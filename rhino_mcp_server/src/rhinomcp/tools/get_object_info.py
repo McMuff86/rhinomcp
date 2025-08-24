@@ -2,6 +2,7 @@ from mcp.server.fastmcp import Context
 import json
 from rhinomcp import get_rhino_connection, mcp, logger
 from typing import Dict, Any
+from rhinomcp.utils.responses import from_exception
 
 @mcp.tool()
 def get_object_info(ctx: Context, id: str = None, name: str = None) -> Dict[str, Any]:
@@ -31,9 +32,6 @@ def get_object_info(ctx: Context, id: str = None, name: str = None) -> Dict[str,
     try:
         rhino = get_rhino_connection()
         return rhino.send_command("get_object_info", {"id": id, "name": name})
-
     except Exception as e:
         logger.error(f"Error getting object info from Rhino: {str(e)}")
-        return {
-            "error": str(e)
-        }
+        return from_exception(e, code="GET_OBJECT_INFO_ERROR")

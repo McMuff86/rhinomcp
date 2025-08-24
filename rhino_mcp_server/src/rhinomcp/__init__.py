@@ -23,3 +23,6 @@ from .tools.select_objects import select_objects
 from .tools.create_layer import create_layer
 from .tools.get_or_set_current_layer import get_or_set_current_layer
 from .tools.delete_layer import delete_layer
+from .tools.create_leader import create_leader
+from .tools.create_text import create_text
+from .tools.create_text_dot import create_text_dot

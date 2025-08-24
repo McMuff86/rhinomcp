@@ -116,6 +116,40 @@ public partial class RhinoMCPFunctions
                 var surf = NurbsSurface.CreateThroughPoints(surfacePoints, surfaceCount[0], surfaceCount[1], surfaceDegree[0], surfaceDegree[1], surfaceClosed[0], surfaceClosed[1]);
                 objectId = doc.Objects.AddSurface(surf);
                 break;
+            case "TEXT":
+                string plainText = castToString(geoParams.SelectToken("text"));
+                Point3d textLocation = castToPoint3d(geoParams.SelectToken("location"));
+                double textHeight = castToDouble(geoParams.SelectToken("height"));
+                if (string.IsNullOrEmpty(plainText)) throw new InvalidOperationException("TEXT requires 'text' param");
+                if (textHeight <= 0) textHeight = 1.0;
+                var textPlane = Plane.WorldXY;
+                textPlane.Origin = textLocation;
+                var textEntity = new TextEntity
+                {
+                    PlainText = plainText,
+                    Plane = textPlane,
+                    TextHeight = textHeight
+                };
+                objectId = doc.Objects.AddText(textEntity);
+                break;
+            case "TEXT_DOT":
+                string dotText = castToString(geoParams.SelectToken("text"));
+                Point3d dotLocation = castToPoint3d(geoParams.SelectToken("location"));
+                if (string.IsNullOrEmpty(dotText)) throw new InvalidOperationException("TEXT_DOT requires 'text' param");
+                var textDot = new TextDot(dotText, dotLocation);
+                objectId = doc.Objects.AddTextDot(textDot);
+                break;
+            case "LEADER":
+                string leaderText = castToString(geoParams.SelectToken("text"));
+                List<Point3d> leaderPoints = castToPoint3dList(geoParams.SelectToken("points"));
+                if (leaderPoints == null || leaderPoints.Count < 2) throw new InvalidOperationException("LEADER requires at least two 'points'");
+                var leaderPlane = Plane.WorldXY;
+                leaderPlane.Origin = leaderPoints[0];
+                var dimStyle = doc.DimStyles.Current;
+                var leader = Leader.Create(leaderText ?? string.Empty, leaderPlane, dimStyle, leaderPoints.ToArray());
+                if (leader == null) throw new InvalidOperationException("unable to create leader");
+                objectId = doc.Objects.AddLeader(leader);
+                break;
             default:
                 throw new InvalidOperationException("Invalid object type");
         }
