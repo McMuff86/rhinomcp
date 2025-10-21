@@ -4,4 +4,4 @@ RhinoMCP connects Rhino to Claude AI through the Model Context Protocol (MCP), a
 
 Please visit Github for complete information:
 
-[Github](https://github.com/jingcheng-chen/rhinomcp)
+[Github](https://github.com/McMuff86/rhinomcp)

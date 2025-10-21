@@ -47,8 +47,9 @@ Other examples in repo:
 
 - `execute_rhinoscript_python_code.py` executes Python code in Rhino.
 - `modify_object.py` and `modify_objects.py` change attributes (name, color, transforms, visibility).
-- Query tools: `get_document_info.py`, `get_object_info.py`, `get_selected_objects_info.py`.
+- Query tools: `get_document_info.py`, `get_object_info.py`, `get_selected_objects_info.py`, `ping.py`.
 - Layer/Annotation tools: `create_layer.py`, `get_or_set_current_layer.py`, `delete_layer.py`, `create_leader.py`.
+- Geometry tools: `create_object.py` supports additional types: MESH (vertices and faces), TORUS (major_radius, minor_radius), SURFACE (points, count, degree, closed).
 
 ### C# Side
 

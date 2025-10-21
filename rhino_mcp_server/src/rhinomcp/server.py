@@ -9,9 +9,18 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator, Dict, Any, List
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, 
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("RhinoMCPServer")
+
+# Global debug flag
+_debug_mode = False
+
+def set_debug_mode(enable: bool):
+    """Enable or disable debug mode"""
+    global _debug_mode
+    _debug_mode = enable
+    logger.info(f"Debug mode {'enabled' if enable else 'disabled'}")
 
 @dataclass
 class RhinoConnection:
@@ -112,29 +121,38 @@ class RhinoConnection:
         
         try:
             # Log the command being sent
-            logger.info(f"Sending command: {command_type} with params: {params}")
+            if _debug_mode:
+                logger.debug(f"Sending command: {command_type} with params: {json.dumps(params, indent=2)}")
+            else:
+                logger.info(f"Sending command: {command_type} with params: {params}")
 
             if self.sock is None:
                 raise Exception("Socket is not connected")
-            
+
             # Send the command
-            self.sock.sendall(json.dumps(command).encode('utf-8'))
-            logger.info(f"Command sent, waiting for response...")
-            
+            command_json = json.dumps(command)
+            self.sock.sendall(command_json.encode('utf-8'))
+            if _debug_mode:
+                logger.debug(f"Command JSON sent: {command_json}")
+
             # Set a timeout for receiving - use the same timeout as in receive_full_response
             self.sock.settimeout(15.0)  # Match the addon's timeout
-            
+
             # Receive the response using the improved receive_full_response method
             response_data = self.receive_full_response(self.sock)
-            logger.info(f"Received {len(response_data)} bytes of data")
-            
+            if _debug_mode:
+                logger.debug(f"Received raw response: {response_data.decode('utf-8')}")
+
             response = json.loads(response_data.decode('utf-8'))
-            logger.info(f"Response parsed, status: {response.get('status', 'unknown')}")
-            
+            if _debug_mode:
+                logger.debug(f"Response parsed: {json.dumps(response, indent=2)}")
+            else:
+                logger.info(f"Response parsed, status: {response.get('status', 'unknown')}")
+
             if response.get("status") == "error":
                 logger.error(f"Rhino error: {response.get('message')}")
                 raise Exception(response.get("message", "Unknown error from Rhino"))
-            
+
             return response.get("result", {})
         except socket.timeout:
             logger.error("Socket timeout while waiting for response from Rhino")

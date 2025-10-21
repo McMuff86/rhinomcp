@@ -76,6 +76,17 @@ public partial class RhinoMCPFunctions
         return ptList;
     }
 
+    private List<int[]> castToIntList(JToken token)
+    {
+        var result = new List<int[]>();
+        foreach (var t in (JArray)token)
+        {
+            int[] inner = castToIntArray(t);
+            result.Add(inner);
+        }
+        return result;
+    }
+
     private Point3d castToPoint3d(JToken token)
     {
         double[] point = castToDoubleArray(token);

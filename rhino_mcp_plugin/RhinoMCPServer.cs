@@ -33,6 +33,7 @@ namespace RhinoMCPPlugin
         private Thread serverThread;
         private readonly object lockObject = new object();
         private RhinoMCPFunctions handler;
+        private bool debugMode = false;
 
         public RhinoMCPServer(string host = "127.0.0.1", int port = 1999)
         {
@@ -42,6 +43,12 @@ namespace RhinoMCPPlugin
             this.listener = null;
             this.serverThread = null;
             this.handler = new RhinoMCPFunctions();
+        }
+
+        public void SetDebugMode(bool enable)
+        {
+            debugMode = enable;
+            RhinoApp.WriteLine($"Debug mode {(enable ? "enabled" : "disabled")}");
         }
 
 
@@ -279,21 +286,34 @@ namespace RhinoMCPPlugin
 
         private JObject ExecuteCommand(JObject command)
         {
+            string cmdType = command["type"]?.ToString();
+            JObject parameters = command["params"] as JObject ?? new JObject();
+
             try
             {
-                string cmdType = command["type"]?.ToString();
-                JObject parameters = command["params"] as JObject ?? new JObject();
-
-                RhinoApp.WriteLine($"Executing command: {cmdType}");
+                if (debugMode)
+                {
+                    RhinoApp.WriteLine($"Executing command: {cmdType} with parameters: {parameters.ToString()}");
+                }
 
                 JObject result = ExecuteCommandInternal(cmdType, parameters);
 
-                RhinoApp.WriteLine("Command execution complete");
+                if (debugMode)
+                {
+                    RhinoApp.WriteLine($"Command {cmdType} executed successfully");
+                }
                 return result;
             }
             catch (Exception e)
             {
-                RhinoApp.WriteLine($"Error executing command: {e.Message}");
+                if (debugMode)
+                {
+                    RhinoApp.WriteLine($"Error executing command {cmdType}: {e.Message}\nStackTrace: {e.StackTrace}");
+                }
+                else
+                {
+                    RhinoApp.WriteLine($"Error executing command: {e.Message}");
+                }
                 return new JObject
                 {
                     ["status"] = "error",
@@ -320,7 +340,10 @@ namespace RhinoMCPPlugin
                 ["select_objects"] = this.handler.SelectObjects,
                 ["create_layer"] = this.handler.CreateLayer,
                 ["get_or_set_current_layer"] = this.handler.GetOrSetCurrentLayer,
-                ["delete_layer"] = this.handler.DeleteLayer
+                ["delete_layer"] = this.handler.DeleteLayer,
+                ["ping"] = this.handler.Ping,
+                ["set_debug_mode"] = this.handler.SetDebugMode,
+                ["log_thought"] = this.handler.LogThought
                 // Add more handlers as needed
             };
 
@@ -339,7 +362,14 @@ namespace RhinoMCPPlugin
                 }
                 catch (Exception e)
                 {
-                    RhinoApp.WriteLine($"Error in handler: {e.Message}");
+                    if (debugMode)
+                    {
+                        RhinoApp.WriteLine($"Error in handler for {cmdType}: {e.Message}\nStackTrace: {e.StackTrace}");
+                    }
+                    else
+                    {
+                        RhinoApp.WriteLine($"Error in handler: {e.Message}");
+                    }
                     return new JObject
                     {
                         ["status"] = "error",

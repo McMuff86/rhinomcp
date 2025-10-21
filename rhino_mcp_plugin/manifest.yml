@@ -1,7 +1,7 @@
 name: rhinomcp
 version: 0.1.3.6
 authors:
-  - Jingcheng Chen
+  - Adi Muff
 description: Rhino integration through the Model Context Protocol
 keywords:
   - rhinomcp
@@ -10,4 +10,4 @@ keywords:
   - ai
   - prompt
   - modelcontextprotocol
-url: 'https://github.com/jingcheng-chen/rhinomcp'
+url: 'https://github.com/McMuff86/rhinomcp.git'

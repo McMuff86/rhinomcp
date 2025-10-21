@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "timestamp": "2025-10-21T22:25:00Z",
+    "source": "RhinoMCP Learning Demo"
+  },
+  "objects": [
+    {
+      "id": "5c18e379-f1f1-4782-803a-edb01e8d66b7",
+      "name": "LearningTestBox",
+      "type": "EXTRUSION",
+      "geometry_type": "Extrusion",
+      "properties": {
+        "dimensions": {
+          "width": 2.0,
+          "length": 3.0,
+          "height": 1.5
+        },
+        "color": {
+          "r": 255,
+          "g": 150,
+          "b": 100
+        },
+        "bounding_box": {
+          "min": [
+            -1.0,
+            -1.5,
+            -0.75
+          ],
+          "max": [
+            1.0,
+            1.5,
+            0.75
+          ]
+        },
+        "is_planar": false,
+        "is_valid": true
+      },
+      "context": {
+        "user_request": "Create a test box for learning data collection",
+        "creation_method": "create_object (BOX)",
+        "ai_thoughts": [
+          "Analyze request for simple geometry",
+          "Generate box with specified dimensions",
+          "Apply color and verify creation"
+        ]
+      },
+      "learning_insights": {
+        "category": "Basic Shapes",
+        "complexity": "Low",
+        "potential_uses": [
+          "Building blocks",
+          "Prototyping"
+        ],
+        "similar_objects": [
+          "Cube",
+          "Rectangular Prism"
+        ]
+      }
+    }
+  ]
+}

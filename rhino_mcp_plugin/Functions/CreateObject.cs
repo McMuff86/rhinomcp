@@ -116,6 +116,27 @@ public partial class RhinoMCPFunctions
                 var surf = NurbsSurface.CreateThroughPoints(surfacePoints, surfaceCount[0], surfaceCount[1], surfaceDegree[0], surfaceDegree[1], surfaceClosed[0], surfaceClosed[1]);
                 objectId = doc.Objects.AddSurface(surf);
                 break;
+            case "MESH":
+                List<Point3d> meshVertices = castToPoint3dList(geoParams.SelectToken("vertices"));
+                List<int[]> meshFaces = castToIntList(geoParams.SelectToken("faces"));
+                var mesh = new Mesh();
+                mesh.Vertices.AddVertices(meshVertices);
+                foreach (var face in meshFaces)
+                {
+                    if (face.Length == 3)
+                        mesh.Faces.AddFace(face[0], face[1], face[2]);
+                    else if (face.Length == 4)
+                        mesh.Faces.AddFace(face[0], face[1], face[2], face[3]);
+                }
+                objectId = doc.Objects.AddMesh(mesh);
+                break;
+            // TODO: Implement TORUS when correct constructor is found
+            // case "TORUS":
+            //     double torusMajorRadius = castToDouble(geoParams.SelectToken("major_radius"));
+            //     double torusMinorRadius = castToDouble(geoParams.SelectToken("minor_radius"));
+            //     var torus = new Torus(Point3d.Origin, Vector3d.ZAxis, torusMajorRadius, torusMinorRadius);
+            //     objectId = doc.Objects.AddBrep(torus.ToBrep());
+            //     break;
             case "TEXT":
                 string plainText = castToString(geoParams.SelectToken("text"));
                 Point3d textLocation = castToPoint3d(geoParams.SelectToken("location"));
@@ -171,6 +192,9 @@ public partial class RhinoMCPFunctions
 
         // Update views
         doc.Views.Redraw();
+
+        // Log explicit creation message
+        RhinoApp.WriteLine($"[OBJECT CREATED] Successfully created {type} object: {name ?? "Unnamed"} with ID: {objectId}");
 
         // apply modification
         parameters["id"] = objectId;

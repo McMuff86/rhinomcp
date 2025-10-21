@@ -72,13 +72,14 @@ An agent-focused guide for working with RhinoMCP. This complements human-facing 
 RhinoMCP tools are registered on Python and dispatched to C#. Common commands include:
 
 - `get_document_info`
-- `create_object`, `create_objects`
+- `create_object`, `create_objects` (supports POINT, LINE, POLYLINE, CIRCLE, ARC, ELLIPSE, CURVE, BOX, SPHERE, CONE, CYLINDER, SURFACE, MESH)
 - `get_object_info`, `get_selected_objects_info`
 - `delete_object`
 - `modify_object`, `modify_objects`
 - `execute_rhinoscript_python_code`
 - `select_objects`
 - `create_layer`, `get_or_set_current_layer`, `delete_layer`
+- `ping` (health check)
 
 Parameters follow these conventions:
 - Colors: `[r, g, b]` in range 0–255

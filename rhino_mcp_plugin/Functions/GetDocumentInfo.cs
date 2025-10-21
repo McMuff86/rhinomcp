@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json.Linq;
 using Rhino;
 using rhinomcp.Serializers;
@@ -66,5 +67,30 @@ public partial class RhinoMCPFunctions
 
         RhinoApp.WriteLine($"Document info collected: {count} objects");
         return result;
+    }
+
+    public JObject Ping(JObject parameters)
+    {
+        RhinoApp.WriteLine("Ping received");
+        return JObject.FromObject(new { status = "success", message = "Pong", timestamp = DateTime.UtcNow.ToString("o") });
+    }
+
+    public JObject SetDebugMode(JObject parameters)
+    {
+        bool enable = parameters["enable"]?.ToObject<bool>() ?? false;
+        // Access the server instance - this is a bit hacky, but for demo purposes
+        var plugin = RhinoMCPPlugin.Instance;
+        if (plugin?.Server != null)
+        {
+            plugin.Server.SetDebugMode(enable);
+        }
+        return JObject.FromObject(new { status = "success", message = $"Debug mode {(enable ? "enabled" : "disabled")}" });
+    }
+
+    public JObject LogThought(JObject parameters)
+    {
+        string thought = parameters["thought"]?.ToString() ?? "No thought provided";
+        RhinoApp.WriteLine($"[AI THOUGHT] {thought}");
+        return JObject.FromObject(new { status = "success", message = "Thought logged" });
     }
 }
