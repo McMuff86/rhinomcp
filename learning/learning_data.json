@@ -1,60 +1,139 @@
 {
   "metadata": {
     "version": "1.0",
-    "timestamp": "2025-10-21T22:25:00Z",
-    "source": "RhinoMCP Learning Demo"
+    "timestamp": "2025-10-21T23:10:00Z",
+    "source": "RhinoMCP Render Spheres Demo"
   },
   "objects": [
     {
-      "id": "5c18e379-f1f1-4782-803a-edb01e8d66b7",
-      "name": "LearningTestBox",
-      "type": "EXTRUSION",
-      "geometry_type": "Extrusion",
+      "name": "RenderSphere1",
+      "type": "SPHERE",
+      "layer": "RenderSpheres",
       "properties": {
-        "dimensions": {
-          "width": 2.0,
-          "length": 3.0,
-          "height": 1.5
-        },
+        "radius": 1.0,
         "color": {
           "r": 255,
           "g": 150,
           "b": 100
         },
+        "material": "MetallicGold",
         "bounding_box": {
           "min": [
             -1.0,
-            -1.5,
-            -0.75
+            -1.0,
+            -1.0
           ],
           "max": [
             1.0,
-            1.5,
-            0.75
+            1.0,
+            1.0
           ]
-        },
-        "is_planar": false,
-        "is_valid": true
+        }
       },
       "context": {
-        "user_request": "Create a test box for learning data collection",
-        "creation_method": "create_object (BOX)",
+        "user_request": "Create spheres with materials for render",
         "ai_thoughts": [
-          "Analyze request for simple geometry",
-          "Generate box with specified dimensions",
-          "Apply color and verify creation"
+          "Create new layer for render objects",
+          "Generate spheres on layer",
+          "Create metallic material",
+          "Assign material to layer for rendering"
         ]
       },
       "learning_insights": {
-        "category": "Basic Shapes",
-        "complexity": "Low",
+        "category": "Rendered Primitives",
+        "complexity": "Medium",
         "potential_uses": [
-          "Building blocks",
-          "Prototyping"
+          "Rendering",
+          "Visualization",
+          "Material Studies"
         ],
         "similar_objects": [
-          "Cube",
-          "Rectangular Prism"
+          "Textured Spheres",
+          "Material-Applied Primitives"
+        ]
+      }
+    },
+    {
+      "name": "RenderSphere2",
+      "type": "SPHERE",
+      "layer": "RenderSpheres",
+      "properties": {
+        "radius": 1.0,
+        "color": {
+          "r": 100,
+          "g": 150,
+          "b": 255
+        },
+        "material": "MetallicGold",
+        "bounding_box": {
+          "min": [
+            2.0,
+            -1.0,
+            -1.0
+          ],
+          "max": [
+            4.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "context": {
+        "user_request": "Create spheres with materials for render",
+        "ai_thoughts": [
+          "Second sphere with blue color",
+          "Same material for consistency"
+        ]
+      },
+      "learning_insights": {
+        "category": "Rendered Primitives",
+        "complexity": "Medium",
+        "potential_uses": [
+          "Rendering",
+          "Visualization",
+          "Material Studies"
+        ]
+      }
+    },
+    {
+      "name": "RenderSphere3",
+      "type": "SPHERE",
+      "layer": "RenderSpheres",
+      "properties": {
+        "radius": 1.0,
+        "color": {
+          "r": 150,
+          "g": 255,
+          "b": 100
+        },
+        "material": "MetallicGold",
+        "bounding_box": {
+          "min": [
+            5.0,
+            -1.0,
+            -1.0
+          ],
+          "max": [
+            7.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "context": {
+        "user_request": "Create spheres with materials for render",
+        "ai_thoughts": [
+          "Third sphere with green color",
+          "Complete the set"
+        ]
+      },
+      "learning_insights": {
+        "category": "Rendered Primitives",
+        "complexity": "Medium",
+        "potential_uses": [
+          "Rendering",
+          "Visualization",
+          "Material Studies"
         ]
       }
     }

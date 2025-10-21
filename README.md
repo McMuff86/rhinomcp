@@ -13,6 +13,7 @@ RhinoMCP connects Rhino to AI agents through the Model Context Protocol (MCP), a
 - **Get Script Documentation**: Get the documentation of a specific RhinoScript python function
 - **Object selection**: Select objects based on filters, e.g. name, color, category, etc. with "and" or "or" logic
 - **Set/Create/Delete Layers**: Get or set the current layer, create new layers, or delete layers
+- **Material Management**: Create and assign render materials to layers for enhanced rendering
 - **Enhanced debugging**: Detailed logging of AI thought processes and object creation with configurable debug modes
 - **Learning data collection**: Structured export of object properties for AI training and analysis
 

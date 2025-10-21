@@ -1,6 +1,8 @@
 using System;
+using System.Drawing;
 using Newtonsoft.Json.Linq;
 using Rhino;
+using Rhino.DocObjects;
 using rhinomcp.Serializers;
 
 namespace RhinoMCPPlugin.Functions;
@@ -9,7 +11,7 @@ public partial class RhinoMCPFunctions
 {
     public JObject GetDocumentInfo(JObject parameters)
     {
-        const int LIMIT = 30;
+        const int LIMIT = 50;
                 
         RhinoApp.WriteLine("Getting document info...");
 
@@ -56,13 +58,30 @@ public partial class RhinoMCPFunctions
         }
 
 
+        var materialData = new JArray();
+        count = 0;
+        foreach (var docMaterial in doc.Materials)
+        {
+            if (count >= LIMIT) break;
+            materialData.Add(new JObject
+            {
+                ["id"] = count.ToString(),
+                ["name"] = docMaterial.Name,
+                ["diffuse_color"] = $"{docMaterial.DiffuseColor.R},{docMaterial.DiffuseColor.G},{docMaterial.DiffuseColor.B}",
+                ["shine"] = docMaterial.Shine
+            });
+            count++;
+        }
+
         var result = new JObject
         {
             ["meta_data"] = metaData,
             ["object_count"] = doc.Objects.Count,
             ["objects"] = objectData,
             ["layer_count"] = doc.Layers.Count,
-            ["layers"] = layerData
+            ["layers"] = layerData,
+            ["material_count"] = doc.Materials.Count,
+            ["materials"] = materialData
         };
 
         RhinoApp.WriteLine($"Document info collected: {count} objects");
@@ -92,5 +111,51 @@ public partial class RhinoMCPFunctions
         string thought = parameters["thought"]?.ToString() ?? "No thought provided";
         RhinoApp.WriteLine($"[AI THOUGHT] {thought}");
         return JObject.FromObject(new { status = "success", message = "Thought logged" });
+    }
+
+    public JObject CreateMaterial(JObject parameters)
+    {
+        string name = parameters["name"]?.ToString() ?? "NewMaterial";
+        int[] color = castToIntArray(parameters.SelectToken("color"));
+        double shine = castToDouble(parameters.SelectToken("shine"));
+
+        var doc = RhinoDoc.ActiveDoc;
+        var material = new Material
+        {
+            Name = name,
+            DiffuseColor = Color.FromArgb(color[0], color[1], color[2]),
+            SpecularColor = Color.FromArgb(255, 255, 255),  // White specular
+            Shine = shine
+        };
+
+        // Ensure material is added to document table
+        material.CommitChanges();
+        var materialId = doc.Materials.Add(material);
+        if (materialId == -1)
+        {
+            throw new InvalidOperationException("Failed to create material");
+        }
+
+        RhinoApp.WriteLine($"[MATERIAL CREATED] Successfully created material: {name} with ID: {materialId}");
+        return JObject.FromObject(new { status = "success", message = $"Material {name} created with ID {materialId}", id = materialId });
+    }
+
+    public JObject AssignMaterialToLayer(JObject parameters)
+    {
+        string layerName = parameters["layer_name"]?.ToString();
+        string materialId = parameters["material_id"]?.ToString();
+
+        var doc = RhinoDoc.ActiveDoc;
+        var layer = doc.Layers.FindName(layerName);
+        if (layer == null)
+        {
+            throw new InvalidOperationException($"Layer {layerName} not found");
+        }
+
+        layer.RenderMaterialIndex = int.Parse(materialId);
+        doc.Layers.Modify(layer, layer.Index, true);
+
+        RhinoApp.WriteLine($"[MATERIAL ASSIGNED] Material {materialId} assigned to layer {layerName}");
+        return JObject.FromObject(new { status = "success", message = $"Material assigned to layer {layerName}" });
     }
 }

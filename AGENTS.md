@@ -79,6 +79,7 @@ RhinoMCP tools are registered on Python and dispatched to C#. Common commands in
 - `execute_rhinoscript_python_code`
 - `select_objects`
 - `create_layer`, `get_or_set_current_layer`, `delete_layer`
+- `create_material`, `assign_material_to_layer` (render material management)
 - `ping` (health check)
 - `set_debug_mode` (enable/disable enhanced logging)
 - `log_thought` (log AI thought processes)

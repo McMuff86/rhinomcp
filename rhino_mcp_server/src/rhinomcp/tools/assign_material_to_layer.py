@@ -1,0 +1,13 @@
+from mcp.server.fastmcp import Context
+from rhinomcp.server import get_rhino_connection, mcp, logger
+
+@mcp.tool()
+def assign_material_to_layer(ctx: Context, layer_name: str, material_id: str) -> str:
+    """Assign a render material to a specific layer."""
+    try:
+        rhino = get_rhino_connection()
+        result = rhino.send_command("assign_material_to_layer", {"layer_name": layer_name, "material_id": material_id})
+        return f"Assigned material: {result['message']}"
+    except Exception as e:
+        logger.error(f"Error assigning material: {str(e)}")
+        return f"Error: {str(e)}"

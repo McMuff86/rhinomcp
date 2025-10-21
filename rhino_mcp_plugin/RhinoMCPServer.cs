@@ -348,7 +348,9 @@ namespace RhinoMCPPlugin
                 ["delete_layer"] = this.handler.DeleteLayer,
                 ["ping"] = this.handler.Ping,
                 ["set_debug_mode"] = this.handler.SetDebugMode,
-                ["log_thought"] = this.handler.LogThought
+                ["log_thought"] = this.handler.LogThought,
+                ["create_material"] = this.handler.CreateMaterial,
+                ["assign_material_to_layer"] = this.handler.AssignMaterialToLayer
                 // Add more handlers as needed
             };
 
