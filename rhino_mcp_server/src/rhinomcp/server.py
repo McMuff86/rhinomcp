@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger("RhinoMCPServer")
 
 # Global debug flag
-_debug_mode = False
+_debug_mode = True
 
 def set_debug_mode(enable: bool):
     """Enable or disable debug mode"""

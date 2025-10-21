@@ -73,13 +73,15 @@ RhinoMCP tools are registered on Python and dispatched to C#. Common commands in
 
 - `get_document_info`
 - `create_object`, `create_objects` (supports POINT, LINE, POLYLINE, CIRCLE, ARC, ELLIPSE, CURVE, BOX, SPHERE, CONE, CYLINDER, SURFACE, MESH)
-- `get_object_info`, `get_selected_objects_info`
+- `get_object_info`, `get_selected_objects_info` (enhanced with geometry details)
 - `delete_object`
 - `modify_object`, `modify_objects`
 - `execute_rhinoscript_python_code`
 - `select_objects`
 - `create_layer`, `get_or_set_current_layer`, `delete_layer`
 - `ping` (health check)
+- `set_debug_mode` (enable/disable enhanced logging)
+- `log_thought` (log AI thought processes)
 
 Parameters follow these conventions:
 - Colors: `[r, g, b]` in range 0–255
@@ -126,6 +128,31 @@ Follow the standards described in `MCP_TOOL_STANDARDS.md`:
   - `rhino_mcp_server/README.md`
 
 When adding any new `*.md` file, list it here under the appropriate section.
+
+## Project Structure
+
+```
+rhinomcp/
+├── rhino_mcp_plugin/          # C# Rhino plugin
+│   ├── Functions/             # Command handlers
+│   ├── Serializers/           # JSON serialization helpers
+│   ├── Commands/              # Rhino command definitions
+│   └── *.cs files             # Plugin core files
+├── rhino_mcp_server/          # Python MCP server
+│   ├── src/rhinomcp/          # Server code
+│   │   ├── tools/             # MCP tool implementations
+│   │   └── server.py          # Main server
+│   ├── dev/                   # Development and example scripts
+│   │   ├── dev_artwork.py     # Artwork generation example
+│   │   ├── dev_castle.py      # Castle building example
+│   │   └── dev_test.py        # Basic testing script
+│   └── *.py files             # Server utilities
+├── learning/                  # AI learning data
+│   └── learning_data.json     # Structured object data
+├── assets/                    # Images and demos
+├── demo_chats/                # Example conversations
+└── *.md files                 # Documentation
+```
 
 ## Pull request checklist
 

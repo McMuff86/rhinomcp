@@ -7,12 +7,14 @@ RhinoMCP connects Rhino to AI agents through the Model Context Protocol (MCP), a
 ## Features
 
 - **Two-way communication**: Connect AI agents to Rhino through a socket-based server
-- **Object manipulation**: Create, modify, and delete 3D objects in Rhino
-- **Document inspection**: Get detailed information about the current Rhino document
+- **Object manipulation**: Create, modify, and delete 3D objects in Rhino (supports POINT, LINE, POLYLINE, CIRCLE, ARC, ELLIPSE, CURVE, BOX, SPHERE, CONE, CYLINDER, SURFACE, MESH)
+- **Document inspection**: Get detailed information about the current Rhino document with enhanced object analysis
 - **Script execution**: Execute Rhinos python scripts in Rhino (experimental, may not work every time)
 - **Get Script Documentation**: Get the documentation of a specific RhinoScript python function
 - **Object selection**: Select objects based on filters, e.g. name, color, category, etc. with "and" or "or" logic
 - **Set/Create/Delete Layers**: Get or set the current layer, create new layers, or delete layers
+- **Enhanced debugging**: Detailed logging of AI thought processes and object creation with configurable debug modes
+- **Learning data collection**: Structured export of object properties for AI training and analysis
 
 > [!NOTE]  
 > So far the tool only supports creating primitive objects for proof of concept. More geometries will be added in the future.

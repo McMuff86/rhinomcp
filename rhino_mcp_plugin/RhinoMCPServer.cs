@@ -33,7 +33,7 @@ namespace RhinoMCPPlugin
         private Thread serverThread;
         private readonly object lockObject = new object();
         private RhinoMCPFunctions handler;
-        private bool debugMode = false;
+        private bool debugMode = true;
 
         public RhinoMCPServer(string host = "127.0.0.1", int port = 1999)
         {
@@ -49,6 +49,11 @@ namespace RhinoMCPPlugin
         {
             debugMode = enable;
             RhinoApp.WriteLine($"Debug mode {(enable ? "enabled" : "disabled")}");
+        }
+
+        public bool GetDebugMode()
+        {
+            return debugMode;
         }
 
 
