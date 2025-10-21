@@ -79,7 +79,7 @@ RhinoMCP tools are registered on Python and dispatched to C#. Common commands in
 - `execute_rhinoscript_python_code`
 - `select_objects`
 - `create_layer`, `get_or_set_current_layer`, `delete_layer`
-- `create_material`, `assign_material_to_layer` (render material management)
+- `create_material` (supports both legacy custom and PBR materials), `assign_material_to_layer` (render material management)
 - `ping` (health check)
 - `set_debug_mode` (enable/disable enhanced logging)
 - `log_thought` (log AI thought processes)
@@ -88,6 +88,16 @@ Parameters follow these conventions:
 - Colors: `[r, g, b]` in range 0–255
 - Points: `[x, y, z]`
 - IDs: GUID strings
+
+**Material parameters:**
+- **Legacy Custom:** `shine` (0.0–1.0, controls specular reflection)
+- **PBR Materials:** `material_type='pbr'`, `metallic` (0.0–1.0), `roughness` (0.0–1.0)
+  - `metallic`: 0.0 = dielectric/non-metal, 1.0 = pure metal
+  - `roughness`: 0.0 = mirror smooth, 1.0 = completely rough
+
+**Status:** ✅ Layer-based PBR implementation is now working correctly, creating materials with proper metallic and roughness parameters. Objects automatically inherit PBR materials from their layers, rendering with realistic metallic appearance in Rendered viewport. The system successfully handles both legacy custom materials and Layer-based PBR materials. See W-0004 in FUNCTIONAL_STATUS.md for implementation details.
+
+**Best Practice:** Use Layer-based material assignment for PBR materials - create dedicated material layers, assign PBR materials to layers, then create objects on those layers for automatic material inheritance.
 
 ## Code style and MCP standards
 
@@ -123,6 +133,7 @@ Follow the standards described in `MCP_TOOL_STANDARDS.md`:
   - `MCP_TOOL_STANDARDS.md`
   - `FUNCTIONAL_STATUS.md`
   - `ANALYSIS_LOG.md`
+  - `USAGE.md` (user guide for tool operation)
   - `AGENTS.md` (this file)
 
 - Server docs

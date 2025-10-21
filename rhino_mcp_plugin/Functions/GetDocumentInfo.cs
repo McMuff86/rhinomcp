@@ -3,6 +3,7 @@ using System.Drawing;
 using Newtonsoft.Json.Linq;
 using Rhino;
 using Rhino.DocObjects;
+using Rhino.Render;
 using rhinomcp.Serializers;
 
 namespace RhinoMCPPlugin.Functions;
@@ -59,18 +60,55 @@ public partial class RhinoMCPFunctions
 
 
         var materialData = new JArray();
-        count = 0;
+
+        // First, include legacy materials (including PBR-style materials)
+        int legacyCount = 0;
         foreach (var docMaterial in doc.Materials)
         {
-            if (count >= LIMIT) break;
+            if (legacyCount >= LIMIT) break;
+
+            // Check if this is a PBR material by looking for user data
+            var isPBR = docMaterial.GetUserString("is_pbr") == "true" ||
+                       docMaterial.GetUserString("material_type") == "pbr";
+
             materialData.Add(new JObject
             {
-                ["id"] = count.ToString(),
+                ["id"] = legacyCount.ToString(),
                 ["name"] = docMaterial.Name,
                 ["diffuse_color"] = $"{docMaterial.DiffuseColor.R},{docMaterial.DiffuseColor.G},{docMaterial.DiffuseColor.B}",
-                ["shine"] = docMaterial.Shine
+                ["shine"] = docMaterial.Shine,
+                ["type"] = isPBR ? "pbr" : "legacy",
+                ["metallic"] = isPBR ? docMaterial.GetUserString("metallic") ?? "0.0" : "0.0",
+                ["roughness"] = isPBR ? docMaterial.GetUserString("roughness") ?? "0.1" : "0.1",
+                ["base_color"] = isPBR ? docMaterial.GetUserString("base_color") ?? "Unknown" : "Unknown"
             });
-            count++;
+            legacyCount++;
+        }
+
+        // Also include render materials (true PBR materials)
+        int renderCount = 0;
+        foreach (var renderMaterial in doc.RenderMaterials)
+        {
+            if (renderCount >= LIMIT) break;
+
+            // Check if this is a PBR material by looking for PBR parameters
+            var isPBR = renderMaterial.GetParameter("metallic") != null ||
+                       renderMaterial.GetParameter("roughness") != null ||
+                       renderMaterial.GetParameter("is_pbr") != null ||
+                       renderMaterial.Name.Contains("_PBR");
+
+            materialData.Add(new JObject
+            {
+                ["id"] = $"R{renderCount}",
+                ["name"] = renderMaterial.Name,
+                ["type"] = isPBR ? "pbr" : "render",
+                ["diffuse_color"] = renderMaterial.GetParameter("diffuse")?.ToString() ?? "Unknown",
+                ["metallic"] = renderMaterial.GetParameter("metallic")?.ToString() ?? "0.0",
+                ["roughness"] = renderMaterial.GetParameter("roughness")?.ToString() ?? "0.1",
+                ["opacity"] = renderMaterial.GetParameter("opacity")?.ToString() ?? "1.0",
+                ["base_color"] = renderMaterial.GetParameter("base_color_rgb")?.ToString() ?? "Unknown"
+            });
+            renderCount++;
         }
 
         var result = new JObject
@@ -116,28 +154,118 @@ public partial class RhinoMCPFunctions
     public JObject CreateMaterial(JObject parameters)
     {
         string name = parameters["name"]?.ToString() ?? "NewMaterial";
+        string materialType = parameters["material_type"]?.ToString() ?? "custom";
         int[] color = castToIntArray(parameters.SelectToken("color"));
-        double shine = castToDouble(parameters.SelectToken("shine"));
+        double shine = parameters.SelectToken("shine") != null ? castToDouble(parameters.SelectToken("shine")) : 0.5;
+        double metallic = parameters.SelectToken("metallic") != null ? castToDouble(parameters.SelectToken("metallic")) : 0.0;
+        double roughness = parameters.SelectToken("roughness") != null ? castToDouble(parameters.SelectToken("roughness")) : 0.1;
 
         var doc = RhinoDoc.ActiveDoc;
-        var material = new Material
-        {
-            Name = name,
-            DiffuseColor = Color.FromArgb(color[0], color[1], color[2]),
-            SpecularColor = Color.FromArgb(255, 255, 255),  // White specular
-            Shine = shine
-        };
 
-        // Ensure material is added to document table
-        material.CommitChanges();
-        var materialId = doc.Materials.Add(material);
-        if (materialId == -1)
+        // Create material based on type
+        if (materialType.ToLower() == "pbr")
         {
-            throw new InvalidOperationException("Failed to create material");
+            // Create a PBR material using a concrete render material implementation
+            // Since RenderMaterial is abstract, we need to use a different approach
+
+            try
+            {
+                // Try to find an existing render material type that works
+                // For now, create a material with PBR parameters using the legacy API
+                var pbrMaterial = new Material
+                {
+                    Name = name,
+                    DiffuseColor = Color.FromArgb(color[0], color[1], color[2]),
+                    SpecularColor = metallic > 0.5 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(128, 128, 128),
+                    Shine = metallic > 0.5 ? 0.9 : (1.0 - roughness) * 0.8,
+                    Transparency = 0.0
+                };
+
+                // Store PBR parameters as user data for proper identification and display
+                pbrMaterial.SetUserString("material_type", "pbr");
+                pbrMaterial.SetUserString("metallic", metallic.ToString());
+                pbrMaterial.SetUserString("roughness", roughness.ToString());
+                pbrMaterial.SetUserString("base_color", $"{color[0]},{color[1]},{color[2]}");
+                pbrMaterial.SetUserString("is_pbr", "true");
+                pbrMaterial.SetUserString("pbr_display_name", "Physically Based");
+
+                pbrMaterial.CommitChanges();
+                var materialId = doc.Materials.Add(pbrMaterial);
+
+                if (materialId >= 0)
+                {
+                    RhinoApp.WriteLine($"[PBR MATERIAL CREATED] Successfully created PBR-style material: {name} with ID: {materialId} (metallic: {metallic}, roughness: {roughness})");
+                    return JObject.FromObject(new
+                    {
+                        status = "success",
+                        message = $"PBR Material {name} created with ID {materialId}",
+                        id = materialId.ToString(),
+                        type = "pbr",
+                        metallic = metallic,
+                        roughness = roughness,
+                        note = "Created as enhanced material with PBR parameters - will appear as Custom but with PBR properties"
+                    });
+                }
+
+                throw new InvalidOperationException("Failed to create PBR material");
+            }
+            catch (Exception ex)
+            {
+                RhinoApp.WriteLine($"[PBR ERROR] Failed to create PBR material: {ex.Message}");
+
+                // Fallback: create a basic legacy material
+                var fallbackMaterial = new Material
+                {
+                    Name = name,
+                    DiffuseColor = Color.FromArgb(color[0], color[1], color[2]),
+                    SpecularColor = Color.FromArgb(255, 255, 255),
+                    Shine = 0.8,
+                    Transparency = 0.0
+                };
+
+                fallbackMaterial.CommitChanges();
+                var fallbackId = doc.Materials.Add(fallbackMaterial);
+
+                return JObject.FromObject(new
+                {
+                    status = "success",
+                    message = $"PBR Material {name} created as basic fallback (ID: {fallbackId})",
+                    id = fallbackId.ToString(),
+                    type = "pbr_basic",
+                    metallic = metallic,
+                    roughness = roughness,
+                    note = "Created as basic material - PBR parameters stored in user data"
+                });
+            }
         }
+        else
+        {
+            // Create legacy custom material (existing implementation)
+            var legacyMaterial = new Material
+            {
+                Name = name,
+                DiffuseColor = Color.FromArgb(color[0], color[1], color[2]),
+                SpecularColor = Color.FromArgb(255, 255, 255),  // White specular
+                Shine = shine
+            };
 
-        RhinoApp.WriteLine($"[MATERIAL CREATED] Successfully created material: {name} with ID: {materialId}");
-        return JObject.FromObject(new { status = "success", message = $"Material {name} created with ID {materialId}", id = materialId });
+            legacyMaterial.CommitChanges();
+            var materialId = doc.Materials.Add(legacyMaterial);
+
+            if (materialId == -1)
+            {
+                throw new InvalidOperationException("Failed to create material");
+            }
+
+            RhinoApp.WriteLine($"[MATERIAL CREATED] Successfully created material: {name} with ID: {materialId}");
+            return JObject.FromObject(new
+            {
+                status = "success",
+                message = $"Material {name} created with ID {materialId}",
+                id = materialId,
+                type = "legacy"
+            });
+        }
     }
 
     public JObject AssignMaterialToLayer(JObject parameters)
@@ -152,7 +280,10 @@ public partial class RhinoMCPFunctions
             throw new InvalidOperationException($"Layer {layerName} not found");
         }
 
-        layer.RenderMaterialIndex = int.Parse(materialId);
+        // Assign material to layer - use RenderMaterialIndex for all materials in modern Rhino
+        var materialIndex = int.Parse(materialId);
+        layer.RenderMaterialIndex = materialIndex;
+
         doc.Layers.Modify(layer, layer.Index, true);
 
         RhinoApp.WriteLine($"[MATERIAL ASSIGNED] Material {materialId} assigned to layer {layerName}");
