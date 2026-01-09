@@ -1,0 +1,61 @@
+# Ralph Progress Log
+Started: 2026-01-09
+Project: RhinoMCP Professionalization
+---
+
+## [2026-01-09 14:00] - Phase 1.1: Branch Setup
+- Thread: Cursor Agent Session
+- Implemented: Created feature branch for Ralph integration
+- Files changed: 
+  - Created Ralph/AGENTS.md
+  - Created Ralph/README.md
+  - Created Ralph/prd.json.example
+  - Created Ralph/scripts/ralph/prompt.md
+  - Created Ralph/scripts/ralph/ralph.sh
+- **Learnings for future iterations:**
+  - New patterns discovered: Ralph workflow adapted for manual execution (no Amp CLI)
+  - Gotchas / pitfalls: Original Ralph uses Amp CLI which isn't available in Cursor
+  - Useful context to remember: Use small tasks to avoid "dumb zone" in context window
+
+---
+
+## [2026-01-09 14:05] - Phase 1.2: Ralph Adaptation for RhinoMCP
+- Thread: Cursor Agent Session
+- Implemented: Adapting prompt.md and workflow for RhinoMCP tech stack
+- Files changed:
+  - Modified Ralph/scripts/ralph/prompt.md (RhinoMCP-specific)
+  - Created Ralph/progress.txt (this file)
+- **Learnings for future iterations:**
+  - New patterns discovered: RhinoMCP uses Python (FastMCP) + C# (Rhino Plugin)
+  - Gotchas / pitfalls: No npm/vitest - use uv/pytest instead
+  - Useful context to remember: 
+    - Server: rhino_mcp_server/src/rhinomcp/
+    - Plugin: rhino_mcp_plugin/
+    - TCP communication on port 1999
+
+---
+
+## Codebase Patterns (SACRED - use exactly these conventions)
+
+### Project Structure
+- Python MCP Server: `rhino_mcp_server/src/rhinomcp/`
+- C# Rhino Plugin: `rhino_mcp_plugin/`
+- Documentation: Root `*.md` files
+
+### Commands
+- Build server: `cd rhino_mcp_server && uv build`
+- Run server: `uv run python -m rhinomcp`
+- Start plugin: In Rhino command line: `mcpstart`
+
+### Code Style
+- Python: FastMCP patterns, logging via `rhinomcp.server.logger`
+- C#: Undo-safe operations, `RhinoApp.WriteLine` for logging
+- Return shapes: `{ success, message, data }` JSON objects
+
+### Naming Conventions
+- Commands: lower_snake_case verbs first (e.g., `create_object`)
+- Colors: `[r, g, b]` in range 0-255
+- Points: `[x, y, z]`
+- IDs: GUID strings
+
+---

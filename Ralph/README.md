@@ -1,147 +1,140 @@
-# Ralph
+# Ralph - Structured Development Workflow for RhinoMCP
+
+Ralph is a structured workflow system for systematic, iterative development. Instead of tackling large features at once, Ralph breaks work into small user stories that fit within a single context window.
 
 ## Workflow
 
-### 1. Create a PRD
+### 1. Create a PRD (Product Requirements Document)
 
-Use the PRD skill to generate a detailed requirements document:
+Define your feature as a set of small, atomic user stories in `prd.json`:
 
+```json
+{
+  "project": "RhinoMCP",
+  "branchName": "feature/my-feature",
+  "description": "Short description of the feature",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add X to Y",
+      "description": "As a developer, I need X so that Y.",
+      "acceptanceCriteria": [
+        "Criterion 1",
+        "Criterion 2",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
 ```
-Load the prd skill and create a PRD for [your feature description]
-```
 
-Answer the clarifying questions. The skill saves output to `tasks/prd-[feature-name].md`.
+### 2. Work Through Stories One at a Time
 
-### 2. Convert PRD to Ralph format
+For each story:
 
-Use the Ralph skill to convert the markdown PRD to JSON:
+1. **Read** `progress.txt` first (patterns, gotchas, context)
+2. **Select** the highest priority story where `passes: false`
+3. **Implement** in small, safe steps
+4. **Test** manually (start Rhino plugin + MCP server)
+5. **Commit** with clear message: `feat/story/US-001: description`
+6. **Update** `progress.txt` with learnings
+7. **Mark** story as `passes: true` in `prd.json`
+8. **Repeat** until all stories complete
 
-```
-Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
-```
+### 3. Document Learnings
 
-This creates `prd.json` with user stories structured for autonomous execution.
-
-### 3. Run Ralph
-
-```bash
-./scripts/ralph/ralph.sh [max_iterations]
-```
-
-Default is 10 iterations.
-
-Ralph will:
-1. Create a feature branch (from PRD `branchName`)
-2. Pick the highest priority story where `passes: false`
-3. Implement that single story
-4. Run quality checks (typecheck, tests)
-5. Commit if checks pass
-6. Update `prd.json` to mark story as `passes: true`
-7. Append learnings to `progress.txt`
-8. Repeat until all stories pass or max iterations reached
+After each story, add learnings to `progress.txt`:
+- New patterns discovered
+- Gotchas and pitfalls
+- Useful context for future work
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `ralph.sh` | The bash loop that spawns fresh Amp instances |
-| `prompt.md` | Instructions given to each Amp instance |
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
 | `progress.txt` | Append-only learnings for future iterations |
-| `skills/prd/` | Skill for generating PRDs |
-| `skills/ralph/` | Skill for converting PRDs to JSON |
-| `flowchart/` | Interactive visualization of how Ralph works |
-
-## Flowchart
-
-[![Ralph Flowchart](ralph-flowchart.png)](https://snarktank.github.io/ralph/)
-
-**[View Interactive Flowchart](https://snarktank.github.io/ralph/)** - Click through to see each step with animations.
-
-The `flowchart/` directory contains the source code. To run locally:
-
-```bash
-cd flowchart
-npm install
-npm run dev
-```
+| `scripts/ralph/prompt.md` | Instructions for AI agents (Cursor, Claude, etc.) |
+| `AGENTS.md` | Agent-specific documentation |
 
 ## Critical Concepts
 
-### Each Iteration = Fresh Context
+### Small Tasks = Better Results
 
-Each iteration spawns a **new Amp instance** with clean context. The only memory between iterations is:
-- Git history (commits from previous iterations)
-- `progress.txt` (learnings and context)
-- `prd.json` (which stories are done)
+Each story should be small enough to complete in one context window. This avoids the "dumb zone" where LLMs produce poor code due to context overflow.
 
-### Small Tasks
+**Right-sized stories:**
+- Add a new MCP tool
+- Fix a specific bug
+- Add a parameter to existing function
+- Update documentation
 
-Each PRD item should be small enough to complete in one context window. If a task is too big, the LLM runs out of context before finishing and produces poor code.
+**Too big (split these):**
+- "Refactor the entire server"
+- "Add authentication system"
+- "Redesign the API"
 
-Right-sized stories:
-- Add a database column and migration
-- Add a UI component to an existing page
-- Update a server action with new logic
-- Add a filter dropdown to a list
+### Learnings Persist via progress.txt
 
-Too big (split these):
-- "Build the entire dashboard"
-- "Add authentication"
-- "Refactor the API"
+The `progress.txt` file is the memory between sessions:
+- Codebase patterns (SACRED - always follow)
+- Discovered gotchas
+- Useful context
 
 ### AGENTS.md Updates Are Critical
 
-After each iteration, Ralph updates the relevant `AGENTS.md` files with learnings. This is key because Amp automatically reads these files, so future iterations (and future human developers) benefit from discovered patterns, gotchas, and conventions.
+After iterations, update relevant `AGENTS.md` files with:
+- Patterns discovered
+- Gotchas ("don't forget to X when doing Y")
+- Useful context ("the settings are in component X")
 
-Examples of what to add to AGENTS.md:
-- Patterns discovered ("this codebase uses X for Y")
-- Gotchas ("do not forget to update Z when changing W")
-- Useful context ("the settings panel is in component X")
+## RhinoMCP-Specific Commands
 
-### Feedback Loops
+```bash
+# Start Rhino plugin (in Rhino command line)
+mcpstart
 
-Ralph only works if there are feedback loops:
-- Typecheck catches type errors
-- Tests verify behavior
-- CI must stay green (broken code compounds across iterations)
+# Start MCP server
+cd rhino_mcp_server
+uv run python -m rhinomcp
 
-### Browser Verification for UI Stories
+# Run dev tests
+uv run python dev/dev_test.py
 
-Frontend stories must include "Verify in browser using dev-browser skill" in acceptance criteria. Ralph will use the dev-browser skill to navigate to the page, interact with the UI, and confirm changes work.
+# Build Python package
+uv build
+```
 
-### Stop Condition
+## Example: Adding a New MCP Tool
 
-When all stories have `passes: true`, Ralph outputs `<promise>COMPLETE</promise>` and the loop exits.
+**Story:** "Add ping tool for health checks"
+
+1. Create `rhino_mcp_server/src/rhinomcp/tools/ping.py`
+2. Register in `server.py`
+3. Test manually: call ping from Cursor/Claude
+4. Commit: `feat/story/US-001: add ping tool for health checks`
+5. Update `progress.txt` with learnings
+6. Mark story `passes: true`
 
 ## Debugging
 
-Check current state:
-
 ```bash
-# See which stories are done
-cat prd.json | jq '.userStories[] | {id, title, passes}'
+# Check story status
+cat Ralph/prd.json | jq '.userStories[] | {id, title, passes}'
 
-# See learnings from previous iterations
-cat progress.txt
+# See learnings
+cat Ralph/progress.txt
 
 # Check git history
 git log --oneline -10
 ```
 
-## Customizing prompt.md
-
-Edit `prompt.md` to customize Ralph's behavior for your project:
-- Add project-specific quality check commands
-- Include codebase conventions
-- Add common gotchas for your stack
-
-## Archiving
-
-Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
-
 ## References
 
 - [Geoffrey Huntley's Ralph article](https://ghuntley.com/ralph/)
-- [Amp documentation](https://ampcode.com/manual)
+- [RhinoMCP AGENTS.md](../AGENTS.md)
+- [MCP Tool Standards](../MCP_TOOL_STANDARDS.md)
