@@ -1,0 +1,97 @@
+{
+  "project": "RhinoMCP",
+  "branchName": "feature/phase-a-stability",
+  "description": "Phase A: Stability & Foundation - Prepare RhinoMCP for professional use",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Add structured error codes to Python responses",
+      "description": "As a developer, I need consistent error codes so I can programmatically handle errors.",
+      "acceptanceCriteria": [
+        "Create rhinomcp/utils/errors.py with error code constants (e.g., CONNECTION_ERROR, INVALID_PARAMS, RHINO_ERROR)",
+        "Update rhinomcp/utils/responses.py to include error codes in error responses",
+        "Update at least 3 existing tools to use the new error format",
+        "Document error codes in MCP_TOOL_STANDARDS.md"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Start with create_object, get_document_info, and ping tools"
+    },
+    {
+      "id": "US-002",
+      "title": "Add connection health check with auto-reconnect",
+      "description": "As a user, I want the server to automatically reconnect if the connection drops.",
+      "acceptanceCriteria": [
+        "Add is_connected() method to RhinoConnection class",
+        "Add reconnect() method with configurable retry count and delay",
+        "Update send_command to attempt reconnect on connection errors",
+        "Log reconnection attempts clearly",
+        "Test: disconnect Rhino plugin, verify reconnect works when restarted"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Keep it simple - max 3 retries with 1 second delay"
+    },
+    {
+      "id": "US-003",
+      "title": "Add missing C# handlers for annotation tools",
+      "description": "As a developer, I need create_leader, create_text, create_text_dot to work end-to-end.",
+      "acceptanceCriteria": [
+        "Create CreateLeader.cs in Functions/",
+        "Create CreateText.cs in Functions/",
+        "Create CreateTextDot.cs in Functions/",
+        "Register handlers in RhinoMCPServer.cs ExecuteCommandInternal",
+        "Test each tool via Python"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Check if these already exist elsewhere or need to be created from scratch"
+    },
+    {
+      "id": "US-004",
+      "title": "Add basic pytest test suite for Python server",
+      "description": "As a developer, I need automated tests to catch regressions.",
+      "acceptanceCriteria": [
+        "Add pytest to pyproject.toml dependencies",
+        "Create rhino_mcp_server/tests/ directory",
+        "Add test_responses.py testing ok() and from_exception()",
+        "Add test_connection.py with mocked socket tests",
+        "Add conftest.py with common fixtures",
+        "All tests pass: uv run pytest"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Focus on unit tests that don't require running Rhino"
+    },
+    {
+      "id": "US-005",
+      "title": "Add GitHub Actions CI workflow",
+      "description": "As a maintainer, I want automated checks on every push/PR.",
+      "acceptanceCriteria": [
+        "Create .github/workflows/ci.yml",
+        "Run pytest on Python 3.10, 3.11, 3.12",
+        "Run ruff lint check",
+        "Workflow triggers on push to main and PRs",
+        "Add status badge to README.md"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Start simple - just Python tests, no C# build yet"
+    },
+    {
+      "id": "US-006",
+      "title": "Add configurable timeout for script execution",
+      "description": "As a user, I want to set custom timeouts for long-running scripts.",
+      "acceptanceCriteria": [
+        "Add optional timeout parameter to execute_rhinoscript_python_code tool",
+        "Default timeout remains 15 seconds",
+        "Timeout can be set up to 120 seconds",
+        "Document timeout parameter in USAGE.md",
+        "Update FUNCTIONAL_STATUS.md backlog (mark as resolved)"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Addresses P-0001 intermittent timeout issue"
+    }
+  ]
+}

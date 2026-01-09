@@ -135,6 +135,7 @@ Follow the standards described in `MCP_TOOL_STANDARDS.md`:
   - `ANALYSIS_LOG.md`
   - `USAGE.md` (user guide for tool operation)
   - `AGENTS.md` (this file)
+  - `ROADMAP.md` (strategic roadmap and phases)
 
 - Server docs
   - `rhino_mcp_server/README.md`
