@@ -42,7 +42,9 @@ Outcome:
   - W-0003: Metallic materials (Gold/Silver) with object assignment and cube creation
   - W-0004: PBR materials (Gold/Silver/Platinum) with metallic and roughness parameters
 - Flaky/Investigate
-  - (none currently)
+  - P-0002: PBR material creation reports success but material not visible in Rhino
+  - P-0003: Objects created on Default layer instead of current layer
+  - P-0004: assign_material_to_layer fails with null parameter error
 - Broken
   - (none currently)
 - Resolved
@@ -159,9 +161,67 @@ Outcome:
 - ✅ SUCCESS: "Custom vs PBR" issue completely resolved with proper Rhino Layer-based workflow
 - ✅ TESTED: All three metallic materials successfully created, assigned to layers, and inherited by objects
 
+---
+
+### P-0002 — PBR material creation reports success but material not visible in Rhino
+Type: PROBLEM • Status: OPEN • Date: 2026-01-10
+Environment: { OS: Windows 10 (10.0.26200), Rhino: unknown, MCP server: 0.1.3.6, Plugin: 0.1.3.6 }
+Related: W-0004
+
+Summary:
+- `create_material` with `material_type='pbr'` returns success message with material ID
+- However, material is not visible in Rhino's material panel
+- Response shows: `"PBR Material GoldMaterial created with ID 1"`
+
+Details:
+- Repro: Run `gold_cube_test.py` or call `create_material` with PBR params
+- Expected: Material appears in Rhino material panel, can be assigned to objects/layers
+- Actual: Success returned but no material visible in Rhino
+
+---
+
+### P-0003 — Objects created on Default layer instead of current layer
+Type: PROBLEM • Status: OPEN • Date: 2026-01-10
+Environment: { OS: Windows 10 (10.0.26200), Rhino: unknown, MCP server: 0.1.3.6, Plugin: 0.1.3.6 }
+
+Summary:
+- After calling `get_or_set_current_layer` to set a new layer, objects still get created on "Default" layer
+- Response from `create_object` shows `"layer": "Default"` instead of expected layer
+
+Details:
+- Repro: 
+  1. Create layer "GoldPBR"
+  2. Call `get_or_set_current_layer(layer_name="GoldPBR")`
+  3. Create object with `create_object`
+  4. Object appears on "Default" layer
+- Expected: Object should be on "GoldPBR" layer
+- Actual: Object is on "Default" layer
+- Possible cause: C# handler may not respect current layer or layer param not passed
+
+---
+
+### P-0004 — assign_material_to_layer fails with null parameter error
+Type: PROBLEM • Status: OPEN • Date: 2026-01-10
+Environment: { OS: Windows 10 (10.0.26200), Rhino: unknown, MCP server: 0.1.3.6, Plugin: 0.1.3.6 }
+
+Summary:
+- Calling `assign_material_to_layer` with `material_name` parameter fails
+- Error: `Value cannot be null. (Parameter 's')`
+
+Details:
+- Repro: `assign_material_to_layer(layer_name="Gold_Material", material_name="PBR_Gold")`
+- Expected: Material assigned to layer
+- Actual: Null parameter error from C# side
+- Possible cause: C# handler expects material_index instead of material_name, or lookup by name fails
+
+---
+
 ## Backlog / Next candidates
 
+- ~~Expose configurable timeout for `execute_rhinoscript_python_code`~~ (DONE - US-006)
+- ~~Add health-check tool (`ping`) returning immediate OK from plugin~~ (EXISTS)
+- Fix P-0002: Investigate PBR material creation in C# plugin
+- Fix P-0003: Ensure objects respect current layer setting
+- Fix P-0004: Fix material assignment by name lookup
 - Add batch endpoints for bulk geometry operations (create_objects for parametric primitives)
-- Expose configurable timeout for `execute_rhinoscript_python_code`
-- Add health-check tool (`ping`) returning immediate OK from plugin
 - Extend serializer coverage for more geometry types and attributes
