@@ -167,7 +167,12 @@ uv publish
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Disclaimer
+See `AGENTS.md` for development guidelines and `Ralph/README.md` for the structured development workflow.
 
-(https://github.com/McMuff86)
+## License
 
+MIT License - See LICENSE file for details.
+
+## Author
+
+Created by [McMuff86](https://github.com/McMuff86)

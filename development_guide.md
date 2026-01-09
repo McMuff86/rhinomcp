@@ -77,3 +77,4 @@ Dieses Dokument ist der zentrale Hub für die Entwicklung von RhinoMCP. Es besch
 
 - 0.1: Initial Creation.
 - 0.2: Added create_leader MCP tool.
+- 0.3: Added Ralph workflow for structured development (see `Ralph/README.md`).
