@@ -241,7 +241,22 @@ create_object(type='BOX', name='Silver_Cube', params={'width': 1.5, 'length': 1.
 Für komplexe Operationen:
 ```bash
 execute_rhinoscript_python_code(code='import rhinoscriptsyntax as rs\n# Dein Code hier')
+
+# Mit erhöhtem Timeout für lange Skripte (max 120 Sekunden):
+execute_rhinoscript_python_code(code='import rhinoscriptsyntax as rs\n# Langes Skript...', timeout=60)
 ```
+
+### Timeout-Parameter
+
+Der `timeout` Parameter ermöglicht es, längere Skripte auszuführen:
+- **Default:** 15 Sekunden
+- **Maximum:** 120 Sekunden
+- **Minimum:** 1 Sekunde
+
+Verwende höhere Timeouts für:
+- Komplexe Geometrieoperationen
+- Mesh-Generierung
+- Große Datenmengen
 
 ## 🚨 Wichtige Hinweise
 

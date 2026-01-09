@@ -1,16 +1,23 @@
 from mcp.server.fastmcp import Context
 import json
 from rhinomcp.server import get_rhino_connection, mcp, logger
-from typing import Any, List, Dict
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
+from typing import Any, List, Dict, Optional
 
 
 @mcp.tool()
-def execute_rhinoscript_python_code(ctx: Context, code: str) -> Dict[str, Any]:
+def execute_rhinoscript_python_code(
+    ctx: Context,
+    code: str,
+    timeout: Optional[float] = None
+) -> Dict[str, Any]:
     """
     Execute arbitrary RhinoScript code in Rhino.
     
     Parameters:
     - code: The RhinoScript code to execute
+    - timeout: Optional timeout in seconds (default: 15, max: 120). Use higher values for long-running scripts.
 
     GUIDE: 
     
@@ -31,11 +38,16 @@ def execute_rhinoscript_python_code(ctx: Context, code: str) -> Dict[str, Any]:
     
     """
     try:
-        # Get the global connection
         rhino = get_rhino_connection()
+        cmd_timeout = timeout if timeout is not None else 15.0
         
-        return rhino.send_command("execute_rhinoscript_python_code", {"code": code})
+        result = rhino.send_command(
+            "execute_rhinoscript_python_code",
+            {"code": code},
+            timeout=cmd_timeout
+        )
+        return result
 
     except Exception as e:
         logger.error(f"Error executing code: {str(e)}")
-        return {"success": False, "message": str(e)}
+        return from_exception(e, code=ErrorCode.SCRIPT_ERROR)

@@ -78,6 +78,66 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## [2026-01-10] - US-004/005/006: Tests, CI, Timeout
+- Thread: Amp Agent Session
+- Implemented:
+  - **US-004:** Pytest test suite with 34 tests (test_responses.py, test_errors.py, test_connection.py)
+  - **US-005:** GitHub Actions CI workflow (ci.yml) with Python 3.10/3.11/3.12 matrix and ruff lint
+  - **US-006:** Configurable timeout for execute_rhinoscript_python_code (1-120 seconds)
+- Files changed:
+  - `rhino_mcp_server/pyproject.toml` - Added pytest/pytest-cov dev dependencies
+  - `rhino_mcp_server/tests/` - Created test suite
+  - `.github/workflows/ci.yml` - Created CI workflow
+  - `README.md` - Added CI badge
+  - `rhino_mcp_server/src/rhinomcp/server.py` - Added timeout param to send_command
+  - `rhino_mcp_server/src/rhinomcp/tools/execute_rhinoscript_python_code.py` - Added timeout param
+  - `USAGE.md` - Documented timeout parameter
+  - `FUNCTIONAL_STATUS.md` - Marked P-0001 as resolved
+- **Learnings for future iterations:**
+  - Tests should not require Rhino - use mocks
+  - CI runs on ubuntu-latest, use `uv pip install --system`
+  - Timeout is clamped to 1-120 seconds in send_command
+
+---
+
+## [2026-01-10] - US-002: Auto-Reconnect
+- Thread: Amp Agent Session
+- Implemented: Connection health check and automatic reconnection
+- Files changed:
+  - Updated `rhino_mcp_server/src/rhinomcp/server.py`:
+    - Added `is_connected()` method to check connection status
+    - Added `reconnect()` method with configurable retries (default: 3) and delay (default: 1s)
+    - Added `_execute_command()` internal method for clean separation
+    - Updated `send_command()` to auto-reconnect on connection errors
+- **Learnings for future iterations:**
+  - New patterns discovered: Use non-blocking socket peek to check connection without data loss
+  - Gotchas / pitfalls: Must set socket back to blocking after peek check
+  - Useful context to remember:
+    - RhinoConnection now has max_retries=3 and retry_delay=1.0 as defaults
+    - send_command will retry once after successful reconnect
+
+---
+
+## [2026-01-10] - US-001: Structured Error Codes
+- Thread: Amp Agent Session
+- Implemented: Structured error codes for consistent programmatic error handling
+- Files changed:
+  - Created `rhino_mcp_server/src/rhinomcp/utils/errors.py` with ErrorCode class
+  - Updated `rhino_mcp_server/src/rhinomcp/utils/responses.py` with auto-detection
+  - Updated `rhino_mcp_server/src/rhinomcp/tools/ping.py` to use structured responses
+  - Updated `rhino_mcp_server/src/rhinomcp/tools/get_document_info.py` to use ErrorCode
+  - Updated `rhino_mcp_server/src/rhinomcp/tools/create_object.py` to use ErrorCode
+  - Updated `MCP_TOOL_STANDARDS.md` with error code documentation
+- **Learnings for future iterations:**
+  - New patterns discovered: Use `from_exception(e, code=ErrorCode.XXX)` for errors
+  - Gotchas / pitfalls: Always return json.dumps() for structured responses
+  - Useful context to remember:
+    - ErrorCode class in utils/errors.py has all constants
+    - from_exception() has auto_detect=True by default for connection errors
+    - All tools should return structured JSON, not plain strings
+
+---
+
 ## Codebase Patterns (SACRED - use exactly these conventions)
 
 ### Project Structure

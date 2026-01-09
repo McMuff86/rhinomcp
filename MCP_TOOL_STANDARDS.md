@@ -14,6 +14,55 @@ Shapes:
 
 Tools that naturally return strings to be shown to users can still return a plain string. For programmatic chaining, prefer structured dicts.
 
+## Error Codes
+
+All error codes are defined in `rhinomcp/utils/errors.py` as constants in the `ErrorCode` class.
+
+| Category | Code | Description |
+|----------|------|-------------|
+| **Connection** | `CONNECTION_ERROR` | General connection failure |
+| | `CONNECTION_TIMEOUT` | Connection timed out |
+| | `CONNECTION_REFUSED` | Connection refused by Rhino plugin |
+| **Validation** | `INVALID_PARAMS` | Invalid parameters provided |
+| | `MISSING_PARAMS` | Required parameters missing |
+| | `INVALID_TYPE` | Invalid object type specified |
+| | `INVALID_ID` | Invalid GUID/object ID |
+| **Rhino** | `RHINO_ERROR` | General Rhino error |
+| | `RHINO_COMMAND_FAILED` | Command execution failed |
+| | `RHINO_OBJECT_NOT_FOUND` | Object not found by ID |
+| | `RHINO_LAYER_NOT_FOUND` | Layer not found |
+| | `RHINO_MATERIAL_NOT_FOUND` | Material not found |
+| **Document** | `DOC_INFO_ERROR` | Error retrieving document info |
+| | `DOC_NOT_OPEN` | No document open |
+| **Script** | `SCRIPT_ERROR` | Script execution error |
+| | `SCRIPT_TIMEOUT` | Script execution timed out |
+| **Objects** | `CREATE_OBJECT_ERROR` | Error creating object |
+| | `MODIFY_OBJECT_ERROR` | Error modifying object |
+| | `DELETE_OBJECT_ERROR` | Error deleting object |
+| | `SELECT_OBJECT_ERROR` | Error selecting object |
+| **Layers** | `CREATE_LAYER_ERROR` | Error creating layer |
+| | `DELETE_LAYER_ERROR` | Error deleting layer |
+| **Materials** | `CREATE_MATERIAL_ERROR` | Error creating material |
+| | `ASSIGN_MATERIAL_ERROR` | Error assigning material |
+| **Generic** | `UNKNOWN_ERROR` | Unknown/unclassified error |
+| | `INTERNAL_ERROR` | Internal server error |
+
+### Usage Example
+
+```python
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
+
+# Success response
+return json.dumps(ok(message="Created object", data={"id": "..."}))
+
+# Error with explicit code
+return json.dumps(from_exception(e, code=ErrorCode.CREATE_OBJECT_ERROR))
+
+# Error with auto-detection (for connection errors)
+return json.dumps(from_exception(e))  # auto_detect=True by default
+```
+
 ## Logging
 
 - Use `logger` from `rhinomcp.server`.

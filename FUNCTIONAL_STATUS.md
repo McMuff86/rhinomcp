@@ -42,9 +42,11 @@ Outcome:
   - W-0003: Metallic materials (Gold/Silver) with object assignment and cube creation
   - W-0004: PBR materials (Gold/Silver/Platinum) with metallic and roughness parameters
 - Flaky/Investigate
-  - P-0001: Intermittent "No data received" on script execution, despite side effects
+  - (none currently)
 - Broken
   - (none currently)
+- Resolved
+  - P-0001: Intermittent "No data received" on script execution - FIXED with configurable timeout
 
 ## Entries
 
@@ -79,7 +81,7 @@ Details:
 ---
 
 ### P-0001 — Intermittent "No data received" on execute_rhinoscript_python_code
-Type: PROBLEM • Status: OPEN • Date: 2025-08-26
+Type: PROBLEM • Status: RESOLVED • Date: 2025-08-26 • Resolved: 2026-01-10
 Environment: { OS: Windows 10 (10.0.26100), Rhino: unknown, MCP server: 0.1.3.6, Plugin: 0.1.3.6 }
 Related: S-0001
 
@@ -105,9 +107,10 @@ Summary:
 
 Outcome:
 - Verified: After error, document contained `Artwork` layer with expected objects.
-- Next steps (engineering):
-  - Increase server read timeout for script execution responses.
-  - Stream progress or chunk long operations (e.g., create in batches of N).
+- **RESOLVED (2026-01-10):** Added configurable `timeout` parameter to `execute_rhinoscript_python_code`.
+  - Default: 15 seconds, Max: 120 seconds
+  - Usage: `execute_rhinoscript_python_code(code="...", timeout=60)`
+  - See USAGE.md for documentation.
   - Consider adding explicit C# endpoints for batch geometry creation to avoid monolithic scripts.
 
 ### W-0003 — Gold and Silver Materials with Cube Creation

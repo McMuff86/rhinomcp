@@ -1,6 +1,8 @@
 from mcp.server.fastmcp import Context
 import json
 from rhinomcp.server import get_rhino_connection, mcp, logger
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
 from typing import Any, List, Dict
 
 @mcp.tool()
@@ -114,10 +116,13 @@ def create_object(
         if color: command_params["color"] = color
 
         # Create the object
-        result = result = rhino.send_command("create_object", command_params)  
+        result = rhino.send_command("create_object", command_params)  
         
-        return f"Created {type} object: {result['name']}"
+        return json.dumps(ok(
+            message=f"Created {type} object: {result['name']}",
+            data={"name": result['name'], "id": result.get('id'), "type": type}
+        ))
     except Exception as e:
         logger.error(f"Error creating object: {str(e)}")
-        return f"Error creating object: {str(e)}"
+        return json.dumps(from_exception(e, code=ErrorCode.CREATE_OBJECT_ERROR))
  

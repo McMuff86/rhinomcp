@@ -5,7 +5,7 @@ description = "Rhino integration through the Model Context Protocol"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    {name = "Adi Muff", email = "mail@mcmuff"}
+    {name = "Adi Muff", email = "mail@mcmuff.ch"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -16,6 +16,12 @@ classifiers = [
 dependencies = [
     "fastmcp>=2.11.2",
     "mcp[cli]>=1.12.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
 ]
 
 [project.scripts]

@@ -1,5 +1,8 @@
+import json
 from mcp.server.fastmcp import Context
 from rhinomcp.server import get_rhino_connection, mcp, logger
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
 
 @mcp.tool()
 def ping(ctx: Context) -> str:
@@ -7,7 +10,10 @@ def ping(ctx: Context) -> str:
     try:
         rhino = get_rhino_connection()
         result = rhino.send_command("ping", {})
-        return f"Pong from Rhino at {result['timestamp']}"
+        return json.dumps(ok(
+            message=f"Pong from Rhino at {result['timestamp']}",
+            data={"timestamp": result['timestamp']}
+        ))
     except Exception as e:
         logger.error(f"Error in ping: {str(e)}")
-        return f"Error: {str(e)}"
+        return json.dumps(from_exception(e, code=ErrorCode.CONNECTION_ERROR))

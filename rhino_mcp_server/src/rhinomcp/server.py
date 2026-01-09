@@ -26,7 +26,9 @@ def set_debug_mode(enable: bool):
 class RhinoConnection:
     host: str
     port: int
-    sock: socket.socket | None = None  # Changed from 'socket' to 'sock' to avoid naming conflict
+    sock: socket.socket | None = None
+    max_retries: int = 3
+    retry_delay: float = 1.0
     
     def connect(self) -> bool:
         """Connect to the Rhino addon socket server"""
@@ -42,6 +44,55 @@ class RhinoConnection:
             logger.error(f"Failed to connect to Rhino: {str(e)}")
             self.sock = None
             return False
+    
+    def is_connected(self) -> bool:
+        """Check if the connection to Rhino is active"""
+        if self.sock is None:
+            return False
+        try:
+            self.sock.setblocking(False)
+            try:
+                data = self.sock.recv(1, socket.MSG_PEEK)
+                if data == b'':
+                    return False
+            except BlockingIOError:
+                pass
+            except ConnectionError:
+                return False
+            finally:
+                self.sock.setblocking(True)
+            return True
+        except Exception:
+            return False
+    
+    def reconnect(self, max_retries: int | None = None, retry_delay: float | None = None) -> bool:
+        """
+        Attempt to reconnect to Rhino with configurable retries.
+        
+        Args:
+            max_retries: Number of retry attempts (default: self.max_retries = 3)
+            retry_delay: Delay between retries in seconds (default: self.retry_delay = 1.0)
+        
+        Returns:
+            True if reconnection successful, False otherwise
+        """
+        retries = max_retries if max_retries is not None else self.max_retries
+        delay = retry_delay if retry_delay is not None else self.retry_delay
+        
+        self.disconnect()
+        
+        for attempt in range(1, retries + 1):
+            logger.info(f"Reconnection attempt {attempt}/{retries}...")
+            if self.connect():
+                logger.info(f"Reconnected to Rhino on attempt {attempt}")
+                return True
+            if attempt < retries:
+                logger.info(f"Waiting {delay}s before next attempt...")
+                import time
+                time.sleep(delay)
+        
+        logger.error(f"Failed to reconnect after {retries} attempts")
+        return False
     
     def disconnect(self):
         """Disconnect from the Rhino addon"""
@@ -109,70 +160,78 @@ class RhinoConnection:
         else:
             raise Exception("No data received")
 
-    def send_command(self, command_type: str, params: Dict[str, Any] = {}) -> Dict[str, Any]:
-        """Send a command to Rhino and return the response"""
-        if not self.sock and not self.connect():
-            raise ConnectionError("Not connected to Rhino")
-        
+    def _execute_command(self, command_type: str, params: Dict[str, Any], timeout: float = 15.0) -> Dict[str, Any]:
+        """Internal method to execute a command (no retry logic)"""
         command = {
             "type": command_type,
             "params": params or {}
         }
         
+        if _debug_mode:
+            logger.debug(f"Sending command: {command_type} with params: {json.dumps(params, indent=2)}")
+        else:
+            logger.info(f"Sending command: {command_type} with params: {params}")
+
+        if self.sock is None:
+            raise ConnectionError("Socket is not connected")
+
+        command_json = json.dumps(command)
+        self.sock.sendall(command_json.encode('utf-8'))
+        if _debug_mode:
+            logger.debug(f"Command JSON sent: {command_json}")
+
+        self.sock.settimeout(timeout)
+        response_data = self.receive_full_response(self.sock)
+        if _debug_mode:
+            logger.debug(f"Received raw response: {response_data.decode('utf-8')}")
+
+        response = json.loads(response_data.decode('utf-8'))
+        if _debug_mode:
+            logger.debug(f"Response parsed: {json.dumps(response, indent=2)}")
+        else:
+            logger.info(f"Response parsed, status: {response.get('status', 'unknown')}")
+
+        if response.get("status") == "error":
+            logger.error(f"Rhino error: {response.get('message')}")
+            raise Exception(response.get("message", "Unknown error from Rhino"))
+
+        return response.get("result", {})
+
+    def send_command(self, command_type: str, params: Dict[str, Any] = {}, timeout: float = 15.0) -> Dict[str, Any]:
+        """
+        Send a command to Rhino with automatic reconnection on failure.
+        
+        Args:
+            command_type: The command to execute
+            params: Command parameters
+            timeout: Response timeout in seconds (default: 15.0, max: 120.0)
+        """
+        timeout = min(max(timeout, 1.0), 120.0)
+        
+        if not self.sock and not self.connect():
+            raise ConnectionError("Not connected to Rhino")
+        
         try:
-            # Log the command being sent
-            if _debug_mode:
-                logger.debug(f"Sending command: {command_type} with params: {json.dumps(params, indent=2)}")
-            else:
-                logger.info(f"Sending command: {command_type} with params: {params}")
-
-            if self.sock is None:
-                raise Exception("Socket is not connected")
-
-            # Send the command
-            command_json = json.dumps(command)
-            self.sock.sendall(command_json.encode('utf-8'))
-            if _debug_mode:
-                logger.debug(f"Command JSON sent: {command_json}")
-
-            # Set a timeout for receiving - use the same timeout as in receive_full_response
-            self.sock.settimeout(15.0)  # Match the addon's timeout
-
-            # Receive the response using the improved receive_full_response method
-            response_data = self.receive_full_response(self.sock)
-            if _debug_mode:
-                logger.debug(f"Received raw response: {response_data.decode('utf-8')}")
-
-            response = json.loads(response_data.decode('utf-8'))
-            if _debug_mode:
-                logger.debug(f"Response parsed: {json.dumps(response, indent=2)}")
-            else:
-                logger.info(f"Response parsed, status: {response.get('status', 'unknown')}")
-
-            if response.get("status") == "error":
-                logger.error(f"Rhino error: {response.get('message')}")
-                raise Exception(response.get("message", "Unknown error from Rhino"))
-
-            return response.get("result", {})
-        except socket.timeout:
-            logger.error("Socket timeout while waiting for response from Rhino")
-            # Don't try to reconnect here - let the get_rhino_connection handle reconnection
-            # Just invalidate the current socket so it will be recreated next time
+            return self._execute_command(command_type, params, timeout=timeout)
+        except (socket.timeout, ConnectionError, BrokenPipeError, ConnectionResetError, OSError) as e:
+            logger.warning(f"Connection error: {str(e)}. Attempting to reconnect...")
             self.sock = None
-            raise Exception("Timeout waiting for Rhino response - try simplifying your request")
-        except (ConnectionError, BrokenPipeError, ConnectionResetError) as e:
-            logger.error(f"Socket connection error: {str(e)}")
-            self.sock = None
-            raise Exception(f"Connection to Rhino lost: {str(e)}")
+            
+            if self.reconnect():
+                logger.info("Reconnected successfully, retrying command...")
+                try:
+                    return self._execute_command(command_type, params, timeout=timeout)
+                except Exception as retry_error:
+                    logger.error(f"Command failed after reconnect: {str(retry_error)}")
+                    self.sock = None
+                    raise Exception(f"Command failed after reconnect: {str(retry_error)}")
+            else:
+                raise ConnectionError("Failed to reconnect to Rhino. Make sure the Rhino plugin is running.")
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response from Rhino: {str(e)}")
-            # Try to log what was received
-            if 'response_data' in locals() and response_data: # type: ignore
-                logger.error(f"Raw response (first 200 bytes): {response_data[:200]}")
             raise Exception(f"Invalid response from Rhino: {str(e)}")
         except Exception as e:
             logger.error(f"Error communicating with Rhino: {str(e)}")
-            # Don't try to reconnect here - let the get_rhino_connection handle reconnection
             self.sock = None
             raise Exception(f"Communication error with Rhino: {str(e)}")
 

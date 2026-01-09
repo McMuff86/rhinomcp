@@ -1,5 +1,7 @@
 # RhinoMCP - Rhino Model Context Protocol Integration
 
+[![CI](https://github.com/McMuff86/rhinomcp/actions/workflows/ci.yml/badge.svg)](https://github.com/McMuff86/rhinomcp/actions/workflows/ci.yml)
+
 <img src="assets/rhinomcp_logo.svg" alt="RhinoMCP Logo" width="130">
 
 RhinoMCP connects Rhino to AI agents through the Model Context Protocol (MCP), allowing AI agents to directly interact with and control Rhino. This integration enables prompt assisted 3D modeling in Rhino 3D.
