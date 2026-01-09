@@ -3,8 +3,8 @@
 ## Introduction
 Dieses Dokument ist der zentrale Hub für die Entwicklung von RhinoMCP. Es beschreibt den aktuellen Stand, Schwächen, Roadmap und Best Practices. Ziel: Ein professionelles Tool für AI-gestützte Rhino-Automatisierung, inkl. Grasshopper und Rhino.Common Integration.
 
-**Version:** 0.1 (Initial Draft)
-**Letztes Update:** [Datum einfügen]
+**Version:** 0.2
+**Letztes Update:** 2026-01-09
 
 ## Workspace Overview
 

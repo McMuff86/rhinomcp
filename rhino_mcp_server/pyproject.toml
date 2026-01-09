@@ -5,7 +5,7 @@ description = "Rhino integration through the Model Context Protocol"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    {name = "Jingcheng Chen", email = "mail@jchen.ch"}
+    {name = "Adi Muff", email = "mail@mcmuff"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -29,5 +29,5 @@ build-backend = "setuptools.build_meta"
 package-dir = {"" = "src"}
 
 [project.urls]
-"Homepage" = "https://github.com/jingcheng-chen/rhinomcp"
-"Bug Tracker" = "https://github.com/jingcheng-chen/rhinomcp/issues"
+"Homepage" = "https://github.com/McMuff86/rhinomcp"
+"Bug Tracker" = "https://github.com/McMuff86/rhinomcp/issues"

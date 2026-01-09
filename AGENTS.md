@@ -191,4 +191,33 @@ rhinomcp/
   - Export properties JSON and optional preview image; record paths in the log.
   - Capture learnings (rules/regex/layer maps) and uncertainties for future iterations.
 
+## Ralph workflow
+
+Ralph is a structured development workflow for systematic, iterative improvements. It breaks large features into small user stories that fit within a single AI context window.
+
+- See `Ralph/README.md` for the full workflow documentation.
+- See `Ralph/progress.txt` for codebase patterns, learnings, and gotchas.
+
+### How to use Ralph
+
+1. **Create a PRD**: Define user stories in `Ralph/prd.json` (see `prd.json.example`)
+2. **Work iteratively**: Pick highest priority story where `passes: false`
+3. **Implement in small steps**: One story per iteration
+4. **Document learnings**: Update `Ralph/progress.txt` after each story
+5. **Mark complete**: Set `passes: true` in `prd.json`
+
+### Key principles
+
+- **Small tasks**: Each story should complete in one context window
+- **Read progress.txt first**: Contains SACRED codebase patterns
+- **Update AGENTS.md**: Add discovered patterns for future iterations
+- **Commit often**: Atomic commits with clear messages
+
+### Ralph files
+
+| File | Purpose |
+|------|---------|
+| `Ralph/prd.json` | User stories with status |
+| `Ralph/progress.txt` | Learnings and patterns |
+| `Ralph/scripts/ralph/prompt.md` | AI agent instructions |
 

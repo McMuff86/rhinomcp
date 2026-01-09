@@ -35,6 +35,26 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## [2026-01-09 14:15] - Phase 1.4: Documentation Update
+- Thread: Cursor Agent Session
+- Implemented: Updated all markdown files to best practice level
+- Files changed:
+  - AGENTS.md: Added Ralph workflow section with usage instructions
+  - Ralph/AGENTS.md: Adapted for RhinoMCP (was originally for Amp)
+  - development_guide.md: Fixed placeholder, updated version to 0.2
+  - README.md: Fixed Disclaimer section, added Contributing reference
+  - rhino_mcp_server/README.md: Expanded with full documentation
+- **Learnings for future iterations:**
+  - New patterns discovered: 12 markdown files in workspace, keep Documentation index updated
+  - Gotchas / pitfalls: README.md had incomplete Disclaimer section
+  - Useful context to remember:
+    - Root docs: README.md, AGENTS.md, USAGE.md, FUNCTIONAL_STATUS.md, etc.
+    - Server docs: rhino_mcp_server/README.md
+    - Ralph docs: Ralph/README.md, Ralph/AGENTS.md
+    - Always update AGENTS.md Documentation index when adding new .md files
+
+---
+
 ## Codebase Patterns (SACRED - use exactly these conventions)
 
 ### Project Structure
