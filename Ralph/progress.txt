@@ -367,3 +367,29 @@ RhinoApp.RunScript(script, echo);
 - IDs: GUID strings
 
 ---
+
+## Session 2026-01-10: US-B05 Dimension Tools
+
+### Implemented
+- `create_linear_dimension` - Linear dimension between two points
+- `create_angular_dimension` - Angle dimension at a vertex
+- `create_radial_dimension` - Radius/diameter dimension for circles
+
+### Key Learnings
+
+1. **DimensionStyle API changed in Rhino 8**: `doc.DimStyles.FindName()` now returns `DimensionStyle` directly, not an index. Use `var foundStyle = doc.DimStyles.FindName(name)` instead of `int index`.
+
+2. **LinearDimension.Create() requires Point3d**: The API takes 3D points directly, not Point2d + plane conversion.
+
+3. **RhinoScript limitations**: No `AddRadialDimension` in rhinoscriptsyntax - our C# implementation fills this gap via RhinoCommon's `RadialDimension.Create()`.
+
+4. **MCP Tool Registration**: New tools need MCP server restart to appear in Cursor's tool catalog. The Python imports in `__init__.py` are correct but Cursor caches the tool list.
+
+5. **Documentation Optimization**: Reduced USAGE.md from 712 lines to ~180 lines. Detailed tool docs now in Python docstrings.
+
+### Test Results
+- 126 tests passed (9 new dimension tests)
+- Build successful
+- RhinoScript dimensions tested and working
+
+---

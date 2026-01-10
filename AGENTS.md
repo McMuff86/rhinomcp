@@ -45,7 +45,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (117 tests)
+# Run pytest suite (126 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -205,6 +205,13 @@ public JObject CreateObject(JObject parameters)
 | `extrude_curve` | `SurfaceOperations.cs` | Extrude curve along vector |
 | `revolve_curve` | `SurfaceOperations.cs` | Revolve curve around axis |
 
+### Dimension Tools
+| Tool | Handler | Description |
+|------|---------|-------------|
+| `create_linear_dimension` | `DimensionOperations.cs` | Linear dimension between points |
+| `create_angular_dimension` | `DimensionOperations.cs` | Angle dimension at vertex |
+| `create_radial_dimension` | `DimensionOperations.cs` | Radius/diameter dimension |
+
 ### Script Execution
 | Tool | Handler | Description |
 |------|---------|-------------|
@@ -316,7 +323,7 @@ uv run pytest tests/ -v
 | US-B02 | Transform Tools | ✅ |
 | US-B03 | Curve Operations | ✅ |
 | US-B04 | Surface from Curves | ✅ |
-| US-B05 | Dimension Tools | ⬜ |
+| US-B05 | Dimension Tools | ✅ |
 | US-B06 | Object Properties | ⬜ |
 
 ---
@@ -384,14 +391,24 @@ uv run pytest tests/test_connection.py -v
 | File | Purpose |
 |------|---------|
 | `README.md` | Project overview |
-| `USAGE.md` | User guide |
+| `USAGE.md` | Quick reference (tool list, conventions) |
 | `AGENTS.md` | This file - agent guide |
 | `ROADMAP.md` | Project phases |
-| `FUNCTIONAL_STATUS.md` | Status log |
-| `MCP_TOOL_STANDARDS.md` | Tool standards |
-| `development_guide.md` | Developer setup |
-| `Ralph/README.md` | Ralph workflow |
+| `MCP_TOOL_STANDARDS.md` | Tool development standards |
 | `Ralph/progress.txt` | Patterns & learnings |
+
+### Tool Documentation
+
+Detailed tool documentation is in the **Python docstrings**:
+
+```
+rhino_mcp_server/src/rhinomcp/tools/*.py
+```
+
+Each tool file contains:
+- Full parameter documentation
+- Return value descriptions
+- Usage examples and notes
 
 ---
 
@@ -452,7 +469,8 @@ When unsure how to implement a feature or which RhinoCommon/RhinoScript API to u
 
 ## See Also
 
-- [USAGE.md](USAGE.md) - Complete tool usage guide
+- [USAGE.md](USAGE.md) - Quick reference (tool list, conventions)
 - [ROADMAP.md](ROADMAP.md) - Project roadmap
 - [Ralph/progress.txt](Ralph/progress.txt) - Codebase patterns
 - [Rhino Developer Docs](https://developer.rhino3d.com/) - Official API documentation
+- Tool docstrings: `rhino_mcp_server/src/rhinomcp/tools/*.py` - Detailed tool documentation

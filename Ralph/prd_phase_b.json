@@ -75,8 +75,8 @@
         "Support dimension style parameters"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented 2026-01-10. 3 Python tools + C# handlers (DimensionOperations.cs) + 9 tests."
     },
     {
       "id": "US-B06",

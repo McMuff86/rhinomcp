@@ -437,7 +437,10 @@ namespace RhinoMCPPlugin
                 ["chamfer_curves"] = this.handler.ChamferCurves,
                 ["loft_curves"] = this.handler.LoftCurves,
                 ["extrude_curve"] = this.handler.ExtrudeCurve,
-                ["revolve_curve"] = this.handler.RevolveCurve
+                ["revolve_curve"] = this.handler.RevolveCurve,
+                ["create_linear_dimension"] = this.handler.CreateLinearDimension,
+                ["create_angular_dimension"] = this.handler.CreateAngularDimension,
+                ["create_radial_dimension"] = this.handler.CreateRadialDimension
                 // Add more handlers as needed
             };
 
