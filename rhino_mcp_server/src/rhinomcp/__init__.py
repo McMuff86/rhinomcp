@@ -26,3 +26,7 @@ from .tools.delete_layer import delete_layer
 from .tools.create_leader import create_leader
 from .tools.create_text import create_text
 from .tools.create_text_dot import create_text_dot
+from .tools.boolean_operation import boolean_operation
+from .tools.create_material import create_material
+from .tools.assign_material_to_layer import assign_material_to_layer
+from .tools.ping import ping
