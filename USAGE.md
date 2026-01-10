@@ -3,7 +3,7 @@
 > Complete guide for using RhinoMCP tools to control Rhino via AI agents.
 
 **Last Updated:** 2026-01-10  
-**Version:** 0.1.3.6
+**Version:** 0.1.3.7
 
 ---
 
@@ -397,6 +397,108 @@ chamfer_curves(
 - `offset_curve` may return multiple curves if the offset self-intersects
 - `fillet_curves` and `chamfer_curves` require intersecting curves
 - Point hints help select the correct fillet/chamfer location when curves have multiple intersections
+
+### Surface Operations
+
+| Tool | Description |
+|------|-------------|
+| `loft_curves` | Create a lofted surface between multiple curves |
+| `extrude_curve` | Extrude a curve along a direction vector |
+| `revolve_curve` | Revolve a curve around an axis |
+
+#### loft_curves
+
+Create a lofted surface or solid between multiple curves. The curves define cross-sections of the resulting surface.
+
+```python
+# Basic loft between 3 curves
+loft_curves(
+    curve_ids=["guid-1", "guid-2", "guid-3"],
+)
+
+# Closed loft (connects last curve back to first)
+loft_curves(
+    curve_ids=["guid-1", "guid-2", "guid-3"],
+    closed=True
+)
+
+# Loft with different interpolation types
+loft_curves(
+    curve_ids=["guid-1", "guid-2", "guid-3"],
+    loft_type="tight"  # "normal", "loose", "tight", "straight"
+)
+```
+
+**Loft Types:**
+- `normal`: Standard loft through curves
+- `loose`: Loose fit (curves influence but don't pass exactly through)
+- `tight`: Tight fit with more control points
+- `straight`: Straight sections between curves (ruled surface)
+
+#### extrude_curve
+
+Extrude a curve along a direction vector to create a surface or solid.
+
+```python
+# Extrude circle upward to create a cylinder
+extrude_curve(
+    curve_id="circle-guid",
+    direction=[0, 0, 1],  # Z direction
+    distance=10.0,
+    cap=True  # Cap ends to create solid
+)
+
+# Extrude open curve (creates surface, not solid)
+extrude_curve(
+    curve_id="line-guid",
+    direction=[1, 0, 0],  # X direction
+    distance=5.0
+)
+
+# Extrude without distance (uses vector length)
+extrude_curve(
+    curve_id="curve-guid",
+    direction=[0, 10, 5],  # Vector defines both direction and distance
+    cap=False
+)
+```
+
+#### revolve_curve
+
+Revolve a curve around an axis to create a surface of revolution (like a vase or wheel).
+
+```python
+# Full revolution around Z axis (360°)
+revolve_curve(
+    curve_id="profile-guid",
+    axis_start=[0, 0, 0],
+    axis_end=[0, 0, 1]  # Z axis
+)
+
+# Partial revolution (180°)
+revolve_curve(
+    curve_id="profile-guid",
+    axis_start=[0, 0, 0],
+    axis_end=[0, 0, 1],
+    angle=180.0
+)
+
+# Revolve around off-center axis
+revolve_curve(
+    curve_id="profile-guid",
+    axis_start=[10, 0, 0],
+    axis_end=[10, 0, 10],  # Vertical axis at X=10
+    angle=360.0
+)
+```
+
+#### Surface Operations Notes
+- All surface tools return new surface/Brep GUIDs
+- `loft_curves` requires at least 2 curves (order matters - curves define cross-sections)
+- For `extrude_curve`, closed curves with `cap=True` create solid geometry
+- For `revolve_curve`, the curve should not cross the axis of revolution
+- 360° revolution creates a closed surface
+- New surfaces are created on the current layer
 
 ### Layer Management
 

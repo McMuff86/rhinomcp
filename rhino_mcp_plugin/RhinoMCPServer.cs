@@ -113,6 +113,7 @@ namespace RhinoMCPPlugin
                 ["Boolean"] = new List<string> { "boolean_operation" },
                 ["Transform"] = new List<string> { "copy_object", "mirror_object", "array_linear", "array_polar" },
                 ["Curves"] = new List<string> { "offset_curve", "fillet_curves", "chamfer_curves" },
+                ["Surfaces"] = new List<string> { "loft_curves", "extrude_curve", "revolve_curve" },
                 ["Scripting"] = new List<string> { "execute_rhinoscript_python_code" },
                 ["Debug"] = new List<string> { "set_debug_mode", "log_thought" }
             };
@@ -159,7 +160,10 @@ namespace RhinoMCPPlugin
                 "array_polar",
                 "offset_curve",
                 "fillet_curves",
-                "chamfer_curves"
+                "chamfer_curves",
+                "loft_curves",
+                "extrude_curve",
+                "revolve_curve"
             };
         }
 
@@ -430,7 +434,10 @@ namespace RhinoMCPPlugin
                 ["array_polar"] = this.handler.ArrayPolar,
                 ["offset_curve"] = this.handler.OffsetCurve,
                 ["fillet_curves"] = this.handler.FilletCurves,
-                ["chamfer_curves"] = this.handler.ChamferCurves
+                ["chamfer_curves"] = this.handler.ChamferCurves,
+                ["loft_curves"] = this.handler.LoftCurves,
+                ["extrude_curve"] = this.handler.ExtrudeCurve,
+                ["revolve_curve"] = this.handler.RevolveCurve
                 // Add more handlers as needed
             };
 

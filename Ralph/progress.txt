@@ -310,6 +310,39 @@ RhinoApp.RunScript(script, echo);
 
 ---
 
+## [2026-01-10] - US-B04: Surface from Curves
+- Thread: Cursor Agent Session
+- Implemented: Surface operations (loft, extrude, revolve)
+- Files changed:
+  - Created `rhino_mcp_server/src/rhinomcp/tools/loft_curves.py` - Loft between multiple curves
+  - Created `rhino_mcp_server/src/rhinomcp/tools/extrude_curve.py` - Extrude along vector
+  - Created `rhino_mcp_server/src/rhinomcp/tools/revolve_curve.py` - Revolve around axis
+  - Created `rhino_mcp_plugin/Functions/SurfaceOperations.cs` - C# handlers for all 3 tools
+  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handlers and added Surfaces category
+  - Created `rhino_mcp_server/tests/test_surface_operations.py` - 22 unit tests (19 pass, 3 skipped integration)
+  - Updated `USAGE.md` - Added Surface Operations section with examples
+  - Updated `AGENTS.md` - Tool tables, test count (117), US-B04 status
+  - Updated `Ralph/prd_phase_b.json` - Marked US-B04 as passes: true
+- **Learnings for future iterations:**
+  - New patterns discovered:
+    - `Brep.CreateFromLoft(curves, start, end, loftType, closed)` for lofting
+    - `Surface.CreateExtrusion(curve, direction)` for extrusion surfaces
+    - `Extrusion.Create(curve, height, cap)` for capped solids
+    - `RevSurface.Create(curve, axis, startAngle, endAngle)` for revolution
+  - Gotchas / pitfalls:
+    - **IMPORTANT:** Always validate ALL parameters BEFORE calling get_rhino_connection()
+    - Including optional parameters like `distance` - validate early to avoid connection errors in tests
+    - `Extrusion.Create()` creates geometry at origin - may need position adjustment
+    - `RevSurface` needs conversion to Brep for document compatibility
+  - Useful context to remember:
+    - LoftType enum: Normal, Loose, Tight, Straight
+    - For closed curves with `cap=True`, prefer `Extrusion.Create()` for solids
+    - Always convert RevSurface to Brep before adding to document
+    - All surface tools return GUIDs of new surfaces on current layer
+- **Next:** US-B05 Dimension Tools or US-B06 Object Properties
+
+---
+
 ## Codebase Patterns (SACRED - use exactly these conventions)
 
 ### Project Structure

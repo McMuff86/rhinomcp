@@ -1,4 +1,4 @@
-# Next Session Plan: US-B04 Surface from Curves
+# Next Session Plan: US-B05 Dimension Tools
 
 > Plan für die nächste Agent-Session. Kopiere diesen Plan in ein neues Kontext-Fenster.
 
@@ -6,17 +6,17 @@
 
 ## Ziel
 
-Implementiere **US-B04: Surface from Curves (Loft, Extrude, Revolve)** mit automatischem Build & Test Workflow.
+Implementiere **US-B05: Dimension Tools** für lineare, angulare und radiale Bemaßungen.
 
 ---
 
 ## Acceptance Criteria (aus prd_phase_b.json)
 
-1. Add `loft_curves` tool (loft between multiple curves)
-2. Add `extrude_curve` tool (extrude along vector or path)
-3. Add `revolve_curve` tool (revolve around axis)
-4. Support closed surfaces where applicable
-5. Return new surface/brep IDs
+1. Add `create_linear_dimension` tool
+2. Add `create_angular_dimension` tool
+3. Add `create_radial_dimension` tool
+4. Dimensions update correctly with object changes
+5. Support dimension style parameters
 
 ---
 
@@ -36,7 +36,6 @@ Nach jeder Implementierung **IMMER** diesen Workflow ausführen:
 
 ```powershell
 # Schritt 1: Rhino beenden (falls es den Build blockiert)
-# Versuche zuerst graceful, dann forciert
 Stop-Process -Name "Rhino" -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
 
@@ -46,7 +45,7 @@ dotnet build --configuration Release
 
 # Schritt 3: Rhino starten
 Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
-Start-Sleep -Seconds 10  # Warte bis Rhino geladen ist
+Start-Sleep -Seconds 10
 
 # Schritt 4: MCP Server starten (in separatem Terminal)
 # Der User muss manuell "mcpstart" in Rhino eingeben
@@ -60,7 +59,7 @@ cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_server
 uv run pytest tests/ -v
 
 # Live Tests ausführen (nach mcpstart in Rhino)
-uv run python dev/test_surface_operations.py
+uv run python dev/test_dimension_operations.py
 ```
 
 ### 4. Dokumentation aktualisieren
@@ -82,143 +81,58 @@ Plugin: C:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_plugin\bin\Release\net7.0\rhi
 
 ---
 
-## Hilfreiche Shell-Befehle
-
-### Rhino schließen (wenn Build blockiert)
-```powershell
-# Graceful
-Stop-Process -Name "Rhino" -ErrorAction SilentlyContinue
-
-# Forciert (falls nötig)
-Stop-Process -Name "Rhino" -Force -ErrorAction SilentlyContinue
-```
-
-### Rhino starten
-```powershell
-Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
-```
-
-### Prüfen ob Rhino läuft
-```powershell
-Get-Process -Name "Rhino" -ErrorAction SilentlyContinue
-```
-
-### Build mit Fehlerbehandlung
-```powershell
-cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_plugin
-
-# Wenn Build fehlschlägt wegen gesperrter Datei:
-Stop-Process -Name "Rhino" -Force -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 3
-dotnet build --configuration Release
-```
-
----
-
 ## Zu implementierende Tools
 
-### 1. loft_curves
-- Python: `rhino_mcp_server/src/rhinomcp/tools/loft_curves.py`
-- C# API: `Brep.CreateFromLoft()` oder `Brep.CreateFromLoftRebuild()`
-- Parameter: `curve_ids`, `closed` (bool), `loft_type` (normal, loose, tight, straight)
+### 1. create_linear_dimension
+- Python: `rhino_mcp_server/src/rhinomcp/tools/create_linear_dimension.py`
+- C# API: `LinearDimension.Create()` oder `doc.Objects.AddLinearDimension()`
+- Parameter: `start_point`, `end_point`, `text_point`, `dimension_style` (optional)
 
-### 2. extrude_curve
-- Python: `rhino_mcp_server/src/rhinomcp/tools/extrude_curve.py`
-- C# API: `Extrusion.Create()` oder `Surface.CreateExtrusion()`
-- Parameter: `curve_id`, `direction` (vector), `distance`, `cap` (bool)
+### 2. create_angular_dimension
+- Python: `rhino_mcp_server/src/rhinomcp/tools/create_angular_dimension.py`
+- C# API: `AngularDimension.Create()` oder `doc.Objects.AddAngularDimension()`
+- Parameter: `vertex`, `start_point`, `end_point`, `text_point`
 
-### 3. revolve_curve
-- Python: `rhino_mcp_server/src/rhinomcp/tools/revolve_curve.py`
-- C# API: `RevSurface.Create()` oder `Brep.CreateFromRevSurface()`
-- Parameter: `curve_id`, `axis_start`, `axis_end`, `angle` (degrees)
+### 3. create_radial_dimension
+- Python: `rhino_mcp_server/src/rhinomcp/tools/create_radial_dimension.py`
+- C# API: `RadialDimension.Create()` oder `doc.Objects.AddRadialDimension()`
+- Parameter: `center`, `radius_point`, `text_point`, `is_diameter` (bool)
 
 ---
 
 ## RhinoCommon API Referenz
 
-Für Surface Operations:
-- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.brep
-- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.extrusion
-- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.revsurface
+Für Dimension Operations:
+- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.lineardimension
+- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.angulardimension
+- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.radialdimension
 
 Key Methods:
-- `Brep.CreateFromLoft(curves, start, end, loftType, closed)`
-- `Surface.CreateExtrusion(profile, direction)`
-- `Extrusion.Create(profile, height, cap)`
-- `RevSurface.Create(profile, axis, startAngle, endAngle)`
+- `LinearDimension.Create(plane, extensionLine1, extensionLine2, direction, textLocation)`
+- `AngularDimension.Create(plane, vertex, startDir, endDir, textPoint)`
+- `RadialDimension.Create(circle, point, text)`
 
 ---
 
-## Checkliste für den Agenten
+## Wichtige Learnings aus US-B04
 
-- [ ] `loft_curves` implementieren
-- [ ] `extrude_curve` implementieren  
-- [ ] `revolve_curve` implementieren
-- [ ] C# Handler in `SurfaceOperations.cs` erstellen
-- [ ] Handler in `RhinoMCPServer.cs` registrieren
-- [ ] Unit Tests erstellen
-- [ ] Rhino schließen & neu builden
-- [ ] Rhino starten
-- [ ] Live Tests ausführen
-- [ ] `USAGE.md` aktualisieren
-- [ ] `AGENTS.md` aktualisieren (Tool-Tabellen, Testzahl, US-B04 Status)
-- [ ] `Ralph/prd_phase_b.json` - US-B04 als passes: true markieren
-- [ ] `Ralph/progress.txt` - Learnings dokumentieren
-
----
-
-## Wichtige Learnings aus US-B03
-
-1. **Parameter-Validierung VOR get_rhino_connection()** - Tests schlagen fehl wenn Validierung nach Connection-Versuch kommt
-2. **Curve Operations können mehrere Ergebnisse liefern** - Immer Liste von IDs zurückgeben
+1. **Parameter-Validierung VOR get_rhino_connection()** - Auch für optionale Parameter!
+2. **Surface zu Brep konvertieren** - RevSurface muss vor dem Hinzufügen zum Dokument konvertiert werden
 3. **Immer LayerIndex auf neue Objekte setzen**
-
----
-
-## Rhino Native Commands (NEU!)
-
-Für komplexe Operationen können native Rhino-Commands verwendet werden:
-
-### Option 1: RhinoApp.RunScript() in C#
-```csharp
-// Execute native command
-string script = "_Loft _Pause _Pause _Enter";
-RhinoApp.RunScript(script, false);
-```
-
-### Option 2: Curve.CreateFilletCurves mit radius=0 für Chamfer
-```csharp
-// Built-in chamfer with automatic trim
-var result = Curve.CreateFilletCurves(curve1, pt1, curve2, pt2, 
-    0.0,    // radius=0 = chamfer
-    true,   // join
-    true,   // trim
-    false,  // arcExtension
-    tolerance, angleTolerance);
-```
-
-### Wann Native Commands verwenden:
-- **Loft, Sweep, Revolve** - Komplexe Surface-Erstellung
-- **Boolean2D** - 2D Boolean-Operationen
-- Operationen mit vielen Edge Cases
-
-### Wann Manual Implementation:
-- Einfache Operationen (offset, copy, array)
-- Wenn Kontrolle über Ergebnis wichtig
-- Wenn native Command User-Interaktion braucht
 
 ---
 
 ## Prompt für neues Fenster
 
 ```
-Lies @Ralph/NEXT_SESSION_PLAN.md und führe den Plan für US-B04: Surface from Curves aus.
+Lies @Ralph/NEXT_SESSION_PLAN.md und führe den Plan für US-B05: Dimension Tools aus.
 
 Workflow:
-1. Implementiere die 3 Surface Tools (loft_curves, extrude_curve, revolve_curve)
-2. Schließe Rhino automatisch wenn nötig (Stop-Process)
-3. Baue das C# Plugin neu
-4. Starte Rhino automatisch
-5. Führe Tests aus
-6. Aktualisiere alle Dokumentation inkl. AGENTS.md
+1. Implementiere die 3 Dimension Tools (create_linear_dimension, create_angular_dimension, create_radial_dimension)
+2. Prüfe RhinoCommon API Dokumentation für korrekte Implementierung
+3. Schließe Rhino automatisch wenn nötig (Stop-Process)
+4. Baue das C# Plugin neu
+5. Starte Rhino automatisch
+6. Führe Tests aus
+7. Aktualisiere alle Dokumentation inkl. AGENTS.md
 ```

@@ -3,7 +3,7 @@
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
 **Last Updated:** 2026-01-10  
-**Version:** 0.1.3.6  
+**Version:** 0.1.3.7  
 **Phase:** B (Core Features)
 
 ---
@@ -45,7 +45,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (98 tests)
+# Run pytest suite (117 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -72,7 +72,7 @@ dotnet build --configuration Release
 rhinomcp/
 ├── rhino_mcp_server/           # Python MCP server
 │   ├── src/rhinomcp/
-│   │   ├── tools/              # MCP tool implementations (30 tools)
+│   │   ├── tools/              # MCP tool implementations (33 tools)
 │   │   ├── utils/              # Helpers (responses.py, errors.py)
 │   │   └── server.py           # Main server + RhinoConnection
 │   ├── tests/                  # Pytest test suite
@@ -80,7 +80,7 @@ rhinomcp/
 │   └── pyproject.toml
 │
 ├── rhino_mcp_plugin/           # C# Rhino plugin
-│   ├── Functions/              # Command handlers (19 handlers)
+│   ├── Functions/              # Command handlers (22 handlers)
 │   ├── Serializers/            # JSON serialization
 │   ├── Commands/               # Rhino command definitions
 │   ├── RhinoMCPServer.cs       # TCP server + command dispatch
@@ -198,6 +198,13 @@ public JObject CreateObject(JObject parameters)
 | `fillet_curves` | `CurveOperations.cs` | Create fillet arc between curves |
 | `chamfer_curves` | `CurveOperations.cs` | Create chamfer line between curves |
 
+### Surface Tools
+| Tool | Handler | Description |
+|------|---------|-------------|
+| `loft_curves` | `SurfaceOperations.cs` | Loft surface between curves |
+| `extrude_curve` | `SurfaceOperations.cs` | Extrude curve along vector |
+| `revolve_curve` | `SurfaceOperations.cs` | Revolve curve around axis |
+
 ### Script Execution
 | Tool | Handler | Description |
 |------|---------|-------------|
@@ -308,7 +315,7 @@ uv run pytest tests/ -v
 | US-B01 | Boolean Operations | ✅ |
 | US-B02 | Transform Tools | ✅ |
 | US-B03 | Curve Operations | ✅ |
-| US-B04 | Surface from Curves | ⬜ |
+| US-B04 | Surface from Curves | ✅ |
 | US-B05 | Dimension Tools | ⬜ |
 | US-B06 | Object Properties | ⬜ |
 
