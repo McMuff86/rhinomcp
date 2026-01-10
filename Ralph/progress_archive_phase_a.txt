@@ -1,0 +1,180 @@
+# Ralph Progress Archive - Phase A
+# Archived: 2026-01-10
+# Original file: progress.txt
+# Reason: Entries before Phase B (US-B01+) archived to keep main progress.txt manageable
+---
+
+## [2026-01-09 14:00] - Phase 1.1: Branch Setup
+- Thread: Cursor Agent Session
+- Implemented: Created feature branch for Ralph integration
+- Files changed: 
+  - Created Ralph/AGENTS.md
+  - Created Ralph/README.md
+  - Created Ralph/prd.json.example
+  - Created Ralph/scripts/ralph/prompt.md
+  - Created Ralph/scripts/ralph/ralph.sh
+- **Learnings for future iterations:**
+  - New patterns discovered: Ralph workflow adapted for manual execution (no Amp CLI)
+  - Gotchas / pitfalls: Original Ralph uses Amp CLI which isn't available in Cursor
+  - Useful context to remember: Use small tasks to avoid "dumb zone" in context window
+
+---
+
+## [2026-01-09 14:05] - Phase 1.2: Ralph Adaptation for RhinoMCP
+- Thread: Cursor Agent Session
+- Implemented: Adapting prompt.md and workflow for RhinoMCP tech stack
+- Files changed:
+  - Modified Ralph/scripts/ralph/prompt.md (RhinoMCP-specific)
+  - Created Ralph/progress.txt (this file)
+- **Learnings for future iterations:**
+  - New patterns discovered: RhinoMCP uses Python (FastMCP) + C# (Rhino Plugin)
+  - Gotchas / pitfalls: No npm/vitest - use uv/pytest instead
+  - Useful context to remember: 
+    - Server: rhino_mcp_server/src/rhinomcp/
+    - Plugin: rhino_mcp_plugin/
+    - TCP communication on port 1999
+
+---
+
+## [2026-01-09 14:15] - Phase 1.4: Documentation Update
+- Thread: Cursor Agent Session
+- Implemented: Updated all markdown files to best practice level
+- Files changed:
+  - AGENTS.md: Added Ralph workflow section with usage instructions
+  - Ralph/AGENTS.md: Adapted for RhinoMCP (was originally for Amp)
+  - development_guide.md: Fixed placeholder, updated version to 0.2
+  - README.md: Fixed Disclaimer section, added Contributing reference
+  - rhino_mcp_server/README.md: Expanded with full documentation
+- **Learnings for future iterations:**
+  - New patterns discovered: 12 markdown files in workspace, keep Documentation index updated
+  - Gotchas / pitfalls: README.md had incomplete Disclaimer section
+  - Useful context to remember:
+    - Root docs: README.md, AGENTS.md, USAGE.md, FUNCTIONAL_STATUS.md, etc.
+    - Server docs: rhino_mcp_server/README.md
+    - Ralph docs: Ralph/README.md, Ralph/AGENTS.md
+    - Always update AGENTS.md Documentation index when adding new .md files
+
+---
+
+## [2026-01-09 14:30] - Phase 2: Codebase Review & Roadmap
+- Thread: Cursor Agent Session
+- Implemented: Complete codebase analysis and strategic roadmap
+- Files changed:
+  - Created ROADMAP.md with 4-phase plan (Stability → Core → Advanced → Monetization)
+  - Created Ralph/prd.json with 6 user stories for Phase A
+  - Updated AGENTS.md Documentation index
+- **Learnings for future iterations:**
+  - New patterns discovered:
+    - Python server has 23 tools in rhino_mcp_server/src/rhinomcp/tools/
+    - C# plugin has 14 handlers in rhino_mcp_plugin/Functions/
+    - Some Python tools lack C# handlers (create_leader, create_text, create_text_dot)
+  - Gotchas / pitfalls:
+    - Socket timeout is 15 seconds - can cause issues with long scripts
+    - No automated tests - only dev_test.py exists
+    - Error responses inconsistent (strings vs dicts)
+  - Useful context to remember:
+    - Command handlers mapped in RhinoMCPServer.cs ExecuteCommandInternal()
+    - Tools registered via @mcp.tool() decorator in Python
+    - Undo support: C# wraps commands in BeginUndoRecord/EndUndoRecord
+
+---
+
+## [2026-01-10] - US-004/005/006: Tests, CI, Timeout
+- Thread: Amp Agent Session
+- Implemented:
+  - **US-004:** Pytest test suite with 34 tests (test_responses.py, test_errors.py, test_connection.py)
+  - **US-005:** GitHub Actions CI workflow (ci.yml) with Python 3.10/3.11/3.12 matrix and ruff lint
+  - **US-006:** Configurable timeout for execute_rhinoscript_python_code (1-120 seconds)
+- Files changed:
+  - `rhino_mcp_server/pyproject.toml` - Added pytest/pytest-cov dev dependencies
+  - `rhino_mcp_server/tests/` - Created test suite
+  - `.github/workflows/ci.yml` - Created CI workflow
+  - `README.md` - Added CI badge
+  - `rhino_mcp_server/src/rhinomcp/server.py` - Added timeout param to send_command
+  - `rhino_mcp_server/src/rhinomcp/tools/execute_rhinoscript_python_code.py` - Added timeout param
+  - `USAGE.md` - Documented timeout parameter
+  - `FUNCTIONAL_STATUS.md` - Marked P-0001 as resolved
+- **Learnings for future iterations:**
+  - Tests should not require Rhino - use mocks
+  - CI runs on ubuntu-latest, use `uv pip install --system`
+  - Timeout is clamped to 1-120 seconds in send_command
+
+---
+
+## [2026-01-10] - US-002: Auto-Reconnect
+- Thread: Amp Agent Session
+- Implemented: Connection health check and automatic reconnection
+- Files changed:
+  - Updated `rhino_mcp_server/src/rhinomcp/server.py`:
+    - Added `is_connected()` method to check connection status
+    - Added `reconnect()` method with configurable retries (default: 3) and delay (default: 1s)
+    - Added `_execute_command()` internal method for clean separation
+    - Updated `send_command()` to auto-reconnect on connection errors
+- **Learnings for future iterations:**
+  - New patterns discovered: Use non-blocking socket peek to check connection without data loss
+  - Gotchas / pitfalls: Must set socket back to blocking after peek check
+  - Useful context to remember:
+    - RhinoConnection now has max_retries=3 and retry_delay=1.0 as defaults
+    - send_command will retry once after successful reconnect
+
+---
+
+## [2026-01-10] - US-001: Structured Error Codes
+- Thread: Amp Agent Session
+- Implemented: Structured error codes for consistent programmatic error handling
+- Files changed:
+  - Created `rhino_mcp_server/src/rhinomcp/utils/errors.py` with ErrorCode class
+  - Updated `rhino_mcp_server/src/rhinomcp/utils/responses.py` with auto-detection
+  - Updated `rhino_mcp_server/src/rhinomcp/tools/ping.py` to use structured responses
+  - Updated `rhino_mcp_server/src/rhinomcp/tools/get_document_info.py` to use ErrorCode
+  - Updated `rhino_mcp_server/src/rhinomcp/tools/create_object.py` to use ErrorCode
+  - Updated `MCP_TOOL_STANDARDS.md` with error code documentation
+- **Learnings for future iterations:**
+  - New patterns discovered: Use `from_exception(e, code=ErrorCode.XXX)` for errors
+  - Gotchas / pitfalls: Always return json.dumps() for structured responses
+  - Useful context to remember:
+    - ErrorCode class in utils/errors.py has all constants
+    - from_exception() has auto_detect=True by default for connection errors
+    - All tools should return structured JSON, not plain strings
+
+---
+
+## [2026-01-10] - Bug Fixes: P-0002, P-0003, P-0004
+- Thread: Amp Agent Session
+- Implemented: Fixed three bugs discovered during Phase A testing
+- Files changed:
+  - `rhino_mcp_plugin/Functions/GetDocumentInfo.cs`:
+    - **P-0002:** PBR materials now use `RenderMaterial.CreateBasicMaterial(baseMaterial, doc)` and add to `doc.RenderMaterials` table (visible in panel)
+    - **P-0004:** Added validation for `layer_name` and `material_id`, use `int.TryParse()`, range validation
+  - `rhino_mcp_plugin/Functions/CreateObject.cs`:
+    - **P-0003:** Added `rhinoObject.Attributes.LayerIndex = doc.Layers.CurrentLayerIndex` to ensure objects are created on current layer
+  - `rhino_mcp_server/src/rhinomcp/tools/assign_material_to_layer.py`:
+    - Added defensive validation for required parameters
+  - `FUNCTIONAL_STATUS.md`: Marked P-0002, P-0003, P-0004 as RESOLVED
+  - `rhino_mcp_server/dev/test_fixes.py`: Created test script for verifying fixes
+- **Learnings for future iterations:**
+  - PBR materials must go in `doc.RenderMaterials` not `doc.Materials`
+  - `RenderMaterial.CreateBasicMaterial()` takes (Material, RhinoDoc), not just RhinoDoc
+  - `Material.ToPhysicallyBased()` returns void, must access `.PhysicallyBased` after calling
+  - Always set LayerIndex explicitly when creating objects
+  - Use `int.TryParse()` instead of `int.Parse()` for user input
+
+---
+
+## [2026-01-10] - Phase A Complete, Phase B Planning
+- Thread: Amp Agent Session
+- Implemented: Phase A completion, Phase B roadmap
+- Files changed:
+  - `ROADMAP.md`: Updated Phase A status to Complete, Phase B to In Progress
+  - `Ralph/prd_phase_b.json`: Created 6 user stories for Phase B (Core Features)
+- **Phase B User Stories:**
+  - US-B01: Boolean Operations (Union, Difference, Intersection)
+  - US-B02: Transform Tools (Copy, Mirror, Array)
+  - US-B03: Curve Operations (Offset, Fillet, Chamfer)
+  - US-B04: Surface from Curves (Loft, Extrude, Revolve)
+  - US-B05: Dimension Tools
+  - US-B06: Get/Set Object Properties
+
+---
+
+# End of Phase A Archive

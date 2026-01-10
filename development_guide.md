@@ -1,10 +1,17 @@
 # RhinoMCP Development Guide
 
+> ⚠️ **DEPRECATED**: This document is partially outdated. For current development practices, see:
+> - `AGENTS.md` - Primary agent guide
+> - `MCP_TOOL_STANDARDS.md` - Tool development standards
+> - `ROADMAP.md` - Project phases and status
+> - `Ralph/progress.txt` - Session learnings
+
 ## Introduction
 Dieses Dokument ist der zentrale Hub für die Entwicklung von RhinoMCP. Es beschreibt den aktuellen Stand, Schwächen, Roadmap und Best Practices. Ziel: Ein professionelles Tool für AI-gestützte Rhino-Automatisierung, inkl. Grasshopper und Rhino.Common Integration.
 
-**Version:** 0.2
-**Letztes Update:** 2026-01-09
+**Version:** 0.3 (deprecated)
+**Letztes Update:** 2026-01-10
+**Status:** Superseded by AGENTS.md and MCP_TOOL_STANDARDS.md
 
 ## Workspace Overview
 
