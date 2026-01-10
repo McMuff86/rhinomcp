@@ -83,12 +83,75 @@ namespace RhinoMCPPlugin
                 serverThread.Start();
 
                 RhinoApp.WriteLine($"RhinoMCP server started on {host}:{port}");
+                RhinoApp.WriteLine("-------------------------------------------");
+                PrintAvailableTools();
+                RhinoApp.WriteLine("-------------------------------------------");
+                RhinoApp.WriteLine("Ready for MCP connections.");
             }
             catch (Exception e)
             {
                 RhinoApp.WriteLine($"Failed to start server: {e.Message}");
                 Stop();
             }
+        }
+
+        /// <summary>
+        /// Prints all available MCP tools to the Rhino command line.
+        /// </summary>
+        private void PrintAvailableTools()
+        {
+            var tools = GetAvailableTools();
+            RhinoApp.WriteLine($"Available MCP Tools ({tools.Count}):");
+            
+            // Group tools by category
+            var categories = new Dictionary<string, List<string>>
+            {
+                ["Document"] = new List<string> { "get_document_info", "ping" },
+                ["Objects"] = new List<string> { "create_object", "create_objects", "get_object_info", "get_selected_objects_info", "delete_object", "modify_object", "modify_objects", "select_objects" },
+                ["Layers"] = new List<string> { "create_layer", "get_or_set_current_layer", "delete_layer" },
+                ["Materials"] = new List<string> { "create_material", "assign_material_to_layer" },
+                ["Boolean"] = new List<string> { "boolean_operation" },
+                ["Scripting"] = new List<string> { "execute_rhinoscript_python_code" },
+                ["Debug"] = new List<string> { "set_debug_mode", "log_thought" }
+            };
+
+            foreach (var category in categories)
+            {
+                var availableInCategory = category.Value.Where(t => tools.Contains(t)).ToList();
+                if (availableInCategory.Count > 0)
+                {
+                    RhinoApp.WriteLine($"  [{category.Key}]: {string.Join(", ", availableInCategory)}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of all available MCP tool names.
+        /// </summary>
+        public List<string> GetAvailableTools()
+        {
+            return new List<string>
+            {
+                "get_document_info",
+                "create_object",
+                "create_objects",
+                "get_object_info",
+                "get_selected_objects_info",
+                "delete_object",
+                "modify_object",
+                "modify_objects",
+                "execute_rhinoscript_python_code",
+                "select_objects",
+                "create_layer",
+                "get_or_set_current_layer",
+                "delete_layer",
+                "ping",
+                "set_debug_mode",
+                "log_thought",
+                "create_material",
+                "assign_material_to_layer",
+                "boolean_operation"
+            };
         }
 
         public void Stop()
