@@ -1,23 +1,26 @@
-# Next Session Plan: US-B06 Object Properties
+# Next Session Plan: US-C02 Viewport Control
 
 > Plan für die nächste Agent-Session. Kopiere diesen Plan in ein neues Kontext-Fenster.
 
-**US-B05 Dimension Tools - COMPLETED 2026-01-10**
+**US-C01 File Operations - COMPLETED 2026-01-10**
+**Phase B - COMPLETED 2026-01-10**
 
 ---
 
 ## Ziel
 
-Implementiere **US-B06: Get/Set Object Properties** für Bounding Box, Area, Volume, Centroid etc.
+Implementiere **US-C02: Viewport Control** für View-Steuerung und Viewport-Capture.
 
 ---
 
-## Acceptance Criteria (aus prd_phase_b.json)
+## Acceptance Criteria (aus prd_phase_c.json)
 
-1. Add `get_object_properties` tool (bounding box, area, volume, centroid)
-2. Add `set_object_properties` tool (name, layer, color, material)
-3. Support batch operations for multiple objects
-4. Return structured property data
+1. `set_view` tool sets named views (Top, Front, Perspective, etc.)
+2. `zoom_extents` tool fits all objects
+3. `zoom_selected` tool zooms to selection
+4. `capture_viewport` tool captures viewport as image
+5. Tests pass
+6. Documentation updated
 
 ---
 
@@ -60,7 +63,7 @@ cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_server
 uv run pytest tests/ -v
 
 # Live Tests ausführen (nach mcpstart in Rhino)
-uv run python dev/test_object_properties.py
+uv run python dev/test_viewport.py
 ```
 
 ### 4. Dokumentation aktualisieren
@@ -68,48 +71,58 @@ uv run python dev/test_object_properties.py
 Nach erfolgreichen Tests:
 1. `USAGE.md` - Neue Tools dokumentieren
 2. `AGENTS.md` - Tool-Tabellen aktualisieren, Testzahl aktualisieren
-3. `Ralph/prd_phase_b.json` - `passes: true` setzen
+3. `Ralph/prd_phase_c.json` - `passes: true` setzen
 4. `Ralph/progress.txt` - Learnings dokumentieren
 
 ---
 
 ## Zu implementierende Tools
 
-### 1. get_object_properties
-- Python: `rhino_mcp_server/src/rhinomcp/tools/get_object_properties.py`
-- C# API: `RhinoObject.Geometry.GetBoundingBox()`, `AreaMassProperties.Compute()`, `VolumeMassProperties.Compute()`
-- Parameter: `object_id` (single) oder `object_ids` (batch)
-- Returns: `{ bounding_box, area, volume, centroid, surface_area }`
+### 1. set_view
+- Python: `rhino_mcp_server/src/rhinomcp/tools/set_view.py`
+- C# API: `RhinoDoc.Views.ActiveView.SetNamedView()`
+- Parameter: `view_name` (Top, Front, Right, Perspective, etc.)
+- Returns: `{ success: true, view: "Perspective" }`
 
-### 2. set_object_properties
-- Python: `rhino_mcp_server/src/rhinomcp/tools/set_object_properties.py`
-- C# API: `RhinoObject.Attributes` modifications
-- Parameter: `object_id`, `name`, `layer`, `color`, `material_id`
-- Supports batch via `object_ids`
+### 2. zoom_extents
+- Python: `rhino_mcp_server/src/rhinomcp/tools/zoom_extents.py`
+- C# API: `RhinoDoc.Views.ActiveView.ActiveViewport.ZoomExtents()`
+- Returns: `{ success: true }`
+
+### 3. zoom_selected
+- Python: `rhino_mcp_server/src/rhinomcp/tools/zoom_selected.py`
+- C# API: `RhinoDoc.Views.ActiveView.ActiveViewport.ZoomBoundingBox()`
+- Returns: `{ success: true }`
+
+### 4. capture_viewport
+- Python: `rhino_mcp_server/src/rhinomcp/tools/capture_viewport.py`
+- C# API: `RhinoDoc.Views.ActiveView.CaptureToBitmap()`
+- Parameter: `width`, `height`, `file_path` (optional)
+- Returns: `{ success: true, path: "...", base64: "..." }`
 
 ---
 
 ## RhinoCommon API Referenz
 
-Für Object Properties:
-- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.areamassproperties
-- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.volumemassproperties
-- https://developer.rhino3d.com/api/rhinocommon/rhino.geometry.boundingbox
+Für Viewport Control:
+- https://developer.rhino3d.com/api/rhinocommon/rhino.display.rhinoview
+- https://developer.rhino3d.com/api/rhinocommon/rhino.display.rhinoviewport
 
 Key Methods:
-- `AreaMassProperties.Compute(geometry)` - Area, centroid for surfaces
-- `VolumeMassProperties.Compute(geometry)` - Volume, centroid for solids
-- `geometry.GetBoundingBox(accurate)` - Bounding box corners
+- `view.SetNamedView(name)` - Set named view
+- `viewport.ZoomExtents()` - Zoom to all objects
+- `viewport.ZoomBoundingBox(bbox)` - Zoom to bounding box
+- `view.CaptureToBitmap(size)` - Capture viewport as bitmap
 
 ---
 
 ## Prompt für neues Fenster
 
 ```
-Lies @Ralph/NEXT_SESSION_PLAN.md und führe den Plan für US-B06: Object Properties aus.
+Lies @Ralph/NEXT_SESSION_PLAN.md und führe den Plan für US-C02: Viewport Control aus.
 
 Workflow:
-1. Implementiere die 2 Object Property Tools (get_object_properties, set_object_properties)
+1. Implementiere die 4 Viewport Tools (set_view, zoom_extents, zoom_selected, capture_viewport)
 2. Prüfe RhinoCommon API Dokumentation für korrekte Implementierung
 3. Schließe Rhino automatisch wenn nötig (Stop-Process)
 4. Baue das C# Plugin neu

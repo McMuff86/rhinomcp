@@ -270,7 +270,7 @@ Ralph/
 
 ## 6. Improvement Plan
 
-### Phase 1: Documentation Cleanup (Quick Wins) - IN PROGRESS
+### Phase 1: Documentation Cleanup (Quick Wins) - ✅ COMPLETE
 
 | Task | Priority | Effort | Status |
 |------|----------|--------|--------|
@@ -280,10 +280,10 @@ Ralph/
 | Add missing exports to `__init__.py` | High | 10 min | ✅ Done |
 | Update `__version__` in `__init__.py` | High | 5 min | ✅ Done |
 | Add Cursor progress.txt requirement to AGENTS.md | High | 10 min | ✅ Done |
-| Archive `Ralph/NEXT_SESSION_PLAN.md` or update for Phase C | High | 10 min | ⏳ Pending |
-| Update test count in all docs | High | 15 min | ⏳ Pending |
-| Create `rhino_mcp_server/AGENTS.md` (Python context) | High | 20 min | ⏳ Pending |
-| Create `rhino_mcp_plugin/AGENTS.md` (C# context) | High | 20 min | ⏳ Pending |
+| Update `Ralph/NEXT_SESSION_PLAN.md` for Phase C | High | 10 min | ✅ Done |
+| Update test count in all docs (155 tests) | High | 15 min | ✅ Done |
+| Create `rhino_mcp_server/AGENTS.md` (Python context) | High | 20 min | ✅ Done |
+| Create `rhino_mcp_plugin/AGENTS.md` (C# context) | High | 20 min | ✅ Done |
 
 ### Phase 2: Standardization
 

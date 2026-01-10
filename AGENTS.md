@@ -96,7 +96,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (143 tests)
+# Run pytest suite (155 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
