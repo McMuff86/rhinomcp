@@ -3,7 +3,7 @@
 > Strategic plan for evolving RhinoMCP from proof-of-concept to professional product.
 
 **Last Updated:** 2026-01-10  
-**Current Version:** 0.1.3.8
+**Current Version:** 0.1.3.9
 
 ---
 
@@ -92,7 +92,7 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 | US-C02 | Viewport Control | 2 | Low | ⬜ |
 | US-C03 | Groups & Blocks | 3 | Medium | ⬜ |
 | US-C04 | Mesh Import/Export | 4 | Medium | ⬜ |
-| US-C05 | Render Settings | 5 | Medium | ⬜ |
+| US-C05 | Render Settings | 5 | Medium | ✅ |
 | US-C06 | Grasshopper Integration | 6 | High | ⬜ |
 
 ### Success Criteria

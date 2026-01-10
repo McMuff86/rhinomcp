@@ -2,7 +2,7 @@
 
 > Quick reference for using RhinoMCP tools.
 
-**Version:** 0.1.3.8
+**Version:** 0.1.3.9
 
 ---
 
@@ -113,6 +113,14 @@ uv run rhinomcp
 | `zoom_extents` | Zoom viewport to show all objects |
 | `zoom_selected` | Zoom viewport to selected objects |
 | `capture_viewport` | Capture viewport as image (file or base64) |
+
+### Render Settings
+| Tool | Description |
+|------|-------------|
+| `set_render_settings` | Set render resolution and quality |
+| `add_light` | Add point, directional, or spot lights |
+| `set_camera` | Set camera position, target, and lens |
+| `render_view` | Render viewport to image (file or base64) |
 
 ### Script Execution
 | Tool | Description |

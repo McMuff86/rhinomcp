@@ -55,10 +55,14 @@ from .tools.save_file import save_file
 from .tools.select_objects import select_objects
 from .tools.set_debug_mode import set_debug_mode
 from .tools.set_object_properties import set_object_properties
+from .tools.set_render_settings import set_render_settings
 from .tools.set_view import set_view
+from .tools.set_camera import set_camera
 from .tools.zoom_extents import zoom_extents
 from .tools.zoom_selected import zoom_selected
 from .tools.capture_viewport import capture_viewport
+from .tools.render_view import render_view
+from .tools.add_light import add_light
 from .tools.create_block import create_block
 from .tools.create_group import create_group
 from .tools.explode_block import explode_block

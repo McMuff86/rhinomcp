@@ -94,8 +94,6 @@ cd rhino_mcp_server
 uv run rhinomcp
 ```
 
-**Note:** The MCP plugin now starts automatically when Rhino loads. Manual `mcpstart` is only needed if you stopped the server manually.
-
 ### Test
 ```bash
 # Run pytest suite (200+ tests)
@@ -244,6 +242,7 @@ When adding new tools, register them in `RhinoMCPServer.cs`:
 | Dimension Tools | `DimensionOperations.cs` |
 | Object Properties | `ObjectProperties.cs` |
 | Viewport Operations | `ViewportOperations.cs` |
+| Render Operations | `RenderOperations.cs` |
 | Mesh Operations | `MeshOperations.cs` |
 | Script Execution | `ExecuteCode.cs` |
 
@@ -353,7 +352,7 @@ uv run pytest tests/ -v
 | US-C02 | Viewport Control | ✅ |
 | US-C03 | Groups & Blocks | ✅ |
 | US-C04 | Mesh Import/Export | ✅ |
-| US-C05 | Render Settings | ⏳ Pending |
+| US-C05 | Render Settings | ✅ |
 | US-C06 | Grasshopper Integration | ⏳ Pending |
 
 ---

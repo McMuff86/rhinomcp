@@ -98,8 +98,8 @@ Project: RhinoMCP Professionalization
 | US-C01 | File Operations | ✅ Complete |
 | US-C02 | Viewport Control | ✅ Complete |
 | US-C03 | Groups & Blocks | ✅ Complete |
-| US-C04 | Mesh Import/Export | ⏳ Pending |
-| US-C05 | Render Settings | ⏳ Pending |
+| US-C04 | Mesh Import/Export | ✅ Complete |
+| US-C05 | Render Settings | ✅ Complete |
 | US-C06 | Grasshopper Integration | ⏳ Pending |
 
 ---
@@ -200,6 +200,19 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## [2026-01-10] - US-C05: Render Settings
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~75 minutes
+- Implemented: Render settings, lights, camera, and viewport render capture
+- Files: `set_render_settings.py`, `add_light.py`, `set_camera.py`, `render_view.py`, `RenderOperations.cs`, 20 tests
+- **Key Learnings:**
+  - `Rhino.Render.RenderSettings.ImageSize` and `AntialiasLevel` control resolution/quality
+  - Use `Rhino.Geometry.Light` with `doc.Lights.Add()` for point/directional/spot lights
+  - `RhinoViewport.SetCameraLocations()` simplifies camera+target updates
+  - `ViewCapture` with Rendered/Raytraced display mode provides deterministic renders
+
+---
+
 ## Known Issues & Future Work (2026-01-10)
 
 ### Issue: Automatic MCP Plugin Start
@@ -271,10 +284,10 @@ def my_tool(ctx: Context, param: ToolType) -> str:
 - US-C02 Viewport Control ✅ Complete
 - US-C03 Groups & Blocks ✅ Complete
 - US-C04 Mesh Import/Export ✅ Complete
-- US-C05 Render Settings ⏳ Pending (Next Priority)
+- US-C05 Render Settings ✅ Complete
 - US-C06 Grasshopper Integration ⏳ Pending
 
-**Next Priority:** US-C05 Render Settings - Enables automated rendering pipelines
+**Next Priority:** US-C06 Grasshopper Integration - Requires Grasshopper API integration
 
 ---
 

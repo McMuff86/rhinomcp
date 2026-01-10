@@ -159,6 +159,7 @@ namespace RhinoMCPPlugin
                 ["Objects"] = new List<string> { "create_object", "create_objects", "get_object_info", "get_selected_objects_info", "delete_object", "modify_object", "modify_objects", "select_objects" },
                 ["Layers"] = new List<string> { "create_layer", "get_or_set_current_layer", "delete_layer" },
                 ["Materials"] = new List<string> { "create_material", "assign_material_to_layer" },
+                ["Render"] = new List<string> { "set_render_settings", "add_light", "set_camera", "render_view" },
                 ["Boolean"] = new List<string> { "boolean_operation" },
                 ["Transform"] = new List<string> { "copy_object", "mirror_object", "array_linear", "array_polar" },
                 ["Curves"] = new List<string> { "offset_curve", "fillet_curves", "chamfer_curves" },
@@ -238,6 +239,11 @@ namespace RhinoMCPPlugin
                 "zoom_extents",
                 "zoom_selected",
                 "capture_viewport",
+                // Render Operations
+                "set_render_settings",
+                "add_light",
+                "set_camera",
+                "render_view",
                 // Scripting
                 "execute_rhinoscript_python_code"
             };
@@ -543,6 +549,11 @@ namespace RhinoMCPPlugin
                 ["zoom_extents"] = this.handler.ZoomExtents,
                 ["zoom_selected"] = this.handler.ZoomSelected,
                 ["capture_viewport"] = this.handler.CaptureViewport,
+                // Render Operations
+                ["set_render_settings"] = this.handler.SetRenderSettings,
+                ["add_light"] = this.handler.AddLight,
+                ["set_camera"] = this.handler.SetCamera,
+                ["render_view"] = this.handler.RenderView,
                 // Group & Block Operations
                 ["create_group"] = this.handler.CreateGroup,
                 ["ungroup"] = this.handler.Ungroup,
