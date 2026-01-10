@@ -60,15 +60,21 @@ class TestCreateGroup:
         from rhinomcp.tools.create_group import create_group
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="object_ids cannot be empty"):
-            create_group(ctx, object_ids=[])
+        result = create_group(ctx, object_ids=[])
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "At least one object_id is required" in parsed["message"]
 
     def test_create_group_none_ids(self):
         from rhinomcp.tools.create_group import create_group
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="object_ids cannot be empty"):
-            create_group(ctx, object_ids=None)
+        result = create_group(ctx, object_ids=None)
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "At least one object_id is required" in parsed["message"]
 
 
 class TestUngroup:
@@ -87,15 +93,13 @@ class TestUngroup:
         ctx = MagicMock()
         result = ungroup(
             ctx,
-            group_ids=["group1", "group2"]
+            group_id="group1"
         )
         parsed = json.loads(result)
 
         assert parsed["success"] is True
-        assert "2 groups" in parsed["message"]
-        assert "6 objects" in parsed["message"]
-        assert parsed["data"]["groups_ungrouped"] == 2
-        assert parsed["data"]["objects_released"] == 6
+        assert "Ungrouped group with 3 objects" in parsed["message"]
+        assert parsed["data"]["object_count"] == 3
 
     @patch("rhinomcp.tools.ungroup.get_rhino_connection")
     def test_ungroup_success_single_group(self, mock_get_conn):
@@ -118,12 +122,15 @@ class TestUngroup:
         assert parsed["data"]["groups_ungrouped"] == 1
         assert parsed["data"]["objects_released"] == 3
 
-    def test_ungroup_no_parameters(self):
+    def test_ungroup_empty_group_id(self):
         from rhinomcp.tools.ungroup import ungroup
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="Either group_ids or group_id must be provided"):
-            ungroup(ctx)
+        result = ungroup(ctx, group_id="")
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "group_id is required" in parsed["message"]
 
 
 class TestCreateBlock:
@@ -187,22 +194,31 @@ class TestCreateBlock:
         from rhinomcp.tools.create_block import create_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="name cannot be empty"):
-            create_block(ctx, object_ids=["obj1"], name="")
+        result = create_block(ctx, object_ids=["obj1"], name="")
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "name is required" in parsed["message"]
 
     def test_create_block_empty_ids(self):
         from rhinomcp.tools.create_block import create_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="object_ids cannot be empty"):
-            create_block(ctx, object_ids=[], name="Test")
+        result = create_block(ctx, object_ids=[], name="Block")
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "object_ids is required" in parsed["message"]
 
     def test_create_block_invalid_base_point(self):
         from rhinomcp.tools.create_block import create_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="base_point must be"):
-            create_block(ctx, object_ids=["obj1"], name="Test", base_point=[1, 2])
+        result = create_block(ctx, object_ids=["obj1"], name="Test", base_point=[1, 2])
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "base_point must be [x, y, z]" in parsed["message"]
 
 
 class TestInsertBlock:
@@ -271,29 +287,41 @@ class TestInsertBlock:
         from rhinomcp.tools.insert_block import insert_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="block_name cannot be empty"):
-            insert_block(ctx, block_name="", position=[0, 0, 0])
+        result = insert_block(ctx, block_name="", position=[0, 0, 0])
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "block_name is required" in parsed["message"]
 
     def test_insert_block_invalid_position(self):
         from rhinomcp.tools.insert_block import insert_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="position must be"):
-            insert_block(ctx, block_name="Test", position=[1, 2])
+        result = insert_block(ctx, block_name="Test", position=[1, 2])
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "position must be [x, y, z]" in parsed["message"]
 
     def test_insert_block_invalid_scale(self):
         from rhinomcp.tools.insert_block import insert_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="scale must be"):
-            insert_block(ctx, block_name="Test", position=[0, 0, 0], scale=[1, 2])
+        result = insert_block(ctx, block_name="Test", position=[0, 0, 0], scale=[1, 2])
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "scale must be [x, y, z]" in parsed["message"]
 
     def test_insert_block_invalid_rotation(self):
         from rhinomcp.tools.insert_block import insert_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="rotation must be"):
-            insert_block(ctx, block_name="Test", position=[0, 0, 0], rotation=[0, 1])
+        result = insert_block(ctx, block_name="Test", position=[0, 0, 0], rotation=[0, 1])
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "rotation must be [x, y, z]" in parsed["message"]
 
 
 class TestExplodeBlock:
@@ -312,15 +340,13 @@ class TestExplodeBlock:
         ctx = MagicMock()
         result = explode_block(
             ctx,
-            instance_ids=["inst1", "inst2"]
+            instance_id="inst1"
         )
         parsed = json.loads(result)
 
         assert parsed["success"] is True
-        assert "2 block instances" in parsed["message"]
-        assert "6 objects" in parsed["message"]
-        assert parsed["data"]["instances_exploded"] == 2
-        assert parsed["data"]["objects_created"] == 6
+        assert "Exploded block instance to geometry" in parsed["message"]
+        assert parsed["data"]["object_count"] == 3
 
     @patch("rhinomcp.tools.explode_block.get_rhino_connection")
     def test_explode_block_success_single_instance(self, mock_get_conn):
@@ -343,12 +369,15 @@ class TestExplodeBlock:
         assert parsed["data"]["instances_exploded"] == 1
         assert parsed["data"]["objects_created"] == 3
 
-    def test_explode_block_no_parameters(self):
+    def test_explode_block_empty_instance_id(self):
         from rhinomcp.tools.explode_block import explode_block
 
         ctx = MagicMock()
-        with pytest.raises(ValueError, match="Either instance_ids or instance_id must be provided"):
-            explode_block(ctx)
+        result = explode_block(ctx, instance_id="")
+        parsed = json.loads(result)
+
+        assert parsed["success"] is False
+        assert "instance_id is required" in parsed["message"]
 
 
 class TestGroupOperationsErrors:

@@ -120,6 +120,9 @@ public partial class RhinoMCPFunctions
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("name is required");
 
+        if (name.Contains("\""))
+            throw new ArgumentException("name cannot contain quotes");
+
         var objectIds = parameters["object_ids"]?.ToObject<List<string>>();
         if (objectIds == null || objectIds.Count == 0)
             throw new ArgumentException("object_ids is required and cannot be empty");
@@ -145,18 +148,21 @@ public partial class RhinoMCPFunctions
         }
 
         // Create block using Rhino command
-        string script = $"_-Block \"{name}\" {basePoint[0]},{basePoint[1]},{basePoint[2]} _Enter";
+        string script = $"_-Block \"{name}\" {basePoint[0].ToString(System.Globalization.CultureInfo.InvariantCulture)},{basePoint[1].ToString(System.Globalization.CultureInfo.InvariantCulture)},{basePoint[2].ToString(System.Globalization.CultureInfo.InvariantCulture)} _Enter";
         bool success = RhinoApp.RunScript(script, false);
 
         if (!success)
             throw new InvalidOperationException("Failed to create block");
 
-        // Delete the original objects
-        foreach (string idStr in objectIds)
+        // Find the newly created block definition
+        string blockId = null;
+        var blockDefinitions = doc.InstanceDefinitions;
+        foreach (var blockDef in blockDefinitions)
         {
-            if (Guid.TryParse(idStr, out Guid objId))
+            if (blockDef.Name == name)
             {
-                doc.Objects.Delete(doc.Objects.FindId(objId), true);
+                blockId = blockDef.Id.ToString();
+                break;
             }
         }
 
@@ -165,6 +171,7 @@ public partial class RhinoMCPFunctions
         return JObject.FromObject(new
         {
             block_name = name,
+            block_id = blockId,
             object_count = objectIds.Count
         });
     }
@@ -175,6 +182,9 @@ public partial class RhinoMCPFunctions
         if (string.IsNullOrEmpty(blockName))
             throw new ArgumentException("block_name is required");
 
+        if (blockName.Contains("\""))
+            throw new ArgumentException("block_name cannot contain quotes");
+
         var position = parameters["position"]?.ToObject<List<double>>();
         if (position == null || position.Count != 3)
             throw new ArgumentException("position must be [x, y, z]");
@@ -182,19 +192,36 @@ public partial class RhinoMCPFunctions
         var scale = parameters["scale"]?.ToObject<List<double>>() ?? new List<double> { 1.0, 1.0, 1.0 };
         var rotation = parameters["rotation"]?.ToObject<List<double>>() ?? new List<double> { 0.0, 0.0, 0.0 };
 
+        var doc = RhinoDoc.ActiveDoc;
+
+        // Get the current object count before insertion
+        int objectCountBefore = doc.Objects.Count;
+
         // Insert block using Rhino command
-        string script = $"_-Insert \"{blockName}\" {position[0]},{position[1]},{position[2]} {scale[0]},{scale[1]},{scale[2]} {rotation[0]},{rotation[1]},{rotation[2]} _Enter";
+        string script = $"_-Insert \"{blockName}\" {position[0].ToString(System.Globalization.CultureInfo.InvariantCulture)},{position[1].ToString(System.Globalization.CultureInfo.InvariantCulture)},{position[2].ToString(System.Globalization.CultureInfo.InvariantCulture)} {scale[0].ToString(System.Globalization.CultureInfo.InvariantCulture)},{scale[1].ToString(System.Globalization.CultureInfo.InvariantCulture)},{scale[2].ToString(System.Globalization.CultureInfo.InvariantCulture)} {rotation[0].ToString(System.Globalization.CultureInfo.InvariantCulture)},{rotation[1].ToString(System.Globalization.CultureInfo.InvariantCulture)},{rotation[2].ToString(System.Globalization.CultureInfo.InvariantCulture)} _Enter";
         bool success = RhinoApp.RunScript(script, false);
 
         if (!success)
             throw new InvalidOperationException("Failed to insert block");
 
-        var doc = RhinoDoc.ActiveDoc;
+        // Find the newly inserted block instance
+        string instanceId = null;
+        if (doc.Objects.Count > objectCountBefore)
+        {
+            // Get the last added object (assuming it's the block instance)
+            RhinoObject lastObj = doc.Objects[doc.Objects.Count - 1];
+            if (lastObj != null)
+            {
+                instanceId = lastObj.Id.ToString();
+            }
+        }
+
         doc.Views.Redraw();
 
         return JObject.FromObject(new
         {
             block_name = blockName,
+            instance_id = instanceId,
             position = position,
             scale = scale,
             rotation = rotation
@@ -234,9 +261,6 @@ public partial class RhinoMCPFunctions
         {
             explodedIds.Add(obj.Id.ToString());
         }
-
-        // Delete the original block instance
-        doc.Objects.Delete(instanceObj, true);
 
         doc.Views.Redraw();
 

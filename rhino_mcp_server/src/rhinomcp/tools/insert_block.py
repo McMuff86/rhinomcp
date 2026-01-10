@@ -45,6 +45,18 @@ def insert_block(
             code=ErrorCode.INVALID_PARAMS
         ))
 
+    if scale is not None and len(scale) != 3:
+        return json.dumps(from_exception(
+            ValueError("scale must be [x, y, z]"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
+
+    if rotation is not None and len(rotation) != 3:
+        return json.dumps(from_exception(
+            ValueError("rotation must be [x, y, z]"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
+
     try:
         rhino = get_rhino_connection()
 
