@@ -1,5 +1,7 @@
 from mcp.server.fastmcp import Context
-from rhinomcp.server import get_rhino_connection, mcp, logger, set_debug_mode
+
+from rhinomcp.server import get_rhino_connection, logger, mcp, set_debug_mode
+
 
 @mcp.tool()
 def set_debug_mode_tool(ctx: Context, enable: bool) -> str:

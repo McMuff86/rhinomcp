@@ -1,5 +1,7 @@
 # RhinoMCP MCP Tools Guide
 
+> **Note:** This file is partially deprecated. For current development practices, see `AGENTS.md` and `MCP_TOOL_STANDARDS.md`.
+
 This document explains how MCP tools in this workspace are structured, how they talk to Rhino, and how to add new tools following best practices. It targets AI coding agents and developers who want to extend RhinoMCP.
 
 ## Architecture Overview
@@ -14,42 +16,54 @@ This document explains how MCP tools in this workspace are structured, how they 
 - Connection helper: `get_rhino_connection()` returns a cached connection, creating and connecting as needed.
 - Send command: `RhinoConnection.send_command(command_type, params)` assembles `{ type, params }`, sends over socket, waits for full JSON response, and returns `result` or raises on error status.
 
-#### Tool pattern
+#### Tool pattern (Current Standard)
 
 Each tool:
 
-- Imports `Context`, `get_rhino_connection`, `mcp`, `logger`.
+- Imports `Context`, `get_rhino_connection`, `mcp`, `logger`, and response helpers.
 - Is registered with `@mcp.tool()`.
-- Defines explicit parameters with type hints for MCP schemas.
-- Calls `rhino.send_command("<command>", params)` inside try/except and returns a concise string or structured result.
+- Defines explicit parameters with type hints (use `Literal` for enums).
+- Returns JSON via `ok()` or `from_exception()` helpers.
 
-Example: create multiple objects
+Example: Create object with structured response
 
 ```python
 from mcp.server.fastmcp import Context
-from typing import Any, List, Dict
+import json
 from rhinomcp.server import get_rhino_connection, mcp, logger
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
+from typing import Literal, Optional, List
+
+ObjectType = Literal["BOX", "SPHERE", "CYLINDER"]
 
 @mcp.tool()
-def create_objects(ctx: Context, objects: List[Dict[str, Any]]) -> str:
-    """Create multiple objects in Rhino."""
+def create_object(
+    ctx: Context,
+    type: ObjectType = "BOX",
+    name: Optional[str] = None
+) -> str:
+    """
+    Create a new object in Rhino.
+    
+    Parameters:
+    - type: Object type (BOX, SPHERE, CYLINDER)
+    - name: Optional name for the object
+    
+    Returns:
+        {"ok": true, "message": "Created BOX", "data": {"id": "guid", "name": "Box_1"}}
+    """
     try:
         rhino = get_rhino_connection()
-        command_params = {obj["name"]: obj for obj in objects}
-        result = rhino.send_command("create_objects", command_params)
-        return f"Created {len(result)} objects"
+        result = rhino.send_command("create_object", {"type": type, "name": name})
+        return json.dumps(ok(
+            message=f"Created {type}",
+            data=result
+        ))
     except Exception as e:
-        logger.error(f"Error creating object: {str(e)}")
-        return f"Error creating object: {str(e)}"
+        logger.error(f"Error: {str(e)}")
+        return json.dumps(from_exception(e, code=ErrorCode.CREATE_OBJECT_ERROR))
 ```
-
-Other examples in repo:
-
-- `execute_rhinoscript_python_code.py` executes Python code in Rhino.
-- `modify_object.py` and `modify_objects.py` change attributes (name, color, transforms, visibility).
-- Query tools: `get_document_info.py`, `get_object_info.py`, `get_selected_objects_info.py`, `ping.py`.
-- Layer/Annotation tools: `create_layer.py`, `get_or_set_current_layer.py`, `delete_layer.py`, `create_leader.py`.
-- Geometry tools: `create_object.py` supports additional types: MESH (vertices and faces), TORUS (major_radius, minor_radius), SURFACE (points, count, degree, closed).
 
 ### C# Side
 
@@ -58,26 +72,42 @@ Other examples in repo:
 - Undo safety: Each command runs within an UndoRecord so user can undo changes.
 - Serialization: `rhinomcp.Serializers.Serializer` provides helpers to serialize objects, colors, layers, geometry, and attributes.
 
-Handler mapping snippet (abridged):
+Handler mapping (see `RhinoMCPServer.cs` for complete list - 48 tools as of v0.1.3.8):
 
-```280:362:rhino_mcp_plugin/RhinoMCPServer.cs
-// ... existing code ...
-Dictionary<string, Func<JObject, JObject>> handlers = new Dictionary<string, Func<JObject, JObject>>
-{
-    ["get_document_info"] = this.handler.GetDocumentInfo,
-    ["create_object"] = this.handler.CreateObject,
-    ["create_objects"] = this.handler.CreateObjects,
-    ["get_object_info"] = this.handler.GetObjectInfo,
-    ["get_selected_objects_info"] = this.handler.GetSelectedObjectsInfo,
-    ["delete_object"] = this.handler.DeleteObject,
-    ["modify_object"] = this.handler.ModifyObject,
-    ["modify_objects"] = this.handler.ModifyObjects,
-    ["execute_rhinoscript_python_code"] = this.handler.ExecuteRhinoscript,
-    ["select_objects"] = this.handler.SelectObjects,
-    ["create_layer"] = this.handler.CreateLayer,
-    ["get_or_set_current_layer"] = this.handler.GetOrSetCurrentLayer,
-    ["delete_layer"] = this.handler.DeleteLayer
-};
+```csharp
+// Document & System
+["get_document_info"], ["ping"], ["set_debug_mode"], ["log_thought"],
+["get_logs"], ["clear_logs"], ["get_command_history"],
+
+// Objects
+["create_object"], ["create_objects"], ["get_object_info"], 
+["get_selected_objects_info"], ["delete_object"], ["modify_object"],
+["modify_objects"], ["select_objects"], ["get_object_properties"],
+["set_object_properties"],
+
+// Boolean & Transform
+["boolean_operation"], ["copy_object"], ["mirror_object"],
+["array_linear"], ["array_polar"],
+
+// Curve Operations
+["offset_curve"], ["fillet_curves"], ["chamfer_curves"],
+
+// Surface Operations
+["loft_curves"], ["extrude_curve"], ["revolve_curve"],
+
+// Dimensions
+["create_linear_dimension"], ["create_angular_dimension"],
+["create_radial_dimension"],
+
+// Layers & Materials
+["create_layer"], ["get_or_set_current_layer"], ["delete_layer"],
+["create_material"], ["assign_material_to_layer"],
+
+// File Operations
+["open_file"], ["save_file"], ["export_file"],
+
+// Scripting
+["execute_rhinoscript_python_code"]
 ```
 
 ### Request/Response Contract
@@ -89,49 +119,39 @@ Dictionary<string, Func<JObject, JObject>> handlers = new Dictionary<string, Fun
   - On success: `{ "status": "success", "result": <JObject> }`
   - On error: `{ "status": "error", "message": <string> }`
 
-Tools should surface either a clear string summary or raw structured result suitable for chaining.
+Tools should return structured JSON via `ok()` / `from_exception()` helpers.
 
 See also: `MCP_TOOL_STANDARDS.md` for the preferred tool-level return shape and Python helpers in `rhinomcp/utils/responses.py`.
 
 ### Adding a New Tool (Checklist)
 
-1. C# implementation
+1. **C# implementation**
+   - Add a method in `RhinoMCPPlugin.Functions.RhinoMCPFunctions` returning a `JObject`.
+   - Use `Serializer` helpers for any output.
 
-- Add a method in `RhinoMCPPlugin.Functions.RhinoMCPFunctions` returning a `JObject`.
-- Use `Serializer` helpers for any output. Modify document on `RhinoDoc.ActiveDoc`, update views, and return a small, stable shape.
+2. **Wire on C# server**
+   - Register in `handlers` dictionary in `RhinoMCPServer.ExecuteCommandInternal`.
+   - **Also** add to `GetAvailableTools()` list.
 
-1. Wire on C# server
+3. **Python tool stub**
+   - Create `src/rhinomcp/tools/<tool_name>.py` with `@mcp.tool()`.
+   - Use `Literal` types for enum parameters.
+   - Return JSON via `ok()` / `from_exception()`.
 
-- Register the new command in `handlers` dictionary in `RhinoMCPServer.ExecuteCommandInternal`.
+4. **Export in `__init__.py`** for convenience imports.
 
-1. Python tool stub
+5. **Add tests** in `tests/test_<tool_name>.py`.
 
-- Create `src/rhinomcp/tools/<tool_name>.py` with `@mcp.tool()`, typed parameters, and error handling.
-- Call `rhino.send_command("<command>", params)`.
-
-1. Optional: expose in `src/rhinomcp/__init__.py` for convenience imports.
-
-1. Document and test
-
-- Update this file with a short section and example.
-- Test round-trip: start Rhino plugin (`mcpstart`), run MCP server (`python -m rhinomcp`), call the tool.
+6. **Document** - Update AGENTS.md tool tables if needed.
 
 ### Best Practices
 
-- Keep tool parameter names stable; prefer explicit parameters with type hints over untyped blobs.
-- Validate inputs on C# side and return clear error messages. Avoid throwing without context.
-- Keep responses compact but consistent; for lists, return arrays of stable objects; for actions, return counts and identifiers.
+- Use `Literal` types for enum-like parameters.
+- Always return structured JSON via `ok()` / `from_exception()`.
+- Validate inputs early and return `from_exception()` with `INVALID_PARAMS`.
+- Keep responses compact but consistent.
 - Maintain undo safety (`BeginUndoRecord`/`EndUndoRecord`).
-- Log actionable errors; Python logs via `logger`, C# via `RhinoApp.WriteLine`.
-- Prefer batch endpoints for N>10 objects (see `create_objects`, `modify_objects`).
-
-### Example: Add a simple annotation tool (sketch)
-
-Steps:
-
-- C#: implement `CreateLeader` in `RhinoMCPFunctions`, map to `create_leader` in `RhinoMCPServer`.
-- Python: add `tools/create_leader.py` calling `send_command("create_leader", {...})`.
-- Return `{ id, name }` and a concise string: `"Created leader: <name>"`.
+- Log errors via `logger`.
 
 ### Startup
 
@@ -143,16 +163,8 @@ cd rhino_mcp_server
 uv run python -m rhinomcp
 ```
 
-- On startup the Python server attempts to connect and logs status. Ensure the Rhino add-on is running before invoking tools.
-
 ### Troubleshooting
 
-- Timeout waiting for response: Simplify request or verify the plugin is running; Python resets socket on timeout.
-- Unknown command type: Ensure C# handler is registered and names match on both sides.
-- Serialization gaps: Extend `Serializer` to cover new geometry types consistently.
-
-### Conventions
-
-- Python tool module names: snake_case matching command name where possible.
-- Command names: lower_snake_case, verbs first (e.g., `create_object`, `modify_objects`).
-- Colors: `[r, g, b]` 0–255. Points: `[x, y, z]`. IDs: string GUIDs.
+- **Timeout**: Simplify request or verify plugin is running.
+- **Unknown command**: Ensure C# handler is registered in BOTH `handlers` dict AND `GetAvailableTools()`.
+- **Serialization gaps**: Extend `Serializer` to cover new geometry types.

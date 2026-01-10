@@ -1,7 +1,11 @@
-from mcp.server.fastmcp import Context
 import json
-from rhinomcp.server import get_rhino_connection, mcp, logger
-from typing import Any, List, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
+from rhinomcp.utils.errors import ErrorCode
+from rhinomcp.utils.responses import from_exception, ok
 
 FilterType = Literal["and", "or"]
 
@@ -38,7 +42,7 @@ def select_objects(
     
 
     Returns:
-    A number indicating the number of objects that have been selected.
+        {"success": true, "message": "Selected N objects", "data": {"count": N}}
     """
     try:
         # Get the global connection
@@ -50,8 +54,11 @@ def select_objects(
 
         result = rhino.send_command("select_objects", command_params)
           
-        return f"Selected {result['count']} objects"
+        return json.dumps(ok(
+            message=f"Selected {result['count']} objects",
+            data={"count": result['count']}
+        ))
     except Exception as e:
         logger.error(f"Error selecting objects: {str(e)}")
-        return f"Error selecting objects: {str(e)}"
+        return json.dumps(from_exception(e, code=ErrorCode.RHINO_ERROR))
 

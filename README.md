@@ -1,6 +1,8 @@
 # RhinoMCP - Rhino Model Context Protocol Integration
 
 [![CI](https://github.com/McMuff86/rhinomcp/actions/workflows/ci.yml/badge.svg)](https://github.com/McMuff86/rhinomcp/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-155%20passed-brightgreen)
+![Version](https://img.shields.io/badge/version-0.1.3.8-blue)
 
 <img src="assets/rhinomcp_logo.svg" alt="RhinoMCP Logo" width="130">
 

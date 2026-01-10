@@ -181,11 +181,51 @@ public partial class RhinoMCPFunctions
         var rhinoObject = doc.Objects.Find(objectId);
         if (rhinoObject != null)
         {
-            // Ensure object is created on the current layer
-            int currentLayerIndex = doc.Layers.CurrentLayerIndex;
-            if (currentLayerIndex >= 0)
+            // Handle layer assignment
+            string layerName = castToString(parameters.SelectToken("layer"));
+            RhinoApp.WriteLine($"[DEBUG] Layer parameter: '{layerName ?? "NULL"}'");
+            if (!string.IsNullOrEmpty(layerName))
             {
-                rhinoObject.Attributes.LayerIndex = currentLayerIndex;
+                // Try to find existing layer
+                int layerIndex = doc.Layers.FindByFullPath(layerName, -1);
+                if (layerIndex < 0)
+                {
+                    layerIndex = doc.Layers.FindName(layerName)?.Index ?? -1;
+                }
+                
+                // Create layer if it doesn't exist
+                if (layerIndex < 0)
+                {
+                    var newLayer = new Layer { Name = layerName };
+                    
+                    // Set layer color if provided
+                    int[] layerColor = castToIntArray(parameters.SelectToken("layer_color"));
+                    if (layerColor != null && layerColor.Length >= 3)
+                    {
+                        newLayer.Color = Color.FromArgb(layerColor[0], layerColor[1], layerColor[2]);
+                    }
+                    
+                    layerIndex = doc.Layers.Add(newLayer);
+                    RhinoApp.WriteLine($"[LAYER CREATED] Created new layer: {layerName}");
+                }
+                
+                // Assign object to layer
+                rhinoObject.Attributes.LayerIndex = layerIndex;
+                
+                // Use layer color unless custom color is specified
+                if (!customColor)
+                {
+                    rhinoObject.Attributes.ColorSource = ObjectColorSource.ColorFromLayer;
+                }
+            }
+            else
+            {
+                // Use current layer if no layer specified
+                int currentLayerIndex = doc.Layers.CurrentLayerIndex;
+                if (currentLayerIndex >= 0)
+                {
+                    rhinoObject.Attributes.LayerIndex = currentLayerIndex;
+                }
             }
 
             if (!string.IsNullOrEmpty(name)) rhinoObject.Attributes.Name = name;

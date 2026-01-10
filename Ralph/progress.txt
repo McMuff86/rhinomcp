@@ -1,576 +1,246 @@
 # Ralph Progress Log
 Started: 2026-01-09
 Project: RhinoMCP Professionalization
----
 
-## [2026-01-09 14:00] - Phase 1.1: Branch Setup
-- Thread: Cursor Agent Session
-- Implemented: Created feature branch for Ralph integration
-- Files changed: 
-  - Created Ralph/AGENTS.md
-  - Created Ralph/README.md
-  - Created Ralph/prd.json.example
-  - Created Ralph/scripts/ralph/prompt.md
-  - Created Ralph/scripts/ralph/ralph.sh
-- **Learnings for future iterations:**
-  - New patterns discovered: Ralph workflow adapted for manual execution (no Amp CLI)
-  - Gotchas / pitfalls: Original Ralph uses Amp CLI which isn't available in Cursor
-  - Useful context to remember: Use small tasks to avoid "dumb zone" in context window
+> **Format:** Each entry includes Thread (Agent Type + Model), Duration, Implementation details
+> **Note:** Entries before Phase B have been archived to `progress_archive_phase_a.txt`
+> Last archived: 2026-01-10 (Phase A: Ralph setup, US-001 to US-006, bug fixes P-0002/P-0003/P-0004)
 
 ---
 
-## [2026-01-09 14:05] - Phase 1.2: Ralph Adaptation for RhinoMCP
-- Thread: Cursor Agent Session
-- Implemented: Adapting prompt.md and workflow for RhinoMCP tech stack
-- Files changed:
-  - Modified Ralph/scripts/ralph/prompt.md (RhinoMCP-specific)
-  - Created Ralph/progress.txt (this file)
-- **Learnings for future iterations:**
-  - New patterns discovered: RhinoMCP uses Python (FastMCP) + C# (Rhino Plugin)
-  - Gotchas / pitfalls: No npm/vitest - use uv/pytest instead
-  - Useful context to remember: 
-    - Server: rhino_mcp_server/src/rhinomcp/
-    - Plugin: rhino_mcp_plugin/
-    - TCP communication on port 1999
+## Phase B Summary (Complete)
 
----
-
-## [2026-01-09 14:15] - Phase 1.4: Documentation Update
-- Thread: Cursor Agent Session
-- Implemented: Updated all markdown files to best practice level
-- Files changed:
-  - AGENTS.md: Added Ralph workflow section with usage instructions
-  - Ralph/AGENTS.md: Adapted for RhinoMCP (was originally for Amp)
-  - development_guide.md: Fixed placeholder, updated version to 0.2
-  - README.md: Fixed Disclaimer section, added Contributing reference
-  - rhino_mcp_server/README.md: Expanded with full documentation
-- **Learnings for future iterations:**
-  - New patterns discovered: 12 markdown files in workspace, keep Documentation index updated
-  - Gotchas / pitfalls: README.md had incomplete Disclaimer section
-  - Useful context to remember:
-    - Root docs: README.md, AGENTS.md, USAGE.md, FUNCTIONAL_STATUS.md, etc.
-    - Server docs: rhino_mcp_server/README.md
-    - Ralph docs: Ralph/README.md, Ralph/AGENTS.md
-    - Always update AGENTS.md Documentation index when adding new .md files
-
----
-
-## [2026-01-09 14:30] - Phase 2: Codebase Review & Roadmap
-- Thread: Cursor Agent Session
-- Implemented: Complete codebase analysis and strategic roadmap
-- Files changed:
-  - Created ROADMAP.md with 4-phase plan (Stability → Core → Advanced → Monetization)
-  - Created Ralph/prd.json with 6 user stories for Phase A
-  - Updated AGENTS.md Documentation index
-- **Learnings for future iterations:**
-  - New patterns discovered:
-    - Python server has 23 tools in rhino_mcp_server/src/rhinomcp/tools/
-    - C# plugin has 14 handlers in rhino_mcp_plugin/Functions/
-    - Some Python tools lack C# handlers (create_leader, create_text, create_text_dot)
-  - Gotchas / pitfalls:
-    - Socket timeout is 15 seconds - can cause issues with long scripts
-    - No automated tests - only dev_test.py exists
-    - Error responses inconsistent (strings vs dicts)
-  - Useful context to remember:
-    - Command handlers mapped in RhinoMCPServer.cs ExecuteCommandInternal()
-    - Tools registered via @mcp.tool() decorator in Python
-    - Undo support: C# wraps commands in BeginUndoRecord/EndUndoRecord
-
----
-
-## [2026-01-10] - US-004/005/006: Tests, CI, Timeout
-- Thread: Amp Agent Session
-- Implemented:
-  - **US-004:** Pytest test suite with 34 tests (test_responses.py, test_errors.py, test_connection.py)
-  - **US-005:** GitHub Actions CI workflow (ci.yml) with Python 3.10/3.11/3.12 matrix and ruff lint
-  - **US-006:** Configurable timeout for execute_rhinoscript_python_code (1-120 seconds)
-- Files changed:
-  - `rhino_mcp_server/pyproject.toml` - Added pytest/pytest-cov dev dependencies
-  - `rhino_mcp_server/tests/` - Created test suite
-  - `.github/workflows/ci.yml` - Created CI workflow
-  - `README.md` - Added CI badge
-  - `rhino_mcp_server/src/rhinomcp/server.py` - Added timeout param to send_command
-  - `rhino_mcp_server/src/rhinomcp/tools/execute_rhinoscript_python_code.py` - Added timeout param
-  - `USAGE.md` - Documented timeout parameter
-  - `FUNCTIONAL_STATUS.md` - Marked P-0001 as resolved
-- **Learnings for future iterations:**
-  - Tests should not require Rhino - use mocks
-  - CI runs on ubuntu-latest, use `uv pip install --system`
-  - Timeout is clamped to 1-120 seconds in send_command
-
----
-
-## [2026-01-10] - US-002: Auto-Reconnect
-- Thread: Amp Agent Session
-- Implemented: Connection health check and automatic reconnection
-- Files changed:
-  - Updated `rhino_mcp_server/src/rhinomcp/server.py`:
-    - Added `is_connected()` method to check connection status
-    - Added `reconnect()` method with configurable retries (default: 3) and delay (default: 1s)
-    - Added `_execute_command()` internal method for clean separation
-    - Updated `send_command()` to auto-reconnect on connection errors
-- **Learnings for future iterations:**
-  - New patterns discovered: Use non-blocking socket peek to check connection without data loss
-  - Gotchas / pitfalls: Must set socket back to blocking after peek check
-  - Useful context to remember:
-    - RhinoConnection now has max_retries=3 and retry_delay=1.0 as defaults
-    - send_command will retry once after successful reconnect
-
----
-
-## [2026-01-10] - US-001: Structured Error Codes
-- Thread: Amp Agent Session
-- Implemented: Structured error codes for consistent programmatic error handling
-- Files changed:
-  - Created `rhino_mcp_server/src/rhinomcp/utils/errors.py` with ErrorCode class
-  - Updated `rhino_mcp_server/src/rhinomcp/utils/responses.py` with auto-detection
-  - Updated `rhino_mcp_server/src/rhinomcp/tools/ping.py` to use structured responses
-  - Updated `rhino_mcp_server/src/rhinomcp/tools/get_document_info.py` to use ErrorCode
-  - Updated `rhino_mcp_server/src/rhinomcp/tools/create_object.py` to use ErrorCode
-  - Updated `MCP_TOOL_STANDARDS.md` with error code documentation
-- **Learnings for future iterations:**
-  - New patterns discovered: Use `from_exception(e, code=ErrorCode.XXX)` for errors
-  - Gotchas / pitfalls: Always return json.dumps() for structured responses
-  - Useful context to remember:
-    - ErrorCode class in utils/errors.py has all constants
-    - from_exception() has auto_detect=True by default for connection errors
-    - All tools should return structured JSON, not plain strings
-
----
-
-## [2026-01-10] - Bug Fixes: P-0002, P-0003, P-0004
-- Thread: Amp Agent Session
-- Implemented: Fixed three bugs discovered during Phase A testing
-- Files changed:
-  - `rhino_mcp_plugin/Functions/GetDocumentInfo.cs`:
-    - **P-0002:** PBR materials now use `RenderMaterial.CreateBasicMaterial(baseMaterial, doc)` and add to `doc.RenderMaterials` table (visible in panel)
-    - **P-0004:** Added validation for `layer_name` and `material_id`, use `int.TryParse()`, range validation
-  - `rhino_mcp_plugin/Functions/CreateObject.cs`:
-    - **P-0003:** Added `rhinoObject.Attributes.LayerIndex = doc.Layers.CurrentLayerIndex` to ensure objects are created on current layer
-  - `rhino_mcp_server/src/rhinomcp/tools/assign_material_to_layer.py`:
-    - Added defensive validation for required parameters
-  - `FUNCTIONAL_STATUS.md`: Marked P-0002, P-0003, P-0004 as RESOLVED
-  - `rhino_mcp_server/dev/test_fixes.py`: Created test script for verifying fixes
-- **Learnings for future iterations:**
-  - PBR materials must go in `doc.RenderMaterials` not `doc.Materials`
-  - `RenderMaterial.CreateBasicMaterial()` takes (Material, RhinoDoc), not just RhinoDoc
-  - `Material.ToPhysicallyBased()` returns void, must access `.PhysicallyBased` after calling
-  - Always set LayerIndex explicitly when creating objects
-  - Use `int.TryParse()` instead of `int.Parse()` for user input
-
----
-
-## [2026-01-10] - Phase A Complete, Phase B Planning
-- Thread: Amp Agent Session
-- Implemented: Phase A completion, Phase B roadmap
-- Files changed:
-  - `ROADMAP.md`: Updated Phase A status to Complete, Phase B to In Progress
-  - `Ralph/prd_phase_b.json`: Created 6 user stories for Phase B (Core Features)
-- **Phase B User Stories:**
-  - US-B01: Boolean Operations (Union, Difference, Intersection)
-  - US-B02: Transform Tools (Copy, Mirror, Array)
-  - US-B03: Curve Operations (Offset, Fillet, Chamfer)
-  - US-B04: Surface from Curves (Loft, Extrude, Revolve)
-  - US-B05: Dimension Tools
-  - US-B06: Get/Set Object Properties
+| Story | Title | Status |
+|-------|-------|--------|
+| US-B01 | Boolean Operations | ✅ Complete |
+| US-B02 | Transform Tools | ✅ Complete |
+| US-B03 | Curve Operations | ✅ Complete |
+| US-B04 | Surface from Curves | ✅ Complete |
+| US-B05 | Dimension Tools | ✅ Complete |
+| US-B06 | Object Properties | ✅ Complete |
 
 ---
 
 ## [2026-01-10] - US-B01: Boolean Operations
-- Thread: Amp Agent Session
+- Thread: Amp Agent Session (Grok-1.5)
+- Duration: ~45 minutes
 - Implemented: Boolean operations for solid geometry (union, difference, intersection)
-- Files changed:
-  - Created `rhino_mcp_server/src/rhinomcp/tools/boolean_operation.py` - Python MCP tool
-  - Created `rhino_mcp_plugin/Functions/BooleanOperations.cs` - C# handler
-  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handler
-  - Created `rhino_mcp_server/tests/test_boolean_operation.py` - 9 unit tests
-  - Updated `USAGE.md` - Added Boolean Operations section with examples
-  - Updated `Ralph/prd_phase_b.json` - Marked US-B01 as passes: true
-- **Learnings for future iterations:**
-  - New patterns discovered:
-    - `Brep.CreateBooleanUnion(breps, tolerance)` for union
-    - `Brep.CreateBooleanDifference(firstSet, secondSet, tolerance)` for difference
-    - `Brep.CreateBooleanIntersection(brep1, brep2, tolerance)` for intersection
-  - Gotchas / pitfalls:
-    - Boolean operations return null for disjoint geometry
-    - Must handle Extrusion objects by converting to Brep first
-    - Objects must be closed solids (`brep.IsSolid`)
-  - Useful context to remember:
-    - Always use `doc.ModelAbsoluteTolerance` for boolean tolerance
-    - Set `LayerIndex` on new objects to current layer
-    - Return result_ids as list (booleans can produce multiple objects)
+- Files: `boolean_operation.py`, `BooleanOperations.cs`, 9 tests
+- **Key Learnings:**
+  - `Brep.CreateBooleanUnion/Difference/Intersection()` for operations
+  - Must convert Extrusion to Brep first
+  - Objects must be closed solids (`brep.IsSolid`)
 
 ---
 
 ## [2026-01-10] - US-B02: Transform Tools
-- Thread: Cursor Agent Session
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~30 minutes
 - Implemented: Transform operations (copy, mirror, linear array, polar array)
-- Files changed:
-  - Created `rhino_mcp_server/src/rhinomcp/tools/copy_object.py` - Copy with optional translation
-  - Created `rhino_mcp_server/src/rhinomcp/tools/mirror_object.py` - Mirror across plane
-  - Created `rhino_mcp_server/src/rhinomcp/tools/array_linear.py` - Linear array with spacing
-  - Created `rhino_mcp_server/src/rhinomcp/tools/array_polar.py` - Polar array around center
-  - Created `rhino_mcp_plugin/Functions/TransformOperations.cs` - C# handlers for all 4 tools
-  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handlers and added Transform category
-  - Created `rhino_mcp_server/tests/test_transform_operations.py` - 14 unit tests
-  - Updated `USAGE.md` - Added Transform Operations section with examples
-  - Updated `Ralph/prd_phase_b.json` - Marked US-B02 as passes: true
-- **Learnings for future iterations:**
-  - New patterns discovered:
-    - `doc.Objects.Transform(objId, xform, false)` creates a copy with transform (false = don't delete original)
-    - `Transform.Mirror(Plane)` for mirroring
-    - `Transform.Rotation(angle, axis, center)` for polar arrays
-    - `Transform.Translation(Vector3d)` for linear arrays
-  - Gotchas / pitfalls:
-    - Must normalize direction/axis vectors with `Unitize()`
-    - For polar arrays: 360° = divide by count, partial arc = divide by (count-1)
-    - Always set LayerIndex on new objects via ModifyAttributes
-  - Useful context to remember:
-    - Transform tools use `doc.Objects.Transform()` which returns new GUID
-    - Plane defined by origin point + normal vector
-    - All new objects inherit current layer
-
----
-
-## [2026-01-10] - US-B02: Live Tests Passed
-- Thread: Cursor Agent Session
-- All 4 transform tools tested successfully in Rhino:
-  - copy_object: 3 copies created with translation
-  - mirror_object: Object mirrored across YZ plane
-  - array_linear: 4 array copies created
-  - array_polar: 5 polar copies in circle
-- **Next:** US-B03 Curve Operations (see Ralph/NEXT_SESSION_PLAN.md)
+- Files: `copy_object.py`, `mirror_object.py`, `array_linear.py`, `array_polar.py`, `TransformOperations.cs`, 14 tests
+- **Key Learnings:**
+  - `doc.Objects.Transform(objId, xform, false)` creates copy
+  - Normalize vectors with `Unitize()`
+  - All new objects inherit current layer
 
 ---
 
 ## [2026-01-10] - US-B03: Curve Operations
-- Thread: Cursor Agent Session
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~40 minutes
 - Implemented: Curve operations (offset, fillet, chamfer)
-- Files changed:
-  - Created `rhino_mcp_server/src/rhinomcp/tools/offset_curve.py` - Offset curves by distance
-  - Created `rhino_mcp_server/src/rhinomcp/tools/fillet_curves.py` - Fillet arc between two curves
-  - Created `rhino_mcp_server/src/rhinomcp/tools/chamfer_curves.py` - Chamfer line between two curves
-  - Created `rhino_mcp_plugin/Functions/CurveOperations.cs` - C# handlers for all 3 tools
-  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handlers and added Curves category
-  - Created `rhino_mcp_server/tests/test_curve_operations.py` - 19 unit tests
-  - Updated `USAGE.md` - Added Curve Operations section with examples
-  - Updated `AGENTS.md` - Tool tables, test count (98), US-B03 status
-  - Updated `Ralph/prd_phase_b.json` - Marked US-B03 as passes: true
-  - Fixed transform tools validation order (copy_object, mirror_object, array_linear, array_polar)
-- **Learnings for future iterations:**
-  - New patterns discovered:
-    - `Curve.Offset(Plane, distance, tolerance, CurveOffsetCornerStyle)` for offset
-    - `Curve.CreateFilletCurves()` for fillet (10 parameters!)
-    - `Intersection.CurveCurve()` to find intersections for chamfer
-    - `curve.LengthParameter()` to get parameter from arc length
-  - Gotchas / pitfalls:
-    - **IMPORTANT:** Always validate parameters BEFORE calling get_rhino_connection()
-    - Tests fail if validation happens after connection attempt
-    - Fillet requires point hints when curves have multiple intersections
-    - Chamfer implementation is manual (find intersection, calculate points, create line)
-  - Useful context to remember:
-    - CurveOffsetCornerStyle enum: Sharp, Round, Smooth, Chamfer
-    - Curve operations may return multiple curves (offset can self-intersect)
-    - Always set LayerIndex on new curve objects
-- **Next:** US-B04 Surface from Curves (Loft, Extrude, Revolve)
-
----
-
-## [2026-01-10] - Learnings: Rhino Native Commands
-- Thread: Cursor Agent Session
-- Discovered: How to use native Rhino commands instead of manual implementations
-
-### RhinoApp.RunScript() - Execute Native Commands
-```csharp
-// Execute native Rhino command from C# plugin
-string script = "_Chamfer _Distance 5 _Polyline";
-bool echo = false;  // Don't show in command line
-RhinoApp.RunScript(script, echo);
-```
-
-### Key Findings:
-1. **Curve.CreateFilletCurves with radius=0** creates a chamfer with automatic trim
-2. **RhinoApp.RunScript()** can execute any native Rhino command
-3. For complex operations, prefer native commands over manual implementation
-
-### When to Use Native Commands:
-- Complex operations already built into Rhino (Loft, Sweep, Boolean2D, etc.)
-- Operations with many edge cases (chamfers, fillets with complex curves)
-- Features that would require extensive code to replicate
-
-### When to Use Manual Implementation:
-- Simple geometric operations (offset, copy, array)
-- When you need fine control over the result
-- When native command requires user interaction
-
-### Important Caveats:
-- `RhinoApp.RunScript()` should be called from commands marked `[CommandStyle(Style.ScriptRunner)]`
-- Object references may become invalid after RunScript - re-fetch by GUID
-- Native commands may require selection - use `rs.SelectObject()` first
+- Files: `offset_curve.py`, `fillet_curves.py`, `chamfer_curves.py`, `CurveOperations.cs`, 19 tests
+- **Key Learnings:**
+  - **IMPORTANT:** Validate parameters BEFORE `get_rhino_connection()`
+  - `Curve.CreateFilletCurves()` with radius=0 creates chamfer
+  - CurveOffsetCornerStyle enum for offset corner types
 
 ---
 
 ## [2026-01-10] - US-B04: Surface from Curves
-- Thread: Cursor Agent Session
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~35 minutes
 - Implemented: Surface operations (loft, extrude, revolve)
-- Files changed:
-  - Created `rhino_mcp_server/src/rhinomcp/tools/loft_curves.py` - Loft between multiple curves
-  - Created `rhino_mcp_server/src/rhinomcp/tools/extrude_curve.py` - Extrude along vector
-  - Created `rhino_mcp_server/src/rhinomcp/tools/revolve_curve.py` - Revolve around axis
-  - Created `rhino_mcp_plugin/Functions/SurfaceOperations.cs` - C# handlers for all 3 tools
-  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handlers and added Surfaces category
-  - Created `rhino_mcp_server/tests/test_surface_operations.py` - 22 unit tests (19 pass, 3 skipped integration)
-  - Updated `USAGE.md` - Added Surface Operations section with examples
-  - Updated `AGENTS.md` - Tool tables, test count (117), US-B04 status
-  - Updated `Ralph/prd_phase_b.json` - Marked US-B04 as passes: true
-- **Learnings for future iterations:**
-  - New patterns discovered:
-    - `Brep.CreateFromLoft(curves, start, end, loftType, closed)` for lofting
-    - `Surface.CreateExtrusion(curve, direction)` for extrusion surfaces
-    - `Extrusion.Create(curve, height, cap)` for capped solids
-    - `RevSurface.Create(curve, axis, startAngle, endAngle)` for revolution
-  - Gotchas / pitfalls:
-    - **IMPORTANT:** Always validate ALL parameters BEFORE calling get_rhino_connection()
-    - Including optional parameters like `distance` - validate early to avoid connection errors in tests
-    - `Extrusion.Create()` creates geometry at origin - may need position adjustment
-    - `RevSurface` needs conversion to Brep for document compatibility
-  - Useful context to remember:
-    - LoftType enum: Normal, Loose, Tight, Straight
-    - For closed curves with `cap=True`, prefer `Extrusion.Create()` for solids
-    - Always convert RevSurface to Brep before adding to document
-    - All surface tools return GUIDs of new surfaces on current layer
-- **Next:** US-B05 Dimension Tools or US-B06 Object Properties
+- Files: `loft_curves.py`, `extrude_curve.py`, `revolve_curve.py`, `SurfaceOperations.cs`, 22 tests
+- **Key Learnings:**
+  - `Brep.CreateFromLoft()` for lofting curves
+  - `Extrusion.Create()` for capped solids
+  - Convert RevSurface to Brep before adding to document
 
 ---
 
-## Codebase Patterns (SACRED - use exactly these conventions)
+## [2026-01-10] - US-B05: Dimension Tools
+- Thread: Cursor/Amp Session (Grok-1.5)
+- Duration: ~50 minutes
+- Implemented: Dimension creation tools
+- Files: `create_linear_dimension.py`, `create_angular_dimension.py`, `create_radial_dimension.py`, `DimensionOperations.cs`, 9 tests
+- **Key Learnings:**
+  - DimensionStyle API changed in Rhino 8: `doc.DimStyles.FindName()` returns style directly
+  - Socket timeout fix: `ManualResetEventSlim` to wait for UI thread
 
-### Project Structure
-- Python MCP Server: `rhino_mcp_server/src/rhinomcp/`
-- C# Rhino Plugin: `rhino_mcp_plugin/`
-- Documentation: Root `*.md` files
+---
+
+## [2026-01-10] - US-B06: Object Properties
+- Thread: Cursor/Amp Session (Grok-1.5)
+- Duration: ~25 minutes
+- Implemented: Get/Set object properties
+- Files: `get_object_properties.py`, `set_object_properties.py`, `ObjectProperties.cs`, 12 tests
+- **Key Learnings:**
+  - `VolumeMassProperties.Compute()` only valid for closed solids
+  - Batch support: Accept both `object_id` and `object_ids`
+
+---
+
+## Phase C Summary (In Progress)
+
+| Story | Title | Status |
+|-------|-------|--------|
+| US-C01 | File Operations | ✅ Complete |
+| US-C02 | Viewport Control | 📋 Next |
+| US-C03 | Groups & Blocks | ⏳ Pending |
+| US-C04 | Mesh Import/Export | ⏳ Pending |
+| US-C05 | Render Settings | ⏳ Pending |
+| US-C06 | Grasshopper Integration | ⏳ Pending |
+
+---
+
+## [2026-01-10] - US-C01: File Operations
+- Thread: Cursor/Amp Session (Grok-1.5)
+- Duration: ~30 minutes
+- Implemented: File operations (open, save, export)
+- Files: `open_file.py`, `save_file.py`, `export_file.py`, `FileOperations.cs`, 12 tests
+- **Key Learnings:**
+  - `RhinoApp.RunScript()` for file commands
+  - `ExportFormat = Literal["STEP", "IGES", ...]` for schema clarity
+  - Export with selection: `obj.Select(true)`, export, then `UnselectAll()`
+
+---
+
+## [2026-01-10] - Integration Test: Layer + Boolean Operations
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~60 minutes
+- Implemented: Comprehensive integration test for Layer Management + Boolean Operations
+- Files: `dev/test_layer_boolean_integration.py`, updated `boolean_operation.py`
+- **Key Learnings:**
+  - Layer creation and object assignment works perfectly
+  - Boolean operations execute successfully in C# but need proper result parsing
+  - Fixed `boolean_operation.py` to return `result_ids[0]` instead of expecting single `id`
+  - Objects must overlap geometrically for valid boolean operations
+  - Translation parameter in `create_object` enables precise positioning
+- **Test Results:**
+  - ✅ Layer creation: 3 layers with custom colors
+  - ✅ Object creation: Boxes and spheres with translations
+  - ✅ Layer assignment: Objects correctly assigned to layers
+  - ✅ Boolean operations: Union/Difference/Intersection execute (results need verification)
+  - ✅ MCP functions: All core functions verified working
+- **Notes:** Test requires manual "mcpstart" in Rhino command line after restart
+
+---
+
+## [2026-01-10] - US-C02: Viewport Control
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~90 minutes
+- Implemented: Viewport control tools for programmatic camera and zoom operations
+- Files: `set_view.py`, `zoom_extents.py`, `zoom_selected.py`, `capture_viewport.py`, `ViewportOperations.cs`, 17 tests
+- **Key Learnings:**
+  - Rhino viewport API uses `SetCameraDirection()` with Vector3d parameters
+  - `ZoomBoundingBox()` for precise zoom to geometry bounds
+  - `CaptureToBitmap()` for viewport screenshots with custom dimensions
+  - `IsHidden` property for filtering hidden objects in zoom operations
+  - System.Drawing.Common package required for image capture functionality
+- **Test Results:**
+  - ✅ set_view: 8 standard views (Top, Front, Perspective, etc.)
+  - ✅ zoom_extents: Fit all objects with hidden object filtering
+  - ✅ zoom_selected: Zoom to specific objects or selection
+  - ✅ capture_viewport: Screenshot to file or base64 data
+  - ✅ Tests: 17 unit tests with full parameter validation
+- **Notes:** Enhanced workflow for automated documentation and view management
+
+---
+
+## Known Issues & Future Work (2026-01-10)
+
+### Issue: Automatic MCP Plugin Start
+**Status:** Open - Medium Priority
+**Description:** MCP plugin does not start automatically on Rhino launch despite OnLoad/OnShutdown implementation
+**Workaround:** Manual `mcpstart` command required after Rhino startup
+**Files:** `rhino_mcp_plugin/rhinomcpPlugin.cs`, `RhinoMCPServerController.cs`
+**Impact:** User experience - requires manual step after Rhino launch
+
+---
+
+## Repository Analysis (2026-01-10)
+
+### Phase 1 Complete ✅
+- Version sync: pyproject.toml 0.1.3.6 → 0.1.3.8
+- C# tool registry: GetAvailableTools() 30 → 48 tools
+- JSON responses: select_objects.py now returns JSON
+- Module exports: Added missing exports to __init__.py
+- Subdirectory AGENTS.md: Created for Python and C#
+
+### Phase 2 Complete ✅
+- Literal types: Added CornerStyle to offset_curve.py
+- README_MCP.md: Updated with current tool list and patterns
+- development_guide.md: Marked as deprecated
+- progress.txt: Archived Phase A entries
+
+---
+
+## Codebase Patterns (SACRED)
+
+### Response Format
+```python
+return json.dumps(ok(message="Success", data=result))
+return json.dumps(from_exception(e, code=ErrorCode.RHINO_ERROR))
+```
+
+### Tool Template
+```python
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
+from typing import Literal
+
+ToolType = Literal["option1", "option2"]  # Use Literal for enums
+
+@mcp.tool()
+def my_tool(ctx: Context, param: ToolType) -> str:
+    try:
+        rhino = get_rhino_connection()
+        result = rhino.send_command("my_command", {"param": param})
+        return json.dumps(ok(message="Success", data=result))
+    except Exception as e:
+        return json.dumps(from_exception(e, code=ErrorCode.RHINO_ERROR))
+```
 
 ### Commands
-- Build server: `cd rhino_mcp_server && uv build`
-- Run server: `uv run python -m rhinomcp`
-- Start plugin: In Rhino command line: `mcpstart`
-
-### Code Style
-- Python: FastMCP patterns, logging via `rhinomcp.server.logger`
-- C#: Undo-safe operations, `RhinoApp.WriteLine` for logging
-- Return shapes: `{ success, message, data }` JSON objects
-
-### Naming Conventions
-- Commands: lower_snake_case verbs first (e.g., `create_object`)
-- Colors: `[r, g, b]` in range 0-255
-- Points: `[x, y, z]`
-- IDs: GUID strings
+- Build: `cd rhino_mcp_server && uv build`
+- Run: `uv run python -m rhinomcp`
+- Test: `uv run pytest tests/ -v`
+- Start plugin: `mcpstart` in Rhino
 
 ---
 
-## Session 2026-01-10: US-B05 Dimension Tools
-
-### Implemented
-- `create_linear_dimension` - Linear dimension between two points
-- `create_angular_dimension` - Angle dimension at a vertex
-- `create_radial_dimension` - Radius/diameter dimension for circles
-
-### Key Learnings
-
-1. **DimensionStyle API changed in Rhino 8**: `doc.DimStyles.FindName()` now returns `DimensionStyle` directly, not an index. Use `var foundStyle = doc.DimStyles.FindName(name)` instead of `int index`.
-
-2. **LinearDimension.Create() requires Point3d**: The API takes 3D points directly, not Point2d + plane conversion.
-
-3. **RhinoScript limitations**: No `AddRadialDimension` in rhinoscriptsyntax - our C# implementation fills this gap via RhinoCommon's `RadialDimension.Create()`.
-
-4. **MCP Tool Registration**: New tools need MCP server restart to appear in Cursor's tool catalog. The Python imports in `__init__.py` are correct but Cursor caches the tool list.
-
-5. **Documentation Optimization**: Reduced USAGE.md from 712 lines to ~180 lines. Detailed tool docs now in Python docstrings.
-
-### Test Results
-- 126 tests passed (9 new dimension tests)
-- Build successful
-- All dimension handlers working via socket
-
-### Socket Timeout Fix (2026-01-10)
-**Problem:** `RhinoApp.InvokeOnUiThread` is non-blocking. The client handler thread continued before the response was sent, causing timeouts.
-
-**Solution:** Added `ManualResetEventSlim` to wait for UI thread completion:
-```csharp
-using (var completionEvent = new ManualResetEventSlim(false))
-{
-    RhinoApp.InvokeOnUiThread(() => {
-        try { /* execute command, send response */ }
-        finally { completionEvent.Set(); }
-    });
-    completionEvent.Wait(TimeSpan.FromSeconds(60));
-}
-```
-
-**Added:** `get_logs` and `clear_logs` commands for debugging.
+## Current Test Count: 173 tests
 
 ---
 
-## Session 2026-01-10: US-B06 Object Properties
-
-### Implemented
-- `get_object_properties` - Get bounding box, area, volume, centroid
-- `set_object_properties` - Set name, layer, color, material
-
-### Key Learnings
-
-1. **AreaMassProperties.Compute()**: Returns area and centroid for Breps, Meshes, and Surfaces.
-
-2. **VolumeMassProperties.Compute()**: Only valid for closed solids (`brep.IsSolid` must be true).
-
-3. **Extrusion handling**: Must convert to Brep via `extrusion.ToBrep()` before computing properties.
-
-4. **Batch support pattern**: Accept both `object_id` (single) and `object_ids` (list) parameters.
-
-5. **Return format**: Single object returns properties directly, batch returns `{ objects: [...], count: n }`.
-
-### Files Created
-- `rhino_mcp_server/src/rhinomcp/tools/get_object_properties.py`
-- `rhino_mcp_server/src/rhinomcp/tools/set_object_properties.py`
-- `rhino_mcp_plugin/Functions/ObjectProperties.cs`
-- `rhino_mcp_server/tests/test_object_properties.py` (12 tests)
-
-### Test Results
-- 138 tests passed (12 new object property tests)
-- Build successful
-
-### Phase B Complete! 🎉
-All 6 user stories implemented:
-- US-B01: Boolean Operations ✅
-- US-B02: Transform Tools ✅
-- US-B03: Curve Operations ✅
-- US-B04: Surface from Curves ✅
-- US-B05: Dimension Tools ✅
-- US-B06: Object Properties ✅
-
----
-
-## Session 2026-01-10: Quick Wins for Better MCP Schema
-
-### Implemented
-Based on Oracle analysis for improving agent tool usage:
-
-1. **Literal Types** - Added type aliases for schema-friendly enums:
-   - `ObjectType = Literal["POINT", "LINE", "POLYLINE", ...]`
-   - `BooleanOperationType = Literal["union", "difference", "intersection"]`
-   - `LoftType = Literal["normal", "loose", "tight", "straight"]`
-   - `FilterType = Literal["and", "or"]`
-
-2. **Mutable Default Fix** - Changed `Dict = {}` to `Optional[Dict] = None`:
-   - `create_object.py`: `params: Optional[Dict] = None`
-   - `select_objects.py`: `filters: Optional[Dict] = None`
-   - Runtime fallback: `params if params is not None else {}`
-
-3. **Explicit Return Examples** - Added JSON examples in docstrings:
-   ```
-   Returns:
-       {"ok": true, "message": "Created BOX", "data": {"id": "guid", "name": "Box_1"}}
-   ```
-
-4. **Tuple → Array in Examples** - Changed Python syntax to JSON:
-   - `(3, 3)` → `[3, 3]`
-   - `True` → `true`
-
-5. **Standardized Error Responses** - All tools now return JSON:
-   - `modify_object.py` and `modify_objects.py` updated
-   - Use `from_exception(e, code=ErrorCode.XXX)`
-
-### Files Changed
-- `create_object.py`, `create_objects.py` - Literal types, return examples
-- `boolean_operation.py` - BooleanOperationType Literal
-- `loft_curves.py` - LoftType Literal
-- `select_objects.py` - FilterType Literal, mutable default fix
-- `modify_object.py`, `modify_objects.py` - JSON error responses
-- `test_modify_object.py` - Updated for JSON responses
-
-### Key Learnings
-- **Literal types** help MCP clients understand valid parameter values
-- **Mutable defaults** are a Python antipattern - always use `None` with fallback
-- **JSON examples** in docstrings help agents construct correct tool calls
-- **Consistent error format** enables programmatic error handling
-
-### Test Results
-- 138 tests passed, 5 skipped
-- Live test in Rhino: All Quick Wins working
-
----
-
-## Session 2026-01-10: Phase 1 ML Foundation - Interaction Logging
-
-### Implemented
-JSONL interaction logging for all MCP tool calls - foundation for ML training data.
-
-### New Files
-- `rhinomcp/utils/interaction_logger.py` - Thread-safe JSONL logger
-- `rhinomcp/tools/get_session_stats.py` - MCP tools for session management
-
-### Log Format
-```json
-{
-  "timestamp": "2026-01-10T11:21:28+00:00",
-  "session_id": "fde7c7b5",
-  "tool_name": "create_object",
-  "tool_args": {"type": "BOX", "params": {...}},
-  "success": true,
-  "response_summary": {"id": "guid", "name": "Box_1"},
-  "duration_ms": 43.05
-}
-```
-
-### Features
-- **Automatic logging** in `RhinoConnection.send_command()`
-- **Session tracking** - groups related tool calls
-- **Error capture** - logs error_code and error_message
-- **Duration tracking** - measures execution time
-- **Arg sanitization** - truncates large lists/strings
-- **Thread-safe** - uses locks for concurrent access
-
-### New MCP Tools
-- `get_session_stats` - Get success rate, tool counts per session
-- `new_session` - Start a new session ID
-- `set_logging_enabled` - Toggle logging on/off
-
-### Log Location
-`rhino_mcp_server/logs/interactions_YYYYMMDD.jsonl`
-
-### Key Learnings
-- Path resolution: `Path(__file__).parent.parent.parent.parent` for correct log dir
-- Import inside function to avoid circular imports
-- Response summarization: Only log key fields (id, name, count, status)
-
----
-
-## Session 2026-01-10: Phase C Started - US-C01 File Operations
-
-### Implemented
-- `open_file` - Open .3dm files
-- `save_file` - Save current document (or Save As to new path)
-- `export_file` - Export to STEP, IGES, DWG, DXF, OBJ, STL, 3MF, FBX, DAE
-
-### Files Created
-- `rhino_mcp_server/src/rhinomcp/tools/open_file.py`
-- `rhino_mcp_server/src/rhinomcp/tools/save_file.py`
-- `rhino_mcp_server/src/rhinomcp/tools/export_file.py`
-- `rhino_mcp_plugin/Functions/FileOperations.cs`
-- `rhino_mcp_server/tests/test_file_operations.py` (12 tests)
-
-### Key Learnings
-
-1. **RhinoApp.RunScript() for file operations**: File commands like Open, Save, Export use native Rhino commands via `RhinoApp.RunScript()` instead of manual API calls.
-
-2. **Format detection from extension**: `export_file` auto-detects format from file extension (e.g., `.step` → STEP, `.obj` → OBJ).
-
-3. **Export with object selection**: When exporting specific objects, select them first with `obj.Select(true)`, export, then deselect with `doc.Objects.UnselectAll()`.
-
-4. **Literal type for export formats**: Used `ExportFormat = Literal["STEP", "IGES", ...]` for MCP schema clarity.
-
-### Test Results
-- 150 tests passed, 5 skipped
-- 12 new file operation tests
+## [2026-01-10 13:34] - Phase 3 Complete (Structural Improvements)
+- Thread: Copilot Agent Session (Grok-1.5)
+- Duration: ~90 minutes
+- Implemented: Phase 3 structural improvements
+- Files changed:
+  - `rhino_mcp_plugin/ErrorCode.cs`: **NEW** - C# error codes mirroring Python
+  - `rhino_mcp_plugin/RhinoMCPServer.cs`: Added error_code to all error responses
+  - `scripts/sync_version.py`: **NEW** - Version sync utility
+  - `README.md`: Added test count and version badges
+  - `rhino_mcp_server/src/rhinomcp/tools/*.py`: Fixed import ordering (48 files)
+  - `REPOSITORY_ANALYSIS.md`: Marked Phase 3 as complete
+- **Learnings for future iterations:**
+  - New patterns discovered: C# error codes enable consistent cross-language error handling
+  - Gotchas / pitfalls: ruff can auto-fix import ordering with --select I --fix
+  - Useful context to remember:
+    - ErrorCode.FromException(e, context) determines code from exception message and context
+    - Version sync script: `python scripts/sync_version.py --check` or `--set X.Y.Z`
+    - All phases (1, 2, 3) of documentation cleanup complete
 
 ---

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Rhino;
 using Rhino.Commands;
@@ -28,7 +28,15 @@ namespace RhinoMCPPlugin.Commands
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
-            RhinoMCPServerController.StartServer();
+            if (RhinoMCPServerController.IsServerRunning())
+            {
+                RhinoApp.WriteLine("MCP server is already running (started automatically on plugin load).");
+            }
+            else
+            {
+                RhinoMCPServerController.StartServer();
+                RhinoApp.WriteLine("MCP server started manually.");
+            }
             return Result.Success;
         }
 

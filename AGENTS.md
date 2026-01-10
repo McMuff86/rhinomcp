@@ -10,11 +10,26 @@
 
 ## 🚀 Agent Quick Start
 
-**ALWAYS do this first when starting a new session:**
+**ALWAYS do this first when starting a new session (Both Cursor and Amp!):**
 
 1. **Read learnings:** `Ralph/progress.txt` - Contains patterns, gotchas, and context from previous sessions
 2. **Check current phase:** `ROADMAP.md` - What's the current focus?
 3. **Find next task:** `Ralph/prd_phase_b.json` - Pick highest priority story with `passes: false`
+
+### Tool Selection: Cursor vs Amp (Ralph)
+
+Before starting, determine which workflow to use:
+
+| Scenario | Tool | Reason |
+|----------|------|--------|
+| Autonomous iteration loops | **Amp (Ralph)** | Auto-handoff, fresh context per iteration |
+| Interactive development | **Cursor** | Real-time feedback, debugging |
+| Large refactoring | **Amp (Ralph)** | Context persistence via progress.txt |
+| Quick fixes | **Cursor** | Direct, no overhead |
+
+> **IMPORTANT:** Both tools MUST use `Ralph/progress.txt` for consistency!
+> - **Before work:** Read progress.txt for learnings
+> - **After work:** Append new learnings to progress.txt
 
 ### Behavioral Guidelines
 
@@ -25,6 +40,7 @@
 | Test with `uv run pytest tests/ -v` | Skip testing |
 | Update `progress.txt` after each story | Forget to document learnings |
 | Follow existing patterns in the codebase | Invent new conventions |
+| Use same progress.txt for Cursor AND Amp | Create separate progress logs |
 
 ### Response Format (SACRED)
 
@@ -70,17 +86,19 @@ uv pip install -e .
 
 ### Run
 ```bash
-# 1. Start Rhino plugin (in Rhino command line)
-mcpstart
+# 1. Start Rhino (MCP plugin starts automatically on load)
+# The RhinoMCP plugin now starts automatically when Rhino loads
 
 # 2. Start MCP server
 cd rhino_mcp_server
 uv run rhinomcp
 ```
 
+**Note:** The MCP plugin now starts automatically when Rhino loads. Manual `mcpstart` is only needed if you stopped the server manually.
+
 ### Test
 ```bash
-# Run pytest suite (143 tests)
+# Run pytest suite (155 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -225,6 +243,7 @@ When adding new tools, register them in `RhinoMCPServer.cs`:
 | Surface Tools | `SurfaceOperations.cs` |
 | Dimension Tools | `DimensionOperations.cs` |
 | Object Properties | `ObjectProperties.cs` |
+| Viewport Operations | `ViewportOperations.cs` |
 | Script Execution | `ExecuteCode.cs` |
 
 ---
@@ -319,22 +338,22 @@ dotnet build --configuration Release
 
 # 3. Start Rhino
 Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 15
 
-# 4. User runs 'mcpstart' in Rhino, then run tests
+# 4. Run tests (MCP plugin starts automatically)
 cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_server
 uv run pytest tests/ -v
 ```
 
-### Current Phase: B (Core Features)
+### Current Phase: C (Advanced Features)
 | Story | Title | Status |
 |-------|-------|--------|
-| US-B01 | Boolean Operations | ✅ |
-| US-B02 | Transform Tools | ✅ |
-| US-B03 | Curve Operations | ✅ |
-| US-B04 | Surface from Curves | ✅ |
-| US-B05 | Dimension Tools | ✅ |
-| US-B06 | Object Properties | ✅ |
+| US-C01 | File Operations | ✅ |
+| US-C02 | Viewport Control | ✅ |
+| US-C03 | Groups & Blocks | ⏳ Pending |
+| US-C04 | Mesh Import/Export | ⏳ Pending |
+| US-C05 | Render Settings | ⏳ Pending |
+| US-C06 | Grasshopper Integration | ⏳ Pending |
 
 ---
 
@@ -342,13 +361,15 @@ uv run pytest tests/ -v
 
 ### Connection Issues
 ```bash
-# Check Rhino plugin status
+# Check Rhino plugin status (plugin starts automatically now)
 MCPStatus  # in Rhino command line
 
-# Restart plugin
+# Manual restart if needed
 mcpstop
 mcpstart
 ```
+
+**Note:** MCP plugin now starts automatically on Rhino launch. Manual commands are only needed for troubleshooting.
 
 ### Build Errors (C#)
 - Ensure Rhino SDK is installed

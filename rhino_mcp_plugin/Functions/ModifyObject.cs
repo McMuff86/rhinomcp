@@ -38,6 +38,24 @@ public partial class RhinoMCPFunctions
             attributesModified = true;
         }
 
+        // Change layer if provided
+        if (parameters["layer"] != null)
+        {
+            string layerName = parameters["layer"].ToString();
+            int layerIndex = doc.Layers.FindByFullPath(layerName, -1);
+            if (layerIndex < 0)
+            {
+                // Try finding by name only (not full path)
+                layerIndex = doc.Layers.FindName(layerName)?.Index ?? -1;
+            }
+            if (layerIndex < 0)
+            {
+                throw new ArgumentException($"Layer not found: {layerName}");
+            }
+            obj.Attributes.LayerIndex = layerIndex;
+            attributesModified = true;
+        }
+
         // Change translation if provided
         if (parameters["translation"] != null)
         {

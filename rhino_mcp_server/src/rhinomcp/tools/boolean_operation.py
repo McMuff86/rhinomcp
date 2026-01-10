@@ -1,9 +1,11 @@
-from mcp.server.fastmcp import Context
 import json
-from rhinomcp.server import get_rhino_connection, mcp, logger
-from rhinomcp.utils.responses import ok, from_exception
-from rhinomcp.utils.errors import ErrorCode
 from typing import List, Literal
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
+from rhinomcp.utils.errors import ErrorCode
+from rhinomcp.utils.responses import from_exception, ok
 
 BooleanOperationType = Literal["union", "difference", "intersection"]
 
@@ -51,10 +53,18 @@ def boolean_operation(
             "object_ids": object_ids,
             "delete_input": delete_input
         })
-        
+
+        # Extract the first result ID for single-result operations
+        result_ids = result.get("result_ids", [])
+        if not result_ids:
+            return json.dumps(from_exception(
+                ValueError(f"Boolean {operation_upper} produced no results"),
+                code=ErrorCode.RHINO_ERROR
+            ))
+
         return json.dumps(ok(
             message=f"Boolean {operation_upper} completed",
-            data=result
+            data={"id": result_ids[0], "result_ids": result_ids}
         ))
     except Exception as e:
         logger.error(f"Error performing boolean operation: {str(e)}")

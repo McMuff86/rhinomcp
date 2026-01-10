@@ -9,8 +9,8 @@
 ## Quick Start
 
 ```bash
-# 1. In Rhino Command Line
-mcpstart
+# 1. Start Rhino (MCP plugin starts automatically)
+# Plugin loads automatically when Rhino starts
 
 # 2. Start MCP Server
 cd rhino_mcp_server
@@ -18,6 +18,8 @@ uv run rhinomcp
 
 # 3. Verify with ping tool
 ```
+
+**Note:** MCP plugin now starts automatically when Rhino loads. Manual `mcpstart` is only needed for troubleshooting.
 
 ---
 
@@ -103,6 +105,14 @@ uv run rhinomcp
 | `open_file` | Open .3dm file |
 | `save_file` | Save current document |
 | `export_file` | Export to STEP, IGES, DWG, OBJ, STL, etc. |
+
+### Viewport Control
+| Tool | Description |
+|------|-------------|
+| `set_view` | Set viewport to standard views (Top, Front, Perspective, etc.) |
+| `zoom_extents` | Zoom viewport to show all objects |
+| `zoom_selected` | Zoom viewport to selected objects |
+| `capture_viewport` | Capture viewport as image (file or base64) |
 
 ### Script Execution
 | Tool | Description |

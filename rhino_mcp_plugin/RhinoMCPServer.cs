@@ -179,7 +179,15 @@ namespace RhinoMCPPlugin
         {
             return new List<string>
             {
+                // Document & System
                 "get_document_info",
+                "ping",
+                "set_debug_mode",
+                "log_thought",
+                "get_logs",
+                "clear_logs",
+                "get_command_history",
+                // Objects
                 "create_object",
                 "create_objects",
                 "get_object_info",
@@ -187,27 +195,46 @@ namespace RhinoMCPPlugin
                 "delete_object",
                 "modify_object",
                 "modify_objects",
-                "execute_rhinoscript_python_code",
                 "select_objects",
+                "get_object_properties",
+                "set_object_properties",
+                // Layers
                 "create_layer",
                 "get_or_set_current_layer",
                 "delete_layer",
-                "ping",
-                "set_debug_mode",
-                "log_thought",
+                // Materials
                 "create_material",
                 "assign_material_to_layer",
+                // Boolean Operations
                 "boolean_operation",
+                // Transform Operations
                 "copy_object",
                 "mirror_object",
                 "array_linear",
                 "array_polar",
+                // Curve Operations
                 "offset_curve",
                 "fillet_curves",
                 "chamfer_curves",
+                // Surface Operations
                 "loft_curves",
                 "extrude_curve",
-                "revolve_curve"
+                "revolve_curve",
+                // Dimension Operations
+                "create_linear_dimension",
+                "create_angular_dimension",
+                "create_radial_dimension",
+                // File Operations
+                "open_file",
+                "save_file",
+                "export_file",
+                // Viewport Operations
+                "set_view",
+                "zoom_extents",
+                "zoom_selected",
+                "capture_viewport",
+                // Scripting
+                "execute_rhinoscript_python_code"
             };
         }
 
@@ -364,9 +391,11 @@ namespace RhinoMCPPlugin
                                             RhinoApp.WriteLine($"Error executing command: {e.Message}\nStackTrace: {e.StackTrace}");
                                             try
                                             {
+                                                string errorCmdType = command["type"]?.ToString() ?? "unknown";
                                                 JObject errorResponse = new JObject
                                                 {
                                                     ["status"] = "error",
+                                                    ["error_code"] = ErrorCode.FromException(e, errorCmdType),
                                                     ["message"] = e.Message
                                                 };
 
@@ -462,6 +491,7 @@ namespace RhinoMCPPlugin
                 return new JObject
                 {
                     ["status"] = "error",
+                    ["error_code"] = ErrorCode.RHINO_ERROR,
                     ["message"] = e.Message
                 };
             }
@@ -511,6 +541,11 @@ namespace RhinoMCPPlugin
                 ["open_file"] = this.handler.OpenFile,
                 ["save_file"] = this.handler.SaveFile,
                 ["export_file"] = this.handler.ExportFile,
+                // Viewport Operations
+                ["set_view"] = this.handler.SetView,
+                ["zoom_extents"] = this.handler.ZoomExtents,
+                ["zoom_selected"] = this.handler.ZoomSelected,
+                ["capture_viewport"] = this.handler.CaptureViewport,
                 // Command History (for agent communication)
                 ["get_command_history"] = this.handler.GetCommandHistory,
                 ["get_logs"] = (p) => {
@@ -555,6 +590,7 @@ namespace RhinoMCPPlugin
                     return new JObject
                     {
                         ["status"] = "error",
+                        ["error_code"] = ErrorCode.FromException(e, cmdType),
                         ["message"] = e.Message
                     };
                 }
@@ -568,6 +604,7 @@ namespace RhinoMCPPlugin
                 return new JObject
                 {
                     ["status"] = "error",
+                    ["error_code"] = ErrorCode.UNKNOWN_COMMAND,
                     ["message"] = $"Unknown command type: {cmdType}"
                 };
             }

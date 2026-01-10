@@ -1,9 +1,13 @@
-from mcp.server.fastmcp import Context
 import json
-from rhinomcp.server import get_rhino_connection, mcp, logger
-from rhinomcp.utils.responses import ok, from_exception
+from typing import List, Literal, Optional
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
 from rhinomcp.utils.errors import ErrorCode
-from typing import List, Optional
+from rhinomcp.utils.responses import from_exception, ok
+
+CornerStyle = Literal["sharp", "round", "smooth", "chamfer"]
 
 
 @mcp.tool()
@@ -13,7 +17,7 @@ def offset_curve(
     distance: float,
     plane_origin: Optional[List[float]] = None,
     plane_normal: Optional[List[float]] = None,
-    corner_style: str = "sharp"
+    corner_style: CornerStyle = "sharp"
 ) -> str:
     """
     Offset a curve by a specified distance.

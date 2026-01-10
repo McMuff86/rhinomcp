@@ -1,9 +1,11 @@
-from mcp.server.fastmcp import Context
 import json
-from rhinomcp.server import get_rhino_connection, mcp, logger
-from rhinomcp.utils.responses import ok, from_exception
+from typing import Any, Dict, List, Literal, Optional
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
 from rhinomcp.utils.errors import ErrorCode
-from typing import Any, List, Dict, Literal, Optional
+from rhinomcp.utils.responses import from_exception, ok
 
 ObjectType = Literal["POINT", "LINE", "POLYLINE", "CIRCLE", "ARC", "ELLIPSE", "CURVE", "BOX", "SPHERE", "CONE", "CYLINDER", "PIPE", "SURFACE"]
 
@@ -13,6 +15,8 @@ def create_object(
     type: ObjectType = "BOX",
     name: Optional[str] = None,
     color: Optional[List[int]] = None,
+    layer: Optional[str] = None,
+    layer_color: Optional[List[int]] = None,
     params: Optional[Dict[str, Any]] = None,
     translation: Optional[List[float]] = None,
     rotation: Optional[List[float]] = None,
@@ -24,7 +28,9 @@ def create_object(
     Parameters:
     - type: Object type ("POINT", "LINE", "POLYLINE", "CIRCLE", "ARC", "ELLIPSE", "CURVE", "BOX", "SPHERE", "CONE", "CYLINDER", "PIPE", "SURFACE")
     - name: Optional name for the object
-    - color: Optional [r, g, b] color values (0-255) for the object
+    - color: Optional [r, g, b] color values (0-255) for the object (overrides layer color)
+    - layer: Optional layer name to assign the object to (creates layer if not exists)
+    - layer_color: Optional [r, g, b] color for new layer (only used when creating new layer)
     - params: Type-specific parameters dictionary (see documentation for each type)
     - translation: Optional [x, y, z] translation vector
     - rotation: Optional [x, y, z] rotation in radians
@@ -116,6 +122,8 @@ def create_object(
 
         if name: command_params["name"] = name
         if color: command_params["color"] = color
+        if layer: command_params["layer"] = layer
+        if layer_color: command_params["layer_color"] = layer_color
 
         # Create the object
         result = rhino.send_command("create_object", command_params)  
