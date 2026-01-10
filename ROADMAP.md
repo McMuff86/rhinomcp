@@ -3,7 +3,7 @@
 > Strategic plan for evolving RhinoMCP from proof-of-concept to professional product.
 
 **Last Updated:** 2026-01-10  
-**Current Version:** 0.1.3.7
+**Current Version:** 0.1.3.8
 
 ---
 
@@ -19,7 +19,7 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 |-------|-------|--------|----------|
 | **A** | Stability & Foundation | ✅ Complete | Q1 2026 |
 | **B** | Core Features | ✅ Complete | Q1 2026 |
-| **C** | Advanced Features | 📋 Planned | Q3 2026 |
+| **C** | Advanced Features | 🚧 In Progress | Q2-Q3 2026 |
 | **D** | Monetization | 📋 Planned | Q4 2026 |
 
 ---
@@ -78,20 +78,22 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 
 ---
 
-## Phase C: Advanced Features
+## Phase C: Advanced Features 🚧
 
 **Goal:** Enable complex workflows and integrations.
 
-### Planned Features
+**Status:** In Progress (see `Ralph/prd_phase_c.json`)
 
-| Feature | Description | Complexity |
-|---------|-------------|------------|
-| Grasshopper Integration | Evaluate definitions, set parameters, bake | High |
-| Mesh I/O | Import/export OBJ, STL, 3MF | Medium |
-| Groups & Blocks | Create, modify, explode groups/blocks | Medium |
-| Render Settings | Camera, lighting, render presets | Medium |
-| File Operations | Open, save, export documents | Low |
-| Viewport Control | Set view, zoom, pan, named views | Low |
+### User Stories
+
+| ID | Title | Priority | Complexity | Status |
+|----|-------|----------|------------|--------|
+| US-C01 | File Operations | 1 | Low | ✅ |
+| US-C02 | Viewport Control | 2 | Low | ⬜ |
+| US-C03 | Groups & Blocks | 3 | Medium | ⬜ |
+| US-C04 | Mesh Import/Export | 4 | Medium | ⬜ |
+| US-C05 | Render Settings | 5 | Medium | ⬜ |
+| US-C06 | Grasshopper Integration | 6 | High | ⬜ |
 
 ### Success Criteria
 - [ ] Grasshopper integration functional

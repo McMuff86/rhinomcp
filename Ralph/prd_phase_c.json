@@ -1,0 +1,110 @@
+{
+  "project": "RhinoMCP",
+  "phase": "C",
+  "branchName": "feature/phase-c-advanced",
+  "description": "Advanced Features - Enable complex workflows and integrations",
+  "userStories": [
+    {
+      "id": "US-C01",
+      "title": "File Operations",
+      "description": "As a user, I need file operations (open, save, export) so that I can manage documents via MCP.",
+      "acceptanceCriteria": [
+        "open_file tool opens .3dm files",
+        "save_file tool saves current document",
+        "export_file tool exports to common formats (STEP, IGES, DWG)",
+        "Tests pass",
+        "Documentation updated"
+      ],
+      "priority": 1,
+      "complexity": "Low",
+      "passes": true,
+      "notes": "Implemented 2026-01-10: 3 Python tools, 1 C# handler, 12 tests"
+    },
+    {
+      "id": "US-C02",
+      "title": "Viewport Control",
+      "description": "As a user, I need viewport controls so that I can set views, zoom, and navigate programmatically.",
+      "acceptanceCriteria": [
+        "set_view tool sets named views (Top, Front, Perspective, etc.)",
+        "zoom_extents tool fits all objects",
+        "zoom_selected tool zooms to selection",
+        "capture_viewport tool captures viewport as image",
+        "Tests pass",
+        "Documentation updated"
+      ],
+      "priority": 2,
+      "complexity": "Low",
+      "passes": false,
+      "notes": "Useful for automated documentation"
+    },
+    {
+      "id": "US-C03",
+      "title": "Groups & Blocks",
+      "description": "As a user, I need group and block operations so that I can organize and reuse geometry.",
+      "acceptanceCriteria": [
+        "create_group tool groups objects by ID",
+        "ungroup tool explodes groups",
+        "create_block tool creates block definition",
+        "insert_block tool inserts block instance",
+        "explode_block tool converts block to geometry",
+        "Tests pass",
+        "Documentation updated"
+      ],
+      "priority": 3,
+      "complexity": "Medium",
+      "passes": false,
+      "notes": "Important for parametric workflows"
+    },
+    {
+      "id": "US-C04",
+      "title": "Mesh Import/Export",
+      "description": "As a user, I need mesh I/O so that I can import/export OBJ, STL, and 3MF files.",
+      "acceptanceCriteria": [
+        "import_mesh tool imports OBJ, STL, 3MF",
+        "export_mesh tool exports to OBJ, STL, 3MF",
+        "mesh_from_brep tool converts Brep to mesh",
+        "Tests pass",
+        "Documentation updated"
+      ],
+      "priority": 4,
+      "complexity": "Medium",
+      "passes": false,
+      "notes": "Essential for 3D printing workflows"
+    },
+    {
+      "id": "US-C05",
+      "title": "Render Settings",
+      "description": "As a user, I need render settings so that I can configure camera, lighting, and presets.",
+      "acceptanceCriteria": [
+        "set_render_settings tool configures resolution, quality",
+        "add_light tool adds point/spot/directional lights",
+        "set_camera tool positions render camera",
+        "render_view tool renders current view to image",
+        "Tests pass",
+        "Documentation updated"
+      ],
+      "priority": 5,
+      "complexity": "Medium",
+      "passes": false,
+      "notes": "Enables automated rendering pipelines"
+    },
+    {
+      "id": "US-C06",
+      "title": "Grasshopper Integration",
+      "description": "As a user, I need Grasshopper integration so that I can evaluate definitions and bake geometry.",
+      "acceptanceCriteria": [
+        "load_grasshopper_definition tool loads .gh/.ghx files",
+        "set_grasshopper_parameter tool sets input parameters",
+        "solve_grasshopper tool evaluates definition",
+        "bake_grasshopper tool bakes output to Rhino",
+        "get_grasshopper_outputs tool retrieves computed values",
+        "Tests pass",
+        "Documentation updated"
+      ],
+      "priority": 6,
+      "complexity": "High",
+      "passes": false,
+      "notes": "Most complex - requires Grasshopper API. Consider splitting into sub-stories."
+    }
+  ]
+}

@@ -3,8 +3,43 @@
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
 **Last Updated:** 2026-01-10  
-**Version:** 0.1.3.7  
+**Version:** 0.1.3.8  
 **Phase:** B Complete (see ROADMAP.md for Phase C)
+
+---
+
+## 🚀 Agent Quick Start
+
+**ALWAYS do this first when starting a new session:**
+
+1. **Read learnings:** `Ralph/progress.txt` - Contains patterns, gotchas, and context from previous sessions
+2. **Check current phase:** `ROADMAP.md` - What's the current focus?
+3. **Find next task:** `Ralph/prd_phase_b.json` - Pick highest priority story with `passes: false`
+
+### Behavioral Guidelines
+
+| Do | Don't |
+|----|-------|
+| Read `progress.txt` before making changes | Jump straight into coding |
+| Use structured JSON responses (`ok()`, `from_exception()`) | Return plain strings from tools |
+| Test with `uv run pytest tests/ -v` | Skip testing |
+| Update `progress.txt` after each story | Forget to document learnings |
+| Follow existing patterns in the codebase | Invent new conventions |
+
+### Response Format (SACRED)
+
+All MCP tools MUST return JSON via helper functions:
+
+```python
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
+
+# Success
+return json.dumps(ok(message="Created object", data={"id": guid}))
+
+# Error  
+return json.dumps(from_exception(e, code=ErrorCode.CREATE_OBJECT_ERROR))
+```
 
 ---
 
@@ -174,72 +209,23 @@ public JObject CreateObject(JObject parameters)
 
 ## Available Tools
 
-### Core Tools
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `ping` | Inline | Health check |
-| `get_logs` | Inline | Get recent server logs |
-| `clear_logs` | Inline | Clear log buffer |
-| `get_document_info` | `GetDocumentInfo.cs` | Document metadata |
-| `create_object` | `CreateObject.cs` | Create geometry |
-| `create_objects` | `CreateObjects.cs` | Batch create |
-| `modify_object` | `ModifyObject.cs` | Transform object |
-| `delete_object` | `DeleteObject.cs` | Delete by ID |
-| `select_objects` | `SelectObjects.cs` | Select by ID |
+For the complete tool list with parameters and examples, see **[USAGE.md](USAGE.md)**.
 
-### Layer & Material
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `create_layer` | `CreateLayer.cs` | Create layer |
-| `get_or_set_current_layer` | `GetOrSetCurrentLayer.cs` | Layer control |
-| `delete_layer` | `DeleteLayer.cs` | Delete layer |
-| `create_material` | `GetDocumentInfo.cs` | Create material |
-| `assign_material_to_layer` | `GetDocumentInfo.cs` | Assign to layer |
+### Handler Mapping (for developers)
 
-### Boolean Operations
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `boolean_operation` | `BooleanOperations.cs` | Union, difference, intersection |
+When adding new tools, register them in `RhinoMCPServer.cs`:
 
-### Transform Tools
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `copy_object` | `TransformOperations.cs` | Copy with optional translation |
-| `mirror_object` | `TransformOperations.cs` | Mirror across plane |
-| `array_linear` | `TransformOperations.cs` | Linear array with spacing |
-| `array_polar` | `TransformOperations.cs` | Polar array around center |
-
-### Curve Tools
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `offset_curve` | `CurveOperations.cs` | Offset curve by distance |
-| `fillet_curves` | `CurveOperations.cs` | Create fillet arc between curves |
-| `chamfer_curves` | `CurveOperations.cs` | Create chamfer line between curves |
-
-### Surface Tools
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `loft_curves` | `SurfaceOperations.cs` | Loft surface between curves |
-| `extrude_curve` | `SurfaceOperations.cs` | Extrude curve along vector |
-| `revolve_curve` | `SurfaceOperations.cs` | Revolve curve around axis |
-
-### Dimension Tools
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `create_linear_dimension` | `DimensionOperations.cs` | Linear dimension between points |
-| `create_angular_dimension` | `DimensionOperations.cs` | Angle dimension at vertex |
-| `create_radial_dimension` | `DimensionOperations.cs` | Radius/diameter dimension |
-
-### Object Properties
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `get_object_properties` | `ObjectProperties.cs` | Get bounding box, area, volume, centroid |
-| `set_object_properties` | `ObjectProperties.cs` | Set name, layer, color, material |
-
-### Script Execution
-| Tool | Handler | Description |
-|------|---------|-------------|
-| `execute_rhinoscript_python_code` | `ExecuteCode.cs` | Run Python in Rhino |
+| Category | C# Handler File |
+|----------|-----------------|
+| Core (create, modify, delete) | `CreateObject.cs`, `ModifyObject.cs`, `DeleteObject.cs` |
+| Layer & Material | `CreateLayer.cs`, `GetOrSetCurrentLayer.cs`, `GetDocumentInfo.cs` |
+| Boolean Operations | `BooleanOperations.cs` |
+| Transform Tools | `TransformOperations.cs` |
+| Curve Tools | `CurveOperations.cs` |
+| Surface Tools | `SurfaceOperations.cs` |
+| Dimension Tools | `DimensionOperations.cs` |
+| Object Properties | `ObjectProperties.cs` |
+| Script Execution | `ExecuteCode.cs` |
 
 ---
 

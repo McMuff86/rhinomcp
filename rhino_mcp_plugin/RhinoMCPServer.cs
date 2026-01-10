@@ -507,6 +507,12 @@ namespace RhinoMCPPlugin
                 ["create_radial_dimension"] = this.handler.CreateRadialDimension,
                 ["get_object_properties"] = this.handler.GetObjectProperties,
                 ["set_object_properties"] = this.handler.SetObjectProperties,
+                // File Operations
+                ["open_file"] = this.handler.OpenFile,
+                ["save_file"] = this.handler.SaveFile,
+                ["export_file"] = this.handler.ExportFile,
+                // Command History (for agent communication)
+                ["get_command_history"] = this.handler.GetCommandHistory,
                 ["get_logs"] = (p) => {
                     int count = p["count"]?.Value<int>() ?? 50;
                     var logs = GetRecentLogs(count);

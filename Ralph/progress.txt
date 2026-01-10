@@ -544,3 +544,33 @@ JSONL interaction logging for all MCP tool calls - foundation for ML training da
 - Response summarization: Only log key fields (id, name, count, status)
 
 ---
+
+## Session 2026-01-10: Phase C Started - US-C01 File Operations
+
+### Implemented
+- `open_file` - Open .3dm files
+- `save_file` - Save current document (or Save As to new path)
+- `export_file` - Export to STEP, IGES, DWG, DXF, OBJ, STL, 3MF, FBX, DAE
+
+### Files Created
+- `rhino_mcp_server/src/rhinomcp/tools/open_file.py`
+- `rhino_mcp_server/src/rhinomcp/tools/save_file.py`
+- `rhino_mcp_server/src/rhinomcp/tools/export_file.py`
+- `rhino_mcp_plugin/Functions/FileOperations.cs`
+- `rhino_mcp_server/tests/test_file_operations.py` (12 tests)
+
+### Key Learnings
+
+1. **RhinoApp.RunScript() for file operations**: File commands like Open, Save, Export use native Rhino commands via `RhinoApp.RunScript()` instead of manual API calls.
+
+2. **Format detection from extension**: `export_file` auto-detects format from file extension (e.g., `.step` → STEP, `.obj` → OBJ).
+
+3. **Export with object selection**: When exporting specific objects, select them first with `obj.Select(true)`, export, then deselect with `doc.Objects.UnselectAll()`.
+
+4. **Literal type for export formats**: Used `ExportFormat = Literal["STEP", "IGES", ...]` for MCP schema clarity.
+
+### Test Results
+- 150 tests passed, 5 skipped
+- 12 new file operation tests
+
+---

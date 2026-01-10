@@ -2,7 +2,7 @@
 
 > Quick reference for using RhinoMCP tools.
 
-**Version:** 0.1.3.7
+**Version:** 0.1.3.8
 
 ---
 
@@ -31,6 +31,7 @@ uv run rhinomcp
 | `get_document_info` | Document metadata |
 | `get_logs` | Get recent server logs (debugging) |
 | `clear_logs` | Clear server log buffer |
+| `get_command_history` | Get Rhino command line history & current prompt |
 
 ### Object Creation
 | Tool | Description |
@@ -95,6 +96,13 @@ uv run rhinomcp
 | `delete_layer` | Delete layer |
 | `create_material` | Create material |
 | `assign_material_to_layer` | Assign to layer |
+
+### File Operations
+| Tool | Description |
+|------|-------------|
+| `open_file` | Open .3dm file |
+| `save_file` | Save current document |
+| `export_file` | Export to STEP, IGES, DWG, OBJ, STL, etc. |
 
 ### Script Execution
 | Tool | Description |
