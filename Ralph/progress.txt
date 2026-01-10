@@ -499,3 +499,48 @@ Based on Oracle analysis for improving agent tool usage:
 - Live test in Rhino: All Quick Wins working
 
 ---
+
+## Session 2026-01-10: Phase 1 ML Foundation - Interaction Logging
+
+### Implemented
+JSONL interaction logging for all MCP tool calls - foundation for ML training data.
+
+### New Files
+- `rhinomcp/utils/interaction_logger.py` - Thread-safe JSONL logger
+- `rhinomcp/tools/get_session_stats.py` - MCP tools for session management
+
+### Log Format
+```json
+{
+  "timestamp": "2026-01-10T11:21:28+00:00",
+  "session_id": "fde7c7b5",
+  "tool_name": "create_object",
+  "tool_args": {"type": "BOX", "params": {...}},
+  "success": true,
+  "response_summary": {"id": "guid", "name": "Box_1"},
+  "duration_ms": 43.05
+}
+```
+
+### Features
+- **Automatic logging** in `RhinoConnection.send_command()`
+- **Session tracking** - groups related tool calls
+- **Error capture** - logs error_code and error_message
+- **Duration tracking** - measures execution time
+- **Arg sanitization** - truncates large lists/strings
+- **Thread-safe** - uses locks for concurrent access
+
+### New MCP Tools
+- `get_session_stats` - Get success rate, tool counts per session
+- `new_session` - Start a new session ID
+- `set_logging_enabled` - Toggle logging on/off
+
+### Log Location
+`rhino_mcp_server/logs/interactions_YYYYMMDD.jsonl`
+
+### Key Learnings
+- Path resolution: `Path(__file__).parent.parent.parent.parent` for correct log dir
+- Import inside function to avoid circular imports
+- Response summarization: Only log key fields (id, name, count, status)
+
+---

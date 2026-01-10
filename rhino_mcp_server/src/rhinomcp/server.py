@@ -4,6 +4,7 @@ import socket
 import json
 import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from contextlib import asynccontextmanager
 from typing import AsyncIterator, Dict, Any, List
@@ -206,13 +207,36 @@ class RhinoConnection:
             params: Command parameters
             timeout: Response timeout in seconds (default: 15.0, max: 120.0)
         """
+        from rhinomcp.utils.interaction_logger import interaction_logger
+        
         timeout = min(max(timeout, 1.0), 120.0)
+        start_time = time.time()
         
         if not self.sock and not self.connect():
+            # Log connection failure
+            interaction_logger.log_tool_call(
+                tool_name=command_type,
+                tool_args=params or {},
+                success=False,
+                error_code="CONNECTION_ERROR",
+                error_message="Not connected to Rhino",
+                duration_ms=(time.time() - start_time) * 1000,
+            )
             raise ConnectionError("Not connected to Rhino")
         
         try:
-            return self._execute_command(command_type, params, timeout=timeout)
+            result = self._execute_command(command_type, params, timeout=timeout)
+            
+            # Log successful call
+            interaction_logger.log_tool_call(
+                tool_name=command_type,
+                tool_args=params or {},
+                success=True,
+                response_summary=self._summarize_response(result),
+                duration_ms=(time.time() - start_time) * 1000,
+            )
+            
+            return result
         except (socket.timeout, ConnectionError, BrokenPipeError, ConnectionResetError, OSError) as e:
             logger.warning(f"Connection error: {str(e)}. Attempting to reconnect...")
             self.sock = None
@@ -220,20 +244,95 @@ class RhinoConnection:
             if self.reconnect():
                 logger.info("Reconnected successfully, retrying command...")
                 try:
-                    return self._execute_command(command_type, params, timeout=timeout)
+                    result = self._execute_command(command_type, params, timeout=timeout)
+                    
+                    # Log successful retry
+                    interaction_logger.log_tool_call(
+                        tool_name=command_type,
+                        tool_args=params or {},
+                        success=True,
+                        response_summary=self._summarize_response(result),
+                        duration_ms=(time.time() - start_time) * 1000,
+                    )
+                    
+                    return result
                 except Exception as retry_error:
                     logger.error(f"Command failed after reconnect: {str(retry_error)}")
                     self.sock = None
+                    
+                    # Log retry failure
+                    interaction_logger.log_tool_call(
+                        tool_name=command_type,
+                        tool_args=params or {},
+                        success=False,
+                        error_code="RETRY_FAILED",
+                        error_message=str(retry_error),
+                        duration_ms=(time.time() - start_time) * 1000,
+                    )
+                    
                     raise Exception(f"Command failed after reconnect: {str(retry_error)}")
             else:
+                # Log reconnect failure
+                interaction_logger.log_tool_call(
+                    tool_name=command_type,
+                    tool_args=params or {},
+                    success=False,
+                    error_code="CONNECTION_REFUSED",
+                    error_message="Failed to reconnect to Rhino",
+                    duration_ms=(time.time() - start_time) * 1000,
+                )
                 raise ConnectionError("Failed to reconnect to Rhino. Make sure the Rhino plugin is running.")
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response from Rhino: {str(e)}")
+            
+            # Log JSON error
+            interaction_logger.log_tool_call(
+                tool_name=command_type,
+                tool_args=params or {},
+                success=False,
+                error_code="INVALID_RESPONSE",
+                error_message=str(e),
+                duration_ms=(time.time() - start_time) * 1000,
+            )
+            
             raise Exception(f"Invalid response from Rhino: {str(e)}")
         except Exception as e:
             logger.error(f"Error communicating with Rhino: {str(e)}")
             self.sock = None
+            
+            # Log general error
+            interaction_logger.log_tool_call(
+                tool_name=command_type,
+                tool_args=params or {},
+                success=False,
+                error_code="RHINO_ERROR",
+                error_message=str(e),
+                duration_ms=(time.time() - start_time) * 1000,
+            )
+            
             raise Exception(f"Communication error with Rhino: {str(e)}")
+    
+    def _summarize_response(self, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a compact summary of the response for logging."""
+        summary = {}
+        
+        # Extract key identifiers
+        if "id" in result:
+            summary["id"] = result["id"]
+        if "ids" in result:
+            summary["ids"] = result["ids"][:5] if len(result.get("ids", [])) > 5 else result.get("ids")
+            if len(result.get("ids", [])) > 5:
+                summary["ids_count"] = len(result["ids"])
+        if "name" in result:
+            summary["name"] = result["name"]
+        if "count" in result:
+            summary["count"] = result["count"]
+        if "status" in result:
+            summary["status"] = result["status"]
+        if "type" in result:
+            summary["type"] = result["type"]
+        
+        return summary if summary else {"raw_keys": list(result.keys())}
 
 @asynccontextmanager
 async def server_lifespan(server: FastMCP) -> AsyncIterator[Dict[str, Any]]:
