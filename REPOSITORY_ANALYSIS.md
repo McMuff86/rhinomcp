@@ -37,7 +37,7 @@ This document provides a comprehensive analysis of the RhinoMCP repository cover
 | `development_guide.md` | Development hub | ⚠️ Partially outdated |
 | `rhino_mcp_server/README.md` | Server-specific docs | ✅ Good |
 | `Ralph/README.md` | Ralph workflow docs | ✅ Good |
-| `Ralph/AGENTS.md` | Agent-specific Ralph guide | ⚠️ Duplicates root AGENTS.md |
+| `Ralph/AGENTS.md` | Agent-specific Ralph guide | ✅ Best practice per original Ralph |
 | `Ralph/NEXT_SESSION_PLAN.md` | Session planning | ⚠️ Outdated (US-B06 done) |
 
 ### 1.2 Inconsistencies Found
@@ -58,12 +58,19 @@ This document provides a comprehensive analysis of the RhinoMCP repository cover
 
 **Recommendation:** Dynamically generate test counts or update after each PR.
 
-#### C. Documentation Overlap
-- `Ralph/AGENTS.md` largely duplicates root `AGENTS.md`
-- `README_MCP.md` and `MCP_TOOL_STANDARDS.md` have overlapping content
-- `development_guide.md` is partially superseded by `AGENTS.md`
+#### C. Documentation Structure (Ralph Best Practice)
 
-**Recommendation:** Consolidate or clearly differentiate purposes.
+Per the [original Ralph repository](https://github.com/snarktank/ralph), having `AGENTS.md` files in subdirectories is a **best practice**:
+
+> "After each iteration, Ralph updates the **relevant `AGENTS.md` files** with learnings. This is key because Amp automatically reads these files."
+
+**Current Implementation:**
+- ✅ Root `AGENTS.md` - Comprehensive RhinoMCP agent guide
+- ✅ `Ralph/AGENTS.md` - Ralph-specific workflow guide (correctly references root AGENTS.md)
+- ⚠️ Consider adding `rhino_mcp_server/AGENTS.md` for Python-specific context
+- ⚠️ Consider adding `rhino_mcp_plugin/AGENTS.md` for C#-specific context
+
+**Note:** `README_MCP.md` and `MCP_TOOL_STANDARDS.md` have overlapping content and `development_guide.md` is partially superseded by `AGENTS.md` - these could be consolidated.
 
 #### D. Tool Count Discrepancy
 - Python tools directory: 45 files
@@ -186,7 +193,7 @@ Ralph/
 ├── prd_phase_c.json      # Phase C stories (in progress)
 ├── progress.txt          # Learnings and patterns
 ├── README.md             # Workflow documentation
-├── AGENTS.md             # Agent-specific guide (duplicate?)
+├── AGENTS.md             # Ralph-specific guide (Best Practice ✅)
 ├── NEXT_SESSION_PLAN.md  # Session planning (outdated)
 └── scripts/ralph/        # (mostly empty)
 ```
@@ -199,15 +206,29 @@ Ralph/
 - ✅ `progress.txt` captures learnings effectively
 - ✅ Priority-based story ordering
 - ✅ Notes field for implementation details
+- ✅ `Ralph/AGENTS.md` follows best practice - subdirectory AGENTS.md for context
 
 **Weaknesses:**
 - ⚠️ `NEXT_SESSION_PLAN.md` is outdated (references completed US-B06)
 - ⚠️ Scripts directory is empty (original Ralph uses Amp CLI)
-- ⚠️ Duplicate `AGENTS.md` in Ralph/ folder
 - ⚠️ No automation for story status updates
 - ⚠️ `progress.txt` is getting very long (~570 lines)
 
-### 4.3 Integration with Root Docs
+### 4.3 Comparison with Original Ralph (snarktank/ralph)
+
+| Feature | Original Ralph | RhinoMCP Implementation | Status |
+|---------|---------------|------------------------|--------|
+| `prd.json` format | User stories with `passes` | ✅ Same format | ✅ Correct |
+| `progress.txt` | Append-only learnings | ✅ Same approach | ✅ Correct |
+| `AGENTS.md` in subdirs | Best practice for context | ✅ `Ralph/AGENTS.md` exists | ✅ Correct |
+| `ralph.sh` script | Amp CLI automation | ❌ Not used (Cursor workflow) | ⚠️ Expected |
+| `prompt.md` | Instructions for Amp | ❌ Not used | ⚠️ Expected |
+| Archive feature | Saves old runs | ❌ Not implemented | 🆕 Optional |
+| Auto-handoff | Context overflow handling | N/A (Cursor handles) | ✅ N/A |
+
+**Key Insight:** This repo adapted Ralph for **Cursor/manual use** rather than Amp CLI automation. The empty `scripts/ralph/` directory is expected since the automation scripts (`ralph.sh`, `prompt.md`) are not needed when using Cursor.
+
+### 4.4 Integration with Root Docs
 
 | Root Doc | Ralph Integration | Notes |
 |----------|-------------------|-------|
@@ -227,10 +248,10 @@ Ralph/
 
 ### High Priority
 
-4. **Documentation Duplication** - `Ralph/AGENTS.md` duplicates root `AGENTS.md`
-5. **Outdated Session Plan** - `NEXT_SESSION_PLAN.md` references completed work
-6. **Missing `__init__.py` Exports** - Several tools not exported for external use
-7. **Test Count Discrepancy** - Different documents report different test counts
+4. **Outdated Session Plan** - `NEXT_SESSION_PLAN.md` references completed work
+5. **Missing `__init__.py` Exports** - Several tools not exported for external use
+6. **Test Count Discrepancy** - Different documents report different test counts
+7. **Missing Subdirectory AGENTS.md** - Per Ralph best practice, consider adding `rhino_mcp_server/AGENTS.md` and `rhino_mcp_plugin/AGENTS.md`
 
 ### Medium Priority
 
@@ -256,10 +277,11 @@ Ralph/
 | Fix version in pyproject.toml to 0.1.3.8 | Critical | 5 min |
 | Update `GetAvailableTools()` in C# | Critical | 15 min |
 | Fix `select_objects.py` to return JSON | Critical | 10 min |
-| Archive or delete `Ralph/NEXT_SESSION_PLAN.md` | High | 5 min |
-| Delete or consolidate `Ralph/AGENTS.md` | High | 10 min |
+| Archive `Ralph/NEXT_SESSION_PLAN.md` or update for Phase C | High | 10 min |
 | Update test count in all docs | High | 15 min |
 | Add missing exports to `__init__.py` | High | 10 min |
+| Create `rhino_mcp_server/AGENTS.md` (Python context) | High | 20 min |
+| Create `rhino_mcp_plugin/AGENTS.md` (C# context) | High | 20 min |
 
 ### Phase 2: Standardization
 
@@ -284,12 +306,22 @@ Ralph/
 
 ## 7. Recommendations Summary
 
-### Documentation Strategy
+### Documentation Strategy (Aligned with Ralph Best Practices)
 
-1. **Single Source of Truth**: Keep `AGENTS.md` as the main agent guide, remove `Ralph/AGENTS.md`
+Per the [original Ralph repository](https://github.com/snarktank/ralph):
+> "AGENTS.md Updates Are Critical - After each iteration, Ralph updates the **relevant `AGENTS.md` files** with learnings."
+
+1. **Hierarchical AGENTS.md Structure**:
+   - ✅ Keep root `AGENTS.md` as the comprehensive guide
+   - ✅ Keep `Ralph/AGENTS.md` for Ralph-specific context (already correct)
+   - 🆕 Add `rhino_mcp_server/AGENTS.md` for Python-specific patterns
+   - 🆕 Add `rhino_mcp_plugin/AGENTS.md` for C#-specific patterns
+
 2. **Version Management**: Centralize version in `pyproject.toml`, document update process
+
 3. **Automated Badges**: Add test count badge from CI to avoid manual updates
-4. **Archive Old Content**: Create `docs/archive/` for outdated files
+
+4. **Consolidate Overlapping Docs**: Merge `README_MCP.md` content into `MCP_TOOL_STANDARDS.md` or `AGENTS.md`
 
 ### Implementation Consistency
 
@@ -297,11 +329,17 @@ Ralph/
 2. **Import Style**: Standardize on `from rhinomcp.server import ...`
 3. **Tool Registry**: Auto-generate `GetAvailableTools()` from handler dictionary keys
 
-### Ralph Workflow
+### Ralph Workflow (Aligned with Original)
 
-1. **Archive Completed Plans**: Move `NEXT_SESSION_PLAN.md` to archive after completion
-2. **Progress Log Maintenance**: Archive entries older than 1 phase into separate files
-3. **Remove Duplicates**: Point Ralph docs to root docs instead of duplicating
+Based on comparison with [snarktank/ralph](https://github.com/snarktank/ralph):
+
+1. **Subdirectory AGENTS.md Files** - Currently correct with `Ralph/AGENTS.md`. Consider extending to other key directories.
+
+2. **Archive Completed Plans**: Update or archive `NEXT_SESSION_PLAN.md` when stories are complete
+
+3. **Progress Log Maintenance**: Archive entries older than 1 phase into separate files (e.g., `progress_phase_a.txt`)
+
+4. **Scripts Directory**: The empty `Ralph/scripts/ralph/` directory is expected since this repo adapted Ralph for Cursor/manual use instead of Amp CLI
 
 ---
 
