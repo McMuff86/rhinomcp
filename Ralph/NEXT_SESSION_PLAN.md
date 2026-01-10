@@ -1,26 +1,28 @@
-# Next Session Plan: US-C02 Viewport Control
+# Next Session Plan: US-C03 Groups & Blocks
 
 > Plan für die nächste Agent-Session. Kopiere diesen Plan in ein neues Kontext-Fenster.
 
 **US-C01 File Operations - COMPLETED 2026-01-10**
+**US-C02 Viewport Control - COMPLETED 2026-01-10**
 **Phase B - COMPLETED 2026-01-10**
 
 ---
 
 ## Ziel
 
-Implementiere **US-C02: Viewport Control** für View-Steuerung und Viewport-Capture.
+Implementiere **US-C03: Groups & Blocks** für geometrische Organisation und Wiederverwendung.
 
 ---
 
 ## Acceptance Criteria (aus prd_phase_c.json)
 
-1. `set_view` tool sets named views (Top, Front, Perspective, etc.)
-2. `zoom_extents` tool fits all objects
-3. `zoom_selected` tool zooms to selection
-4. `capture_viewport` tool captures viewport as image
-5. Tests pass
-6. Documentation updated
+1. `create_group` tool groups objects by ID
+2. `ungroup` tool explodes groups
+3. `create_block` tool creates block definition
+4. `insert_block` tool inserts block instance
+5. `explode_block` tool converts block to geometry
+6. Tests pass
+7. Documentation updated
 
 ---
 
@@ -78,51 +80,62 @@ Nach erfolgreichen Tests:
 
 ## Zu implementierende Tools
 
-### 1. set_view
-- Python: `rhino_mcp_server/src/rhinomcp/tools/set_view.py`
-- C# API: `RhinoDoc.Views.ActiveView.SetNamedView()`
-- Parameter: `view_name` (Top, Front, Right, Perspective, etc.)
-- Returns: `{ success: true, view: "Perspective" }`
+### 1. create_group
+- Python: `rhino_mcp_server/src/rhinomcp/tools/create_group.py`
+- C# API: `RhinoDoc.Groups.Add()`
+- Parameter: `object_ids` (list of object IDs to group)
+- Returns: `{ success: true, group_id: "guid", group_name: "Group 01" }`
 
-### 2. zoom_extents
-- Python: `rhino_mcp_server/src/rhinomcp/tools/zoom_extents.py`
-- C# API: `RhinoDoc.Views.ActiveView.ActiveViewport.ZoomExtents()`
-- Returns: `{ success: true }`
+### 2. ungroup
+- Python: `rhino_mcp_server/src/rhinomcp/tools/ungroup.py`
+- C# API: `RhinoDoc.Groups.Ungroup()`
+- Parameter: `group_id` (ID of group to ungroup)
+- Returns: `{ success: true, object_ids: ["id1", "id2"] }`
 
-### 3. zoom_selected
-- Python: `rhino_mcp_server/src/rhinomcp/tools/zoom_selected.py`
-- C# API: `RhinoDoc.Views.ActiveView.ActiveViewport.ZoomBoundingBox()`
-- Returns: `{ success: true }`
+### 3. create_block
+- Python: `rhino_mcp_server/src/rhinomcp/tools/create_block.py`
+- C# API: `RhinoDoc.InstanceDefinitions.Add()`
+- Parameter: `name`, `object_ids`, `base_point` (insertion point)
+- Returns: `{ success: true, block_id: "guid" }`
 
-### 4. capture_viewport
-- Python: `rhino_mcp_server/src/rhinomcp/tools/capture_viewport.py`
-- C# API: `RhinoDoc.Views.ActiveView.CaptureToBitmap()`
-- Parameter: `width`, `height`, `file_path` (optional)
-- Returns: `{ success: true, path: "...", base64: "..." }`
+### 4. insert_block
+- Python: `rhino_mcp_server/src/rhinomcp/tools/insert_block.py`
+- C# API: `RhinoDoc.Objects.AddInstanceObject()`
+- Parameter: `block_name`, `position` (insertion point)
+- Returns: `{ success: true, instance_id: "guid" }`
+
+### 5. explode_block
+- Python: `rhino_mcp_server/src/rhinomcp/tools/explode_block.py`
+- C# API: `RhinoDoc.Objects.Explode()`
+- Parameter: `instance_id` (block instance to explode)
+- Returns: `{ success: true, object_ids: ["id1", "id2"] }`
 
 ---
 
 ## RhinoCommon API Referenz
 
-Für Viewport Control:
-- https://developer.rhino3d.com/api/rhinocommon/rhino.display.rhinoview
-- https://developer.rhino3d.com/api/rhinocommon/rhino.display.rhinoviewport
+Für Groups & Blocks:
+- https://developer.rhino3d.com/api/rhinocommon/rhino.docobjects.groups
+- https://developer.rhino3d.com/api/rhinocommon/rhino.docobjects.instancedefinition
 
-Key Methods:
-- `view.SetNamedView(name)` - Set named view
-- `viewport.ZoomExtents()` - Zoom to all objects
-- `viewport.ZoomBoundingBox(bbox)` - Zoom to bounding box
-- `view.CaptureToBitmap(size)` - Capture viewport as bitmap
+Key Methods für Groups:
+- `RhinoDoc.Groups.Add(objects)` - Create new group
+- `RhinoDoc.Groups.Ungroup(groupIndex)` - Ungroup objects
+
+Key Methods für Blocks:
+- `RhinoDoc.InstanceDefinitions.Add(name, description, basePoint, geometry, attributes)` - Create block definition
+- `RhinoDoc.Objects.AddInstanceObject(instanceDefinitionIndex, xform)` - Insert block instance
+- `RhinoDoc.Objects.Explode(objRef, pieces)` - Explode block to geometry
 
 ---
 
 ## Prompt für neues Fenster
 
 ```
-Lies @Ralph/NEXT_SESSION_PLAN.md und führe den Plan für US-C02: Viewport Control aus.
+Lies @Ralph/NEXT_SESSION_PLAN.md und führe den Plan für US-C03: Groups & Blocks aus.
 
 Workflow:
-1. Implementiere die 4 Viewport Tools (set_view, zoom_extents, zoom_selected, capture_viewport)
+1. Implementiere die 5 Group/Block Tools (create_group, ungroup, create_block, insert_block, explode_block)
 2. Prüfe RhinoCommon API Dokumentation für korrekte Implementierung
 3. Schließe Rhino automatisch wenn nötig (Stop-Process)
 4. Baue das C# Plugin neu
