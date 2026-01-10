@@ -179,7 +179,15 @@ namespace RhinoMCPPlugin
         {
             return new List<string>
             {
+                // Document & System
                 "get_document_info",
+                "ping",
+                "set_debug_mode",
+                "log_thought",
+                "get_logs",
+                "clear_logs",
+                "get_command_history",
+                // Objects
                 "create_object",
                 "create_objects",
                 "get_object_info",
@@ -187,27 +195,41 @@ namespace RhinoMCPPlugin
                 "delete_object",
                 "modify_object",
                 "modify_objects",
-                "execute_rhinoscript_python_code",
                 "select_objects",
+                "get_object_properties",
+                "set_object_properties",
+                // Layers
                 "create_layer",
                 "get_or_set_current_layer",
                 "delete_layer",
-                "ping",
-                "set_debug_mode",
-                "log_thought",
+                // Materials
                 "create_material",
                 "assign_material_to_layer",
+                // Boolean Operations
                 "boolean_operation",
+                // Transform Operations
                 "copy_object",
                 "mirror_object",
                 "array_linear",
                 "array_polar",
+                // Curve Operations
                 "offset_curve",
                 "fillet_curves",
                 "chamfer_curves",
+                // Surface Operations
                 "loft_curves",
                 "extrude_curve",
-                "revolve_curve"
+                "revolve_curve",
+                // Dimension Operations
+                "create_linear_dimension",
+                "create_angular_dimension",
+                "create_radial_dimension",
+                // File Operations
+                "open_file",
+                "save_file",
+                "export_file",
+                // Scripting
+                "execute_rhinoscript_python_code"
             };
         }
 

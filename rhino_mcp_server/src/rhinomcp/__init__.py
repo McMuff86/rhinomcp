@@ -1,6 +1,6 @@
 """Rhino integration through the Model Context Protocol."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.3.8"
 
 # Expose key classes and functions for easier imports
 from .static.rhinoscriptsyntax import rhinoscriptsyntax_json
@@ -46,3 +46,10 @@ from .tools.create_linear_dimension import create_linear_dimension
 from .tools.create_angular_dimension import create_angular_dimension
 from .tools.create_radial_dimension import create_radial_dimension
 from .tools.get_logs import get_logs, clear_logs
+# Object Properties
+from .tools.get_object_properties import get_object_properties
+from .tools.set_object_properties import set_object_properties
+# File Operations
+from .tools.open_file import open_file
+from .tools.save_file import save_file
+from .tools.export_file import export_file

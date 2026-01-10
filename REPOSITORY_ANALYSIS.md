@@ -270,18 +270,20 @@ Ralph/
 
 ## 6. Improvement Plan
 
-### Phase 1: Documentation Cleanup (Quick Wins)
+### Phase 1: Documentation Cleanup (Quick Wins) - IN PROGRESS
 
-| Task | Priority | Effort |
-|------|----------|--------|
-| Fix version in pyproject.toml to 0.1.3.8 | Critical | 5 min |
-| Update `GetAvailableTools()` in C# | Critical | 15 min |
-| Fix `select_objects.py` to return JSON | Critical | 10 min |
-| Archive `Ralph/NEXT_SESSION_PLAN.md` or update for Phase C | High | 10 min |
-| Update test count in all docs | High | 15 min |
-| Add missing exports to `__init__.py` | High | 10 min |
-| Create `rhino_mcp_server/AGENTS.md` (Python context) | High | 20 min |
-| Create `rhino_mcp_plugin/AGENTS.md` (C# context) | High | 20 min |
+| Task | Priority | Effort | Status |
+|------|----------|--------|--------|
+| Fix version in pyproject.toml to 0.1.3.8 | Critical | 5 min | ✅ Done |
+| Update `GetAvailableTools()` in C# | Critical | 15 min | ✅ Done |
+| Fix `select_objects.py` to return JSON | Critical | 10 min | ✅ Done |
+| Add missing exports to `__init__.py` | High | 10 min | ✅ Done |
+| Update `__version__` in `__init__.py` | High | 5 min | ✅ Done |
+| Add Cursor progress.txt requirement to AGENTS.md | High | 10 min | ✅ Done |
+| Archive `Ralph/NEXT_SESSION_PLAN.md` or update for Phase C | High | 10 min | ⏳ Pending |
+| Update test count in all docs | High | 15 min | ⏳ Pending |
+| Create `rhino_mcp_server/AGENTS.md` (Python context) | High | 20 min | ⏳ Pending |
+| Create `rhino_mcp_plugin/AGENTS.md` (C# context) | High | 20 min | ⏳ Pending |
 
 ### Phase 2: Standardization
 
@@ -410,14 +412,22 @@ Based on comparison with [snarktank/ralph](https://github.com/snarktank/ralph):
 #### Problem Statement
 The repository currently uses Ralph workflow (originally for Amp CLI) but has been adapted for Cursor. The user needs to sometimes use Ralph/Amp and sometimes native Cursor agents.
 
-#### Solution: Tool Selection Flag
+#### Solution: Unified Progress Tracking
 
-**Option A: Document-Level Flag in AGENTS.md**
-Add to root `AGENTS.md`:
+**Critical Requirement:** Both Amp and Cursor MUST use `Ralph/progress.txt` for consistency.
+
+| Tool | Read progress.txt | Write progress.txt | Workflow |
+|------|-------------------|-------------------|----------|
+| **Amp (Ralph)** | ✅ Yes (built-in) | ✅ Yes (built-in) | Autonomous |
+| **Cursor** | ✅ Yes (manual) | ✅ Yes (manual) | Interactive |
+
+#### Tool Selection Flag
+
+Add to root `AGENTS.md` (already implemented):
 ```markdown
-## Agent Tool Selection
+## Tool Selection: Cursor vs Amp (Ralph)
 
-Before starting work, determine which tool to use:
+Before starting, determine which workflow to use:
 
 | Scenario | Tool | Reason |
 |----------|------|--------|
@@ -426,10 +436,10 @@ Before starting work, determine which tool to use:
 | Large refactoring | **Amp (Ralph)** | Context persistence via progress.txt |
 | Quick fixes | **Cursor** | Direct, no overhead |
 
-**Ask prompt:** "Which workflow should I use for this task? (1) Amp/Ralph autonomous loop (2) Cursor interactive"
+> **IMPORTANT:** Both tools MUST use `Ralph/progress.txt` for consistency!
 ```
 
-**Option B: Workflow-Specific Prompt Files**
+#### Workflow-Specific Prompt Files (Future)
 ```
 Ralph/
 ├── prompt_amp.md      # For Amp CLI execution
@@ -437,7 +447,7 @@ Ralph/
 └── prompt_select.md   # Decision helper
 ```
 
-**Recommendation:** Implement Option A first, then Option B for complex workflows.
+**Recommendation:** Use unified progress.txt for both tools to ensure no learnings are lost regardless of which tool is used.
 
 ---
 
