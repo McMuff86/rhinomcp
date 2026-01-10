@@ -13,8 +13,8 @@
 **ALWAYS do this first when starting a new session (Both Cursor and Amp!):**
 
 1. **Read learnings:** `Ralph/progress.txt` - Contains patterns, gotchas, and context from previous sessions
-2. **Check current phase:** `ROADMAP.md` - What's the current focus?
-3. **Find next task:** `Ralph/prd_phase_b.json` - Pick highest priority story with `passes: false`
+2. **Check current phase:** `docs/ROADMAP.md` - What's the current focus?
+3. **Find next task:** `Ralph/prd_phase_c.json` - Pick highest priority story with `passes: false`
 
 ### Tool Selection: Cursor vs Amp (Ralph)
 
@@ -94,7 +94,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (45+ tests)
+# Run pytest suite (265 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -124,7 +124,7 @@ rhinomcp/                          # Project root
 │   │   ├── tools/                # MCP tool implementations
 │   │   ├── utils/                # Helpers (responses.py, errors.py)
 │   │   └── server.py             # Main server + RhinoConnection
-│   ├── tests/                    # Pytest test suite (45+ test files)
+│   ├── tests/                    # Pytest test suite (30 files, 265 tests)
 │   ├── dev/                      # Development scripts
 │   └── pyproject.toml
 │
@@ -140,28 +140,34 @@ rhinomcp/                          # Project root
 │   ├── prd_phase_b.json          # Phase B user stories (complete)
 │   ├── prd_phase_c.json          # Phase C user stories (in progress)
 │   ├── progress.txt              # Codebase patterns & learnings
+│   ├── archive/                  # Archived session plans
 │   └── scripts/ralph/            # Ralph automation scripts
+│
+├── docs/                         # Documentation
+│   ├── USAGE.md                  # Tool reference & examples
+│   ├── ROADMAP.md                # Project phases & roadmap
+│   ├── FUNCTIONAL_STATUS.md      # Current status & known issues
+│   ├── MCP_TOOL_STANDARDS.md     # Tool development standards
+│   └── archive/                  # Archived documentation
+│       ├── PHASE_B_CONTEXT.md
+│       ├── REPOSITORY_ANALYSIS.md
+│       └── development_guide.md
 │
 ├── assets/                       # Images, icons, demo files
 ├── demo_chats/                   # Demo conversation examples
 ├── learning/                     # ML training data
 ├── scripts/                      # Utility scripts
-├── dev                           # Development workspace
+├── testdata/                     # Test data files (.3dm)
 │
 ├── .github/workflows/            # CI/CD pipelines
 │   ├── ci.yml                    # Pytest + ruff on Python 3.10-3.12
 │   └── mcp-server-publish.yml    # Automated publishing
 │
 ├── AGENTS.md                     # This file - agent guide
-├── USAGE.md                      # Tool reference & examples
-├── ROADMAP.md                    # Project phases & roadmap
 ├── README.md                     # Project overview
-├── FUNCTIONAL_STATUS.md          # Current status & known issues
-├── MCP_TOOL_STANDARDS.md         # Tool development standards
+├── README_MCP.md                 # MCP-specific documentation
 ├── FUTURE_ISSUES.md              # Planned improvements
-├── PHASE_B_CONTEXT.md            # Phase B implementation details
-├── development_guide.md          # Development workflow (deprecated)
-└── [additional .md files]        # Various documentation files
+└── LICENSE
 ```
 
 ---
@@ -235,7 +241,7 @@ public JObject CreateObject(JObject parameters)
 
 ## Available Tools
 
-For the complete tool list with parameters and examples, see **[USAGE.md](USAGE.md)**.
+For the complete tool list with parameters and examples, see **[docs/USAGE.md](docs/USAGE.md)**.
 
 ### Handler Mapping (for developers)
 
@@ -326,14 +332,13 @@ Ralph is our structured development workflow for iterative improvements.
 
 ### Start New Feature
 1. Read `Ralph/progress.txt` for patterns
-2. Check `Ralph/prd_phase_b.json` for current stories
+2. Check `Ralph/prd_phase_c.json` for current stories
 3. Pick highest priority story with `passes: false`
-4. Read `Ralph/NEXT_SESSION_PLAN.md` for detailed workflow
-5. Implement in small steps
-6. Build & Test (see below)
-7. Update `progress.txt` with learnings
-8. Mark story as `passes: true`
-9. Update `AGENTS.md` (tool tables, test count, status)
+4. Implement in small steps
+5. Build & Test (see below)
+6. Update `progress.txt` with learnings
+7. Mark story as `passes: true`
+8. Update `AGENTS.md` (tool tables, test count, status)
 
 ### Build & Restart Workflow
 After implementing features, **always** run:
@@ -432,18 +437,17 @@ uv run pytest tests/test_connection.py -v
 | File | Purpose |
 |------|---------|
 | `README.md` | Project overview & quick start |
-| `USAGE.md` | Tool reference, examples & conventions |
 | `AGENTS.md` | This file - AI agent guide |
-| `ROADMAP.md` | Project phases & development roadmap |
-| `FUNCTIONAL_STATUS.md` | Current status, known issues & solutions |
 | `FUTURE_ISSUES.md` | Planned improvements & feature requests |
-| `MCP_TOOL_STANDARDS.md` | Tool development standards & patterns |
-| `PHASE_B_CONTEXT.md` | Phase B implementation details |
 | `README_MCP.md` | MCP-specific documentation |
-| `REPOSITORY_ANALYSIS.md` | Codebase analysis & insights |
-| `development_guide.md` | Development workflow (deprecated) |
+| `docs/USAGE.md` | Tool reference, examples & conventions |
+| `docs/ROADMAP.md` | Project phases & development roadmap |
+| `docs/FUNCTIONAL_STATUS.md` | Current status, known issues & solutions |
+| `docs/MCP_TOOL_STANDARDS.md` | Tool development standards & patterns |
+| `docs/archive/PHASE_B_CONTEXT.md` | Phase B implementation details (archived) |
+| `docs/archive/REPOSITORY_ANALYSIS.md` | Codebase analysis & insights (archived) |
+| `docs/archive/development_guide.md` | Development workflow (deprecated) |
 | `Ralph/README.md` | Ralph workflow documentation |
-| `Ralph/NEXT_SESSION_PLAN.md` | Detailed next development steps |
 | `Ralph/progress.txt` | Codebase patterns & learnings |
 
 ### Tool Documentation
@@ -518,8 +522,8 @@ When unsure how to implement a feature or which RhinoCommon/RhinoScript API to u
 
 ## See Also
 
-- [USAGE.md](USAGE.md) - Quick reference (tool list, conventions)
-- [ROADMAP.md](ROADMAP.md) - Project roadmap
+- [docs/USAGE.md](docs/USAGE.md) - Quick reference (tool list, conventions)
+- [docs/ROADMAP.md](docs/ROADMAP.md) - Project roadmap
 - [Ralph/progress.txt](Ralph/progress.txt) - Codebase patterns
 - [Rhino Developer Docs](https://developer.rhino3d.com/) - Official API documentation
 - Tool docstrings: `rhino_mcp_server/src/rhinomcp/tools/*.py` - Detailed tool documentation

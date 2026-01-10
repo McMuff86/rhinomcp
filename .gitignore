@@ -16,3 +16,14 @@ rhino_mcp_server/logs/
 # Build artifacts
 rhino_mcp_plugin/bin/
 rhino_mcp_plugin/obj/
+
+# Rhino Backups
+*.3dmbak
+
+# Test outputs
+rhino_mcp_server/*.png
+rhino_mcp_server/*.obj
+rhino_mcp_server/*.mtl
+
+# VS Code workspace
+*.code-workspace

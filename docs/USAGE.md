@@ -9,17 +9,17 @@
 ## Quick Start
 
 ```bash
-# 1. Start Rhino (MCP plugin starts automatically)
-# Plugin loads automatically when Rhino starts
+# 1. Start Rhino
+# 2. Run 'mcpstart' in Rhino command line
 
-# 2. Start MCP Server
+# 3. Start MCP Server
 cd rhino_mcp_server
 uv run rhinomcp
 
-# 3. Verify with ping tool
+# 4. Verify with ping tool
 ```
 
-**Note:** MCP plugin now starts automatically when Rhino loads. Manual `mcpstart` is only needed for troubleshooting.
+**Note:** MCP plugin must be started manually with `mcpstart` command in Rhino command line.
 
 ---
 
@@ -214,5 +214,5 @@ Each tool file contains full parameter documentation and usage examples.
 
 ## See Also
 
-- [AGENTS.md](AGENTS.md) - Agent development guide
-- [README.md](README.md) - Project overview
+- [AGENTS.md](../AGENTS.md) - Agent development guide
+- [README.md](../README.md) - Project overview

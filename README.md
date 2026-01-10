@@ -1,7 +1,7 @@
 # RhinoMCP - Rhino Model Context Protocol Integration
 
 [![CI](https://github.com/McMuff86/rhinomcp/actions/workflows/ci.yml/badge.svg)](https://github.com/McMuff86/rhinomcp/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-155%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-265%20passed-brightgreen)
 ![Version](https://img.shields.io/badge/version-0.1.3.8-blue)
 
 <img src="assets/rhinomcp_logo.svg" alt="RhinoMCP Logo" width="130">
@@ -26,7 +26,7 @@ RhinoMCP connects Rhino to AI agents through the Model Context Protocol (MCP), a
 - **Dimensions & properties**: Create dimensions and query/set object properties
 
 > [!NOTE]  
-> The tool supports a growing set of primitive and derived geometries and operations. See [USAGE.md](USAGE.md) for the full list of object types and tools.
+> The tool supports a growing set of primitive and derived geometries and operations. See [docs/USAGE.md](docs/USAGE.md) for the full list of object types and tools.
 
 ## Demo
 
