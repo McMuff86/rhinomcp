@@ -174,7 +174,7 @@ dotnet build --configuration Release
 
 # 3. Start Rhino
 Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 15
 
 # 4. In Rhino command line:
 mcpstart

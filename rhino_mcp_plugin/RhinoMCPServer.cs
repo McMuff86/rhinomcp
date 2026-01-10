@@ -228,6 +228,11 @@ namespace RhinoMCPPlugin
                 "open_file",
                 "save_file",
                 "export_file",
+                // Viewport Operations
+                "set_view",
+                "zoom_extents",
+                "zoom_selected",
+                "capture_viewport",
                 // Scripting
                 "execute_rhinoscript_python_code"
             };
@@ -536,6 +541,11 @@ namespace RhinoMCPPlugin
                 ["open_file"] = this.handler.OpenFile,
                 ["save_file"] = this.handler.SaveFile,
                 ["export_file"] = this.handler.ExportFile,
+                // Viewport Operations
+                ["set_view"] = this.handler.SetView,
+                ["zoom_extents"] = this.handler.ZoomExtents,
+                ["zoom_selected"] = this.handler.ZoomSelected,
+                ["capture_viewport"] = this.handler.CaptureViewport,
                 // Command History (for agent communication)
                 ["get_command_history"] = this.handler.GetCommandHistory,
                 ["get_logs"] = (p) => {

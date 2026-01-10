@@ -55,3 +55,7 @@ from .tools.save_file import save_file
 from .tools.select_objects import select_objects
 from .tools.set_debug_mode import set_debug_mode
 from .tools.set_object_properties import set_object_properties
+from .tools.set_view import set_view
+from .tools.zoom_extents import zoom_extents
+from .tools.zoom_selected import zoom_selected
+from .tools.capture_viewport import capture_viewport

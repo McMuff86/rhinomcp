@@ -49,7 +49,7 @@ dotnet build --configuration Release
 
 # Schritt 3: Rhino starten
 Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 15
 
 # Schritt 4: MCP Server starten (in separatem Terminal)
 # Der User muss manuell "mcpstart" in Rhino eingeben

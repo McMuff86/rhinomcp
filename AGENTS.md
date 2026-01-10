@@ -86,13 +86,15 @@ uv pip install -e .
 
 ### Run
 ```bash
-# 1. Start Rhino plugin (in Rhino command line)
-mcpstart
+# 1. Start Rhino (MCP plugin starts automatically on load)
+# The RhinoMCP plugin now starts automatically when Rhino loads
 
 # 2. Start MCP server
 cd rhino_mcp_server
 uv run rhinomcp
 ```
+
+**Note:** The MCP plugin now starts automatically when Rhino loads. Manual `mcpstart` is only needed if you stopped the server manually.
 
 ### Test
 ```bash
@@ -335,22 +337,22 @@ dotnet build --configuration Release
 
 # 3. Start Rhino
 Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 15
 
-# 4. User runs 'mcpstart' in Rhino, then run tests
+# 4. Run tests (MCP plugin starts automatically)
 cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_server
 uv run pytest tests/ -v
 ```
 
-### Current Phase: B (Core Features)
+### Current Phase: C (Advanced Features)
 | Story | Title | Status |
 |-------|-------|--------|
-| US-B01 | Boolean Operations | ✅ |
-| US-B02 | Transform Tools | ✅ |
-| US-B03 | Curve Operations | ✅ |
-| US-B04 | Surface from Curves | ✅ |
-| US-B05 | Dimension Tools | ✅ |
-| US-B06 | Object Properties | ✅ |
+| US-C01 | File Operations | ✅ |
+| US-C02 | Viewport Control | ✅ |
+| US-C03 | Groups & Blocks | ⏳ Pending |
+| US-C04 | Mesh Import/Export | ⏳ Pending |
+| US-C05 | Render Settings | ⏳ Pending |
+| US-C06 | Grasshopper Integration | ⏳ Pending |
 
 ---
 
@@ -358,13 +360,15 @@ uv run pytest tests/ -v
 
 ### Connection Issues
 ```bash
-# Check Rhino plugin status
+# Check Rhino plugin status (plugin starts automatically now)
 MCPStatus  # in Rhino command line
 
-# Restart plugin
+# Manual restart if needed
 mcpstop
 mcpstart
 ```
+
+**Note:** MCP plugin now starts automatically on Rhino launch. Manual commands are only needed for troubleshooting.
 
 ### Build Errors (C#)
 - Ensure Rhino SDK is installed

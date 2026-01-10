@@ -53,10 +53,18 @@ def boolean_operation(
             "object_ids": object_ids,
             "delete_input": delete_input
         })
-        
+
+        # Extract the first result ID for single-result operations
+        result_ids = result.get("result_ids", [])
+        if not result_ids:
+            return json.dumps(from_exception(
+                ValueError(f"Boolean {operation_upper} produced no results"),
+                code=ErrorCode.RHINO_ERROR
+            ))
+
         return json.dumps(ok(
             message=f"Boolean {operation_upper} completed",
-            data=result
+            data={"id": result_ids[0], "result_ids": result_ids}
         ))
     except Exception as e:
         logger.error(f"Error performing boolean operation: {str(e)}")
