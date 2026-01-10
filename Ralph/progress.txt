@@ -97,7 +97,7 @@ Project: RhinoMCP Professionalization
 |-------|-------|--------|
 | US-C01 | File Operations | ✅ Complete |
 | US-C02 | Viewport Control | 📋 Next |
-| US-C03 | Groups & Blocks | ⏳ Pending |
+| US-C03 | Groups & Blocks | ✅ Complete |
 | US-C04 | Mesh Import/Export | ⏳ Pending |
 | US-C05 | Render Settings | ⏳ Pending |
 | US-C06 | Grasshopper Integration | ⏳ Pending |
@@ -155,6 +155,21 @@ Project: RhinoMCP Professionalization
   - ✅ capture_viewport: Screenshot to file or base64 data
   - ✅ Tests: 17 unit tests with full parameter validation
 - **Notes:** Enhanced workflow for automated documentation and view management
+
+---
+
+## [2026-01-10] - US-C03: Groups & Blocks
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~75 minutes
+- Implemented: Groups and Blocks operations for organizing geometry
+- Files: `create_group.py`, `ungroup.py`, `create_block.py`, `insert_block.py`, `explode_block.py`, `GroupOperations.cs`, 28 tests
+- **Key Learnings:**
+  - Rhino groups use `doc.Groups.Add()` and `doc.Groups.Ungroup()`
+  - Block definitions use `doc.InstanceDefinitions.Add()` with base point
+  - Block instances use `doc.Objects.AddInstanceObject()` with transform
+  - Block explosion uses `doc.Objects.AddInstanceExploded()`
+  - Group indices are integers, block IDs are GUIDs
+  - Objects are removed from document when added to block definition
 
 ---
 
@@ -220,7 +235,7 @@ def my_tool(ctx: Context, param: ToolType) -> str:
 
 ---
 
-## Current Test Count: 173 tests
+## Current Test Count: 196 tests
 
 ---
 

@@ -59,3 +59,8 @@ from .tools.set_view import set_view
 from .tools.zoom_extents import zoom_extents
 from .tools.zoom_selected import zoom_selected
 from .tools.capture_viewport import capture_viewport
+from .tools.create_block import create_block
+from .tools.create_group import create_group
+from .tools.explode_block import explode_block
+from .tools.insert_block import insert_block
+from .tools.ungroup import ungroup
