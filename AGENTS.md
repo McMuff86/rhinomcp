@@ -86,17 +86,15 @@ uv pip install -e .
 
 ### Run
 ```bash
-# 1. Start Rhino (MCP plugin starts automatically on load)
-# The RhinoMCP plugin now starts automatically when Rhino loads
 
-# 2. Start MCP server
+# 1. Start MCP server
 cd rhino_mcp_server
 uv run rhinomcp
 ```
 
 ### Test
 ```bash
-# Run pytest suite (200+ tests)
+# Run pytest suite (45+ tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -120,38 +118,50 @@ dotnet build --configuration Release
 ## Project Structure
 
 ```
-rhinomcp/
-├── rhino_mcp_server/           # Python MCP server
+rhinomcp/                          # Project root
+├── rhino_mcp_server/             # Python MCP server
 │   ├── src/rhinomcp/
-│   │   ├── tools/              # MCP tool implementations
-│   │   ├── utils/              # Helpers (responses.py, errors.py)
-│   │   └── server.py           # Main server + RhinoConnection
-│   ├── tests/                  # Pytest test suite
-│   ├── dev/                    # Development scripts
+│   │   ├── tools/                # MCP tool implementations
+│   │   ├── utils/                # Helpers (responses.py, errors.py)
+│   │   └── server.py             # Main server + RhinoConnection
+│   ├── tests/                    # Pytest test suite (45+ test files)
+│   ├── dev/                      # Development scripts
 │   └── pyproject.toml
 │
-├── rhino_mcp_plugin/           # C# Rhino plugin
-│   ├── Functions/              # Command handlers
-│   ├── Serializers/            # JSON serialization
-│   ├── Commands/               # Rhino command definitions
-│   ├── RhinoMCPServer.cs       # TCP server + command dispatch
+├── rhino_mcp_plugin/             # C# Rhino plugin
+│   ├── Functions/                # Command handlers
+│   ├── Serializers/              # JSON serialization
+│   ├── Commands/                 # Rhino command definitions
+│   ├── RhinoMCPServer.cs         # TCP server + command dispatch
 │   └── rhinomcp.csproj
 │
-├── Ralph/                      # Structured development workflow
-│   ├── prd.json                # Phase A user stories (complete)
-│   ├── prd_phase_b.json        # Phase B user stories (complete)
-│   └── progress.txt            # Codebase patterns & learnings
+├── Ralph/                        # Structured development workflow
+│   ├── prd.json                  # Phase A user stories (complete)
+│   ├── prd_phase_b.json          # Phase B user stories (complete)
+│   ├── prd_phase_c.json          # Phase C user stories (in progress)
+│   ├── progress.txt              # Codebase patterns & learnings
+│   └── scripts/ralph/            # Ralph automation scripts
 │
-├── .github/workflows/          # CI/CD
-│   └── ci.yml                  # Pytest + ruff on Python 3.10-3.12
+├── assets/                       # Images, icons, demo files
+├── demo_chats/                   # Demo conversation examples
+├── learning/                     # ML training data
+├── scripts/                      # Utility scripts
+├── dev                           # Development workspace
 │
-└── Documentation
-    ├── AGENTS.md               # This file
-    ├── USAGE.md                # User guide
-    ├── ROADMAP.md              # Project phases
-    ├── FUNCTIONAL_STATUS.md    # What works / problems / solutions
-    ├── MCP_TOOL_STANDARDS.md   # Tool development standards
-    └── README.md               # Project overview
+├── .github/workflows/            # CI/CD pipelines
+│   ├── ci.yml                    # Pytest + ruff on Python 3.10-3.12
+│   └── mcp-server-publish.yml    # Automated publishing
+│
+├── AGENTS.md                     # This file - agent guide
+├── USAGE.md                      # Tool reference & examples
+├── ROADMAP.md                    # Project phases & roadmap
+├── README.md                     # Project overview
+├── FUNCTIONAL_STATUS.md          # Current status & known issues
+├── MCP_TOOL_STANDARDS.md         # Tool development standards
+├── FUTURE_ISSUES.md              # Planned improvements
+├── PHASE_B_CONTEXT.md            # Phase B implementation details
+├── development_guide.md          # Development workflow (deprecated)
+└── [additional .md files]        # Various documentation files
 ```
 
 ---
@@ -333,7 +343,7 @@ Stop-Process -Name "Rhino" -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 2
 
 # 2. Build C# plugin
-cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_plugin
+cd rhino_mcp_plugin
 dotnet build --configuration Release
 
 # 3. Start Rhino
@@ -421,12 +431,20 @@ uv run pytest tests/test_connection.py -v
 
 | File | Purpose |
 |------|---------|
-| `README.md` | Project overview |
-| `USAGE.md` | Quick reference (tool list, conventions) |
-| `AGENTS.md` | This file - agent guide |
-| `ROADMAP.md` | Project phases |
-| `MCP_TOOL_STANDARDS.md` | Tool development standards |
-| `Ralph/progress.txt` | Patterns & learnings |
+| `README.md` | Project overview & quick start |
+| `USAGE.md` | Tool reference, examples & conventions |
+| `AGENTS.md` | This file - AI agent guide |
+| `ROADMAP.md` | Project phases & development roadmap |
+| `FUNCTIONAL_STATUS.md` | Current status, known issues & solutions |
+| `FUTURE_ISSUES.md` | Planned improvements & feature requests |
+| `MCP_TOOL_STANDARDS.md` | Tool development standards & patterns |
+| `PHASE_B_CONTEXT.md` | Phase B implementation details |
+| `README_MCP.md` | MCP-specific documentation |
+| `REPOSITORY_ANALYSIS.md` | Codebase analysis & insights |
+| `development_guide.md` | Development workflow (deprecated) |
+| `Ralph/README.md` | Ralph workflow documentation |
+| `Ralph/NEXT_SESSION_PLAN.md` | Detailed next development steps |
+| `Ralph/progress.txt` | Codebase patterns & learnings |
 
 ### Tool Documentation
 
