@@ -7,48 +7,41 @@ from rhinomcp.server import get_rhino_connection, logger, mcp
 from rhinomcp.utils.errors import ErrorCode
 from rhinomcp.utils.responses import from_exception, ok
 
+
 @mcp.tool()
 def ungroup(
     ctx: Context,
-    group_ids: List[str] = None,
-    group_id: str = None
+    group_id: str
 ) -> str:
     """
-    Explode groups, converting grouped objects back to individual objects.
+    Ungroup objects from a group.
 
     Parameters:
-    - group_ids: List of group IDs to ungroup (takes precedence if provided)
-    - group_id: Single group ID to ungroup (alternative to group_ids)
+    - group_id: ID of the group to ungroup
 
     Returns:
-        {"ok": true, "message": "Ungrouped 2 groups, released 6 objects", "data": {"groups_ungrouped": 2, "objects_released": 6}}
+    JSON response with ungrouped object information
 
-    Note:
-    - Either group_ids or group_id must be provided
-    - Group IDs must exist in the document
-    - Objects will retain their original properties and layers
+    Examples:
+    - ungroup(group_id="group123") - Ungroup the specified group
     """
+    # Validate parameters before connecting
+    if not group_id or len(group_id.strip()) == 0:
+        return json.dumps(from_exception(
+            ValueError("group_id is required"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
+
     try:
-        if not group_ids and not group_id:
-            raise ValueError("Either group_ids or group_id must be provided")
-
-        target_group_ids = group_ids if group_ids else [group_id]
-
         rhino = get_rhino_connection()
+
         result = rhino.send_command("ungroup", {
-            "group_ids": target_group_ids
+            "group_id": group_id
         })
 
-        groups_count = len(target_group_ids)
-        objects_count = result["objects_released"]
-        message = f"Ungrouped {groups_count} groups, released {objects_count} objects"
-
         return json.dumps(ok(
-            message=message,
-            data={
-                "groups_ungrouped": groups_count,
-                "objects_released": objects_count
-            }
+            message=f"Ungrouped group with {result.get('object_count', 0)} objects",
+            data=result
         ))
     except Exception as e:
         logger.error(f"Error ungrouping: {str(e)}")

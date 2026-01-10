@@ -7,61 +7,63 @@ from rhinomcp.server import get_rhino_connection, logger, mcp
 from rhinomcp.utils.errors import ErrorCode
 from rhinomcp.utils.responses import from_exception, ok
 
+
 @mcp.tool()
 def create_block(
     ctx: Context,
-    object_ids: List[str],
     name: str,
+    object_ids: List[str],
     base_point: List[float] = None
 ) -> str:
     """
-    Create a block definition from the specified objects.
+    Create a block definition from objects.
 
     Parameters:
-    - object_ids: List of object IDs to include in the block
     - name: Name for the block definition
+    - object_ids: List of object IDs to include in the block
     - base_point: Optional base point [x, y, z] for the block (default: [0, 0, 0])
 
     Returns:
-        {"ok": true, "message": "Created block 'MyBlock' with 3 objects", "data": {"block_id": "block_guid", "name": "MyBlock", "object_count": 3, "base_point": [0,0,0]}}
+    JSON response with block definition information
 
-    Note:
-    - Objects must exist in the document
-    - Block definitions are stored in the document and can be reused
-    - Objects in the block will be removed from the document and stored in the block definition
-    - Use insert_block to place instances of the block
+    Examples:
+    - create_block(name="Chair", object_ids=["leg1", "leg2", "seat", "back"])
+    - create_block(name="Table", object_ids=["top", "legs"], base_point=[0, 0, 0])
     """
-    try:
-        if not object_ids or len(object_ids) == 0:
-            raise ValueError("object_ids cannot be empty")
+    # Validate parameters before connecting
+    if not name or len(name.strip()) == 0:
+        return json.dumps(from_exception(
+            ValueError("name is required"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
 
-        if not name or name.strip() == "":
-            raise ValueError("name cannot be empty")
+    if not object_ids or len(object_ids) == 0:
+        return json.dumps(from_exception(
+            ValueError("object_ids is required and cannot be empty"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
+
+    if base_point is not None and len(base_point) != 3:
+        return json.dumps(from_exception(
+            ValueError("base_point must be [x, y, z]"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
+
+    try:
+        rhino = get_rhino_connection()
 
         if base_point is None:
             base_point = [0.0, 0.0, 0.0]
 
-        if len(base_point) != 3:
-            raise ValueError("base_point must be [x, y, z]")
-
-        rhino = get_rhino_connection()
         result = rhino.send_command("create_block", {
-            "object_ids": object_ids,
             "name": name,
+            "object_ids": object_ids,
             "base_point": base_point
         })
 
-        object_count = len(object_ids)
-        message = f"Created block '{name}' with {object_count} objects"
-
         return json.dumps(ok(
-            message=message,
-            data={
-                "block_id": result["block_id"],
-                "name": name,
-                "object_count": object_count,
-                "base_point": base_point
-            }
+            message=f"Created block definition '{name}' with {len(object_ids)} objects",
+            data=result
         ))
     except Exception as e:
         logger.error(f"Error creating block: {str(e)}")

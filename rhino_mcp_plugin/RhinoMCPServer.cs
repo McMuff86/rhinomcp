@@ -546,7 +546,7 @@ namespace RhinoMCPPlugin
                 ["zoom_extents"] = this.handler.ZoomExtents,
                 ["zoom_selected"] = this.handler.ZoomSelected,
                 ["capture_viewport"] = this.handler.CaptureViewport,
-                // Group Operations
+                // Group & Block Operations
                 ["create_group"] = this.handler.CreateGroup,
                 ["ungroup"] = this.handler.Ungroup,
                 ["create_block"] = this.handler.CreateBlock,

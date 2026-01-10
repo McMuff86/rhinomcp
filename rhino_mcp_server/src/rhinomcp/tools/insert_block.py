@@ -7,6 +7,7 @@ from rhinomcp.server import get_rhino_connection, logger, mcp
 from rhinomcp.utils.errors import ErrorCode
 from rhinomcp.utils.responses import from_exception, ok
 
+
 @mcp.tool()
 def insert_block(
     ctx: Context,
@@ -16,41 +17,42 @@ def insert_block(
     rotation: List[float] = None
 ) -> str:
     """
-    Insert an instance of a block at the specified position.
+    Insert a block instance at the specified position.
 
     Parameters:
     - block_name: Name of the block definition to insert
-    - position: Position [x, y, z] where to insert the block
+    - position: Position [x, y, z] to insert the block
     - scale: Optional scale factors [x, y, z] (default: [1, 1, 1])
-    - rotation: Optional rotation angles [x, y, z] in radians (default: [0, 0, 0])
+    - rotation: Optional rotation angles [x, y, z] in degrees (default: [0, 0, 0])
 
     Returns:
-        {"ok": true, "message": "Inserted block 'MyBlock' at [10, 0, 0]", "data": {"instance_id": "instance_guid", "block_name": "MyBlock", "position": [10,0,0]}}
+    JSON response with block instance information
 
-    Note:
-    - Block definition must exist (created with create_block)
-    - Position is the insertion point of the block instance
-    - Scale and rotation are applied relative to the block's base point
-    - Each insertion creates a new instance that references the same block definition
+    Examples:
+    - insert_block(block_name="Chair", position=[10, 0, 0])
+    - insert_block(block_name="Table", position=[5, 5, 0], scale=[2, 2, 2])
     """
-    try:
-        if not block_name or block_name.strip() == "":
-            raise ValueError("block_name cannot be empty")
+    # Validate parameters before connecting
+    if not block_name or len(block_name.strip()) == 0:
+        return json.dumps(from_exception(
+            ValueError("block_name is required"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
 
-        if len(position) != 3:
-            raise ValueError("position must be [x, y, z]")
+    if position is None or len(position) != 3:
+        return json.dumps(from_exception(
+            ValueError("position must be [x, y, z]"),
+            code=ErrorCode.INVALID_PARAMS
+        ))
+
+    try:
+        rhino = get_rhino_connection()
 
         if scale is None:
             scale = [1.0, 1.0, 1.0]
-        elif len(scale) != 3:
-            raise ValueError("scale must be [x, y, z]")
-
         if rotation is None:
             rotation = [0.0, 0.0, 0.0]
-        elif len(rotation) != 3:
-            raise ValueError("rotation must be [x, y, z] in radians")
 
-        rhino = get_rhino_connection()
         result = rhino.send_command("insert_block", {
             "block_name": block_name,
             "position": position,
@@ -58,17 +60,9 @@ def insert_block(
             "rotation": rotation
         })
 
-        message = f"Inserted block '{block_name}' at [{position[0]}, {position[1]}, {position[2]}]"
-
         return json.dumps(ok(
-            message=message,
-            data={
-                "instance_id": result["instance_id"],
-                "block_name": block_name,
-                "position": position,
-                "scale": scale,
-                "rotation": rotation
-            }
+            message=f"Inserted block instance of '{block_name}'",
+            data=result
         ))
     except Exception as e:
         logger.error(f"Error inserting block: {str(e)}")
