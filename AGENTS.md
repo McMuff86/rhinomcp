@@ -3,7 +3,7 @@
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
 **Last Updated:** 2026-01-10  
-**Version:** 0.1.3.8  
+**Version:** 0.1.3.9  
 **Phase:** B Complete (see ROADMAP.md for Phase C)
 
 ---
@@ -98,7 +98,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (155 tests)
+# Run pytest suite (184 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -350,7 +350,7 @@ uv run pytest tests/ -v
 |-------|-------|--------|
 | US-C01 | File Operations | ✅ |
 | US-C02 | Viewport Control | ✅ |
-| US-C03 | Groups & Blocks | ⏳ Pending |
+| US-C03 | Groups & Blocks | ✅ |
 | US-C04 | Mesh Import/Export | ⏳ Pending |
 | US-C05 | Render Settings | ⏳ Pending |
 | US-C06 | Grasshopper Integration | ⏳ Pending |

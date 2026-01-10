@@ -546,6 +546,12 @@ namespace RhinoMCPPlugin
                 ["zoom_extents"] = this.handler.ZoomExtents,
                 ["zoom_selected"] = this.handler.ZoomSelected,
                 ["capture_viewport"] = this.handler.CaptureViewport,
+                // Group & Block Operations
+                ["create_group"] = this.handler.CreateGroup,
+                ["ungroup"] = this.handler.Ungroup,
+                ["create_block"] = this.handler.CreateBlock,
+                ["insert_block"] = this.handler.InsertBlock,
+                ["explode_block"] = this.handler.ExplodeBlock,
                 // Command History (for agent communication)
                 ["get_command_history"] = this.handler.GetCommandHistory,
                 ["get_logs"] = (p) => {
