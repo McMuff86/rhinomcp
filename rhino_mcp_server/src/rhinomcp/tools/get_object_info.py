@@ -1,8 +1,11 @@
-from mcp.server.fastmcp import Context
 import json
-from rhinomcp import get_rhino_connection, mcp, logger
-from typing import Dict, Any
+from typing import Any, Dict
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp import get_rhino_connection, logger, mcp
 from rhinomcp.utils.responses import from_exception
+
 
 @mcp.tool()
 def get_object_info(ctx: Context, id: str = None, name: str = None) -> Dict[str, Any]:

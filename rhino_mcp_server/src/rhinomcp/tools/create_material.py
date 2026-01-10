@@ -1,6 +1,9 @@
-from mcp.server.fastmcp import Context
 from typing import List, Optional
-from rhinomcp.server import get_rhino_connection, mcp, logger
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
+
 
 @mcp.tool()
 def create_material(ctx: Context, name: str, color: List[int], shine: Optional[float] = 0.5, material_type: Optional[str] = "custom", metallic: Optional[float] = 0.0, roughness: Optional[float] = 0.1) -> str:

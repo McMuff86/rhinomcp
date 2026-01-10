@@ -1,5 +1,7 @@
 from mcp.server.fastmcp import Context
-from rhinomcp.server import get_rhino_connection, mcp, logger
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
+
 
 @mcp.tool()
 def log_thought(ctx: Context, thought: str) -> str:

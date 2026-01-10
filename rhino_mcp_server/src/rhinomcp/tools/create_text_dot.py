@@ -1,6 +1,8 @@
+from typing import Any, Dict, List, Optional
+
 from mcp.server.fastmcp import Context
-from typing import Any, List, Dict, Optional
-from rhinomcp.server import get_rhino_connection, mcp, logger
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
 from rhinomcp.utils.responses import from_exception
 
 

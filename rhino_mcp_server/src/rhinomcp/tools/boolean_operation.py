@@ -1,9 +1,11 @@
-from mcp.server.fastmcp import Context
 import json
-from rhinomcp.server import get_rhino_connection, mcp, logger
-from rhinomcp.utils.responses import ok, from_exception
-from rhinomcp.utils.errors import ErrorCode
 from typing import List, Literal
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp.server import get_rhino_connection, logger, mcp
+from rhinomcp.utils.errors import ErrorCode
+from rhinomcp.utils.responses import from_exception, ok
 
 BooleanOperationType = Literal["union", "difference", "intersection"]
 

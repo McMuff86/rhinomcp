@@ -1,6 +1,9 @@
-from mcp.server.fastmcp import Context
 import json
-from rhinomcp import get_rhino_connection, mcp, logger
+
+from mcp.server.fastmcp import Context
+
+from rhinomcp import get_rhino_connection, logger, mcp
+
 
 @mcp.tool()
 def get_selected_objects_info(ctx: Context, include_attributes: bool = False) -> str:

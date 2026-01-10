@@ -1,13 +1,14 @@
 # rhino_mcp_server.py
-from mcp.server.fastmcp import FastMCP, Context, Image
-import socket
-import json
 import asyncio
+import json
 import logging
+import socket
 import time
-from dataclasses import dataclass
 from contextlib import asynccontextmanager
-from typing import AsyncIterator, Dict, Any, List
+from dataclasses import dataclass
+from typing import Any, AsyncIterator, Dict, List
+
+from mcp.server.fastmcp import Context, FastMCP, Image
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,

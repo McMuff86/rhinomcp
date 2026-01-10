@@ -389,6 +389,7 @@ namespace RhinoMCPPlugin
                                                 JObject errorResponse = new JObject
                                                 {
                                                     ["status"] = "error",
+                                                    ["error_code"] = ErrorCode.FromException(e, cmdType),
                                                     ["message"] = e.Message
                                                 };
 
@@ -484,6 +485,7 @@ namespace RhinoMCPPlugin
                 return new JObject
                 {
                     ["status"] = "error",
+                    ["error_code"] = ErrorCode.RHINO_ERROR,
                     ["message"] = e.Message
                 };
             }
@@ -577,6 +579,7 @@ namespace RhinoMCPPlugin
                     return new JObject
                     {
                         ["status"] = "error",
+                        ["error_code"] = ErrorCode.FromException(e, cmdType),
                         ["message"] = e.Message
                     };
                 }
@@ -590,6 +593,7 @@ namespace RhinoMCPPlugin
                 return new JObject
                 {
                     ["status"] = "error",
+                    ["error_code"] = ErrorCode.UNKNOWN_COMMAND,
                     ["message"] = $"Unknown command type: {cmdType}"
                 };
             }
