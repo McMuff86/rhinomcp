@@ -158,6 +158,17 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## Known Issues & Future Work (2026-01-10)
+
+### Issue: Automatic MCP Plugin Start
+**Status:** Open - Medium Priority
+**Description:** MCP plugin does not start automatically on Rhino launch despite OnLoad/OnShutdown implementation
+**Workaround:** Manual `mcpstart` command required after Rhino startup
+**Files:** `rhino_mcp_plugin/rhinomcpPlugin.cs`, `RhinoMCPServerController.cs`
+**Impact:** User experience - requires manual step after Rhino launch
+
+---
+
 ## Repository Analysis (2026-01-10)
 
 ### Phase 1 Complete ✅
