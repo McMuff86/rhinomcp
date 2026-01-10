@@ -43,6 +43,14 @@ Project: RhinoMCP Professionalization
   - Normalize vectors with `Unitize()`
   - All new objects inherit current layer
 
+## [2026-01-11] - Galaxy Scene Creation & Layer Management
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~45 minutes
+- **Critical Finding:** modify_object layer parameter NOT functional
+- **Solution:** Use RhinoScript for layer assignment: `rs.ObjectLayer(obj_id, 'LayerName')`
+- **Pattern:** Create objects with MCP tools, then assign layers with RhinoScript
+- **Documentation Updated:** AGENTS.md corrected - MCP server does NOT start automatically
+
 ---
 
 ## [2026-01-10] - US-B03: Curve Operations

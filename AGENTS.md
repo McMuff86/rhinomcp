@@ -350,7 +350,7 @@ dotnet build --configuration Release
 Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
 Start-Sleep -Seconds 15
 
-# 4. Run tests (MCP plugin starts automatically)
+# 4. Run tests (ensure MCP plugin is started with mcpstart first by the User)
 cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_server
 uv run pytest tests/ -v
 ```
@@ -371,7 +371,7 @@ uv run pytest tests/ -v
 
 ### Connection Issues
 ```bash
-# Check Rhino plugin status (plugin starts automatically now)
+# Check Rhino plugin status (use mcpstart to start manually)
 MCPStatus  # in Rhino command line
 
 # Manual restart if needed
@@ -379,7 +379,7 @@ mcpstop
 mcpstart
 ```
 
-**Note:** MCP plugin now starts automatically on Rhino launch. Manual commands are only needed for troubleshooting.
+**Note:** MCP plugin must be started manually with `mcpstart` command in Rhino command line.
 
 ### Build Errors (C#)
 - Ensure Rhino SDK is installed
