@@ -30,8 +30,8 @@
         "All tools return new object IDs"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented 2026-01-10. 4 Python tools + C# handlers + 14 tests."
     },
     {
       "id": "US-B03",
@@ -45,8 +45,8 @@
         "Return new curve IDs"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Implemented 2026-01-10. 3 Python tools + C# handlers (CurveOperations.cs) + 19 tests."
     },
     {
       "id": "US-B04",

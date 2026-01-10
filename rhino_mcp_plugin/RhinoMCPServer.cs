@@ -111,6 +111,8 @@ namespace RhinoMCPPlugin
                 ["Layers"] = new List<string> { "create_layer", "get_or_set_current_layer", "delete_layer" },
                 ["Materials"] = new List<string> { "create_material", "assign_material_to_layer" },
                 ["Boolean"] = new List<string> { "boolean_operation" },
+                ["Transform"] = new List<string> { "copy_object", "mirror_object", "array_linear", "array_polar" },
+                ["Curves"] = new List<string> { "offset_curve", "fillet_curves", "chamfer_curves" },
                 ["Scripting"] = new List<string> { "execute_rhinoscript_python_code" },
                 ["Debug"] = new List<string> { "set_debug_mode", "log_thought" }
             };
@@ -150,7 +152,14 @@ namespace RhinoMCPPlugin
                 "log_thought",
                 "create_material",
                 "assign_material_to_layer",
-                "boolean_operation"
+                "boolean_operation",
+                "copy_object",
+                "mirror_object",
+                "array_linear",
+                "array_polar",
+                "offset_curve",
+                "fillet_curves",
+                "chamfer_curves"
             };
         }
 
@@ -414,7 +423,14 @@ namespace RhinoMCPPlugin
                 ["log_thought"] = this.handler.LogThought,
                 ["create_material"] = this.handler.CreateMaterial,
                 ["assign_material_to_layer"] = this.handler.AssignMaterialToLayer,
-                ["boolean_operation"] = this.handler.BooleanOperation
+                ["boolean_operation"] = this.handler.BooleanOperation,
+                ["copy_object"] = this.handler.CopyObject,
+                ["mirror_object"] = this.handler.MirrorObject,
+                ["array_linear"] = this.handler.ArrayLinear,
+                ["array_polar"] = this.handler.ArrayPolar,
+                ["offset_curve"] = this.handler.OffsetCurve,
+                ["fillet_curves"] = this.handler.FilletCurves,
+                ["chamfer_curves"] = this.handler.ChamferCurves
                 // Add more handlers as needed
             };
 

@@ -45,7 +45,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (34 tests)
+# Run pytest suite (98 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -72,7 +72,7 @@ dotnet build --configuration Release
 rhinomcp/
 ├── rhino_mcp_server/           # Python MCP server
 │   ├── src/rhinomcp/
-│   │   ├── tools/              # MCP tool implementations (23 tools)
+│   │   ├── tools/              # MCP tool implementations (30 tools)
 │   │   ├── utils/              # Helpers (responses.py, errors.py)
 │   │   └── server.py           # Main server + RhinoConnection
 │   ├── tests/                  # Pytest test suite
@@ -80,7 +80,7 @@ rhinomcp/
 │   └── pyproject.toml
 │
 ├── rhino_mcp_plugin/           # C# Rhino plugin
-│   ├── Functions/              # Command handlers (14 handlers)
+│   ├── Functions/              # Command handlers (19 handlers)
 │   ├── Serializers/            # JSON serialization
 │   ├── Commands/               # Rhino command definitions
 │   ├── RhinoMCPServer.cs       # TCP server + command dispatch
@@ -178,6 +178,26 @@ public JObject CreateObject(JObject parameters)
 | `create_material` | `GetDocumentInfo.cs` | Create material |
 | `assign_material_to_layer` | `GetDocumentInfo.cs` | Assign to layer |
 
+### Boolean Operations
+| Tool | Handler | Description |
+|------|---------|-------------|
+| `boolean_operation` | `BooleanOperations.cs` | Union, difference, intersection |
+
+### Transform Tools
+| Tool | Handler | Description |
+|------|---------|-------------|
+| `copy_object` | `TransformOperations.cs` | Copy with optional translation |
+| `mirror_object` | `TransformOperations.cs` | Mirror across plane |
+| `array_linear` | `TransformOperations.cs` | Linear array with spacing |
+| `array_polar` | `TransformOperations.cs` | Polar array around center |
+
+### Curve Tools
+| Tool | Handler | Description |
+|------|---------|-------------|
+| `offset_curve` | `CurveOperations.cs` | Offset curve by distance |
+| `fillet_curves` | `CurveOperations.cs` | Create fillet arc between curves |
+| `chamfer_curves` | `CurveOperations.cs` | Create chamfer line between curves |
+
 ### Script Execution
 | Tool | Handler | Description |
 |------|---------|-------------|
@@ -255,16 +275,39 @@ Ralph is our structured development workflow for iterative improvements.
 1. Read `Ralph/progress.txt` for patterns
 2. Check `Ralph/prd_phase_b.json` for current stories
 3. Pick highest priority story with `passes: false`
-4. Implement in small steps
-5. Update `progress.txt` with learnings
-6. Mark story as `passes: true`
+4. Read `Ralph/NEXT_SESSION_PLAN.md` for detailed workflow
+5. Implement in small steps
+6. Build & Test (see below)
+7. Update `progress.txt` with learnings
+8. Mark story as `passes: true`
+9. Update `AGENTS.md` (tool tables, test count, status)
+
+### Build & Restart Workflow
+After implementing features, **always** run:
+```powershell
+# 1. Close Rhino (if blocking build)
+Stop-Process -Name "Rhino" -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+
+# 2. Build C# plugin
+cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_plugin
+dotnet build --configuration Release
+
+# 3. Start Rhino
+Start-Process "C:\Program Files\Rhino 8\System\Rhino.exe"
+Start-Sleep -Seconds 10
+
+# 4. User runs 'mcpstart' in Rhino, then run tests
+cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_server
+uv run pytest tests/ -v
+```
 
 ### Current Phase: B (Core Features)
 | Story | Title | Status |
 |-------|-------|--------|
-| US-B01 | Boolean Operations | ⬜ |
-| US-B02 | Transform Tools | ⬜ |
-| US-B03 | Curve Operations | ⬜ |
+| US-B01 | Boolean Operations | ✅ |
+| US-B02 | Transform Tools | ✅ |
+| US-B03 | Curve Operations | ✅ |
 | US-B04 | Surface from Curves | ⬜ |
 | US-B05 | Dimension Tools | ⬜ |
 | US-B06 | Object Properties | ⬜ |

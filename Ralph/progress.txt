@@ -202,6 +202,80 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## [2026-01-10] - US-B02: Transform Tools
+- Thread: Cursor Agent Session
+- Implemented: Transform operations (copy, mirror, linear array, polar array)
+- Files changed:
+  - Created `rhino_mcp_server/src/rhinomcp/tools/copy_object.py` - Copy with optional translation
+  - Created `rhino_mcp_server/src/rhinomcp/tools/mirror_object.py` - Mirror across plane
+  - Created `rhino_mcp_server/src/rhinomcp/tools/array_linear.py` - Linear array with spacing
+  - Created `rhino_mcp_server/src/rhinomcp/tools/array_polar.py` - Polar array around center
+  - Created `rhino_mcp_plugin/Functions/TransformOperations.cs` - C# handlers for all 4 tools
+  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handlers and added Transform category
+  - Created `rhino_mcp_server/tests/test_transform_operations.py` - 14 unit tests
+  - Updated `USAGE.md` - Added Transform Operations section with examples
+  - Updated `Ralph/prd_phase_b.json` - Marked US-B02 as passes: true
+- **Learnings for future iterations:**
+  - New patterns discovered:
+    - `doc.Objects.Transform(objId, xform, false)` creates a copy with transform (false = don't delete original)
+    - `Transform.Mirror(Plane)` for mirroring
+    - `Transform.Rotation(angle, axis, center)` for polar arrays
+    - `Transform.Translation(Vector3d)` for linear arrays
+  - Gotchas / pitfalls:
+    - Must normalize direction/axis vectors with `Unitize()`
+    - For polar arrays: 360° = divide by count, partial arc = divide by (count-1)
+    - Always set LayerIndex on new objects via ModifyAttributes
+  - Useful context to remember:
+    - Transform tools use `doc.Objects.Transform()` which returns new GUID
+    - Plane defined by origin point + normal vector
+    - All new objects inherit current layer
+
+---
+
+## [2026-01-10] - US-B02: Live Tests Passed
+- Thread: Cursor Agent Session
+- All 4 transform tools tested successfully in Rhino:
+  - copy_object: 3 copies created with translation
+  - mirror_object: Object mirrored across YZ plane
+  - array_linear: 4 array copies created
+  - array_polar: 5 polar copies in circle
+- **Next:** US-B03 Curve Operations (see Ralph/NEXT_SESSION_PLAN.md)
+
+---
+
+## [2026-01-10] - US-B03: Curve Operations
+- Thread: Cursor Agent Session
+- Implemented: Curve operations (offset, fillet, chamfer)
+- Files changed:
+  - Created `rhino_mcp_server/src/rhinomcp/tools/offset_curve.py` - Offset curves by distance
+  - Created `rhino_mcp_server/src/rhinomcp/tools/fillet_curves.py` - Fillet arc between two curves
+  - Created `rhino_mcp_server/src/rhinomcp/tools/chamfer_curves.py` - Chamfer line between two curves
+  - Created `rhino_mcp_plugin/Functions/CurveOperations.cs` - C# handlers for all 3 tools
+  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handlers and added Curves category
+  - Created `rhino_mcp_server/tests/test_curve_operations.py` - 19 unit tests
+  - Updated `USAGE.md` - Added Curve Operations section with examples
+  - Updated `AGENTS.md` - Tool tables, test count (98), US-B03 status
+  - Updated `Ralph/prd_phase_b.json` - Marked US-B03 as passes: true
+  - Fixed transform tools validation order (copy_object, mirror_object, array_linear, array_polar)
+- **Learnings for future iterations:**
+  - New patterns discovered:
+    - `Curve.Offset(Plane, distance, tolerance, CurveOffsetCornerStyle)` for offset
+    - `Curve.CreateFilletCurves()` for fillet (10 parameters!)
+    - `Intersection.CurveCurve()` to find intersections for chamfer
+    - `curve.LengthParameter()` to get parameter from arc length
+  - Gotchas / pitfalls:
+    - **IMPORTANT:** Always validate parameters BEFORE calling get_rhino_connection()
+    - Tests fail if validation happens after connection attempt
+    - Fillet requires point hints when curves have multiple intersections
+    - Chamfer implementation is manual (find intersection, calculate points, create line)
+  - Useful context to remember:
+    - CurveOffsetCornerStyle enum: Sharp, Round, Smooth, Chamfer
+    - Curve operations may return multiple curves (offset can self-intersect)
+    - Always set LayerIndex on new curve objects
+- **Next:** US-B04 Surface from Curves (Loft, Extrude, Revolve)
+
+---
+
 ## Codebase Patterns (SACRED - use exactly these conventions)
 
 ### Project Structure

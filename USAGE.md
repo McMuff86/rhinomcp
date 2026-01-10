@@ -162,6 +162,242 @@ boolean_operation(
 - Returns the new object ID(s) of the resulting solid(s)
 - Set `delete_input=False` to keep original objects
 
+### Transform Operations
+
+| Tool | Description |
+|------|-------------|
+| `copy_object` | Copy an object with optional translation |
+| `mirror_object` | Mirror an object across a plane |
+| `array_linear` | Create a linear array of objects |
+| `array_polar` | Create a polar (radial) array of objects |
+
+#### copy_object
+
+Copy an object with optional translation. Supports creating multiple copies with incremental offset.
+
+```python
+# Simple copy (no offset)
+copy_object(object_id="guid-123")
+
+# Copy with offset
+copy_object(
+    object_id="guid-123",
+    translation=[10, 0, 0]  # Copy 10 units in X
+)
+
+# Multiple copies with incremental offset
+copy_object(
+    object_id="guid-123",
+    translation=[10, 0, 0],
+    count=5  # Creates 5 copies at 10, 20, 30, 40, 50 units
+)
+```
+
+#### mirror_object
+
+Mirror an object across a plane defined by origin and normal vector.
+
+```python
+# Mirror across YZ plane (vertical plane at X=0)
+mirror_object(
+    object_id="guid-123",
+    plane_origin=[0, 0, 0],
+    plane_normal=[1, 0, 0]  # X normal = YZ plane
+)
+
+# Mirror across XZ plane (horizontal plane at Y=5)
+mirror_object(
+    object_id="guid-123",
+    plane_origin=[0, 5, 0],
+    plane_normal=[0, 1, 0],
+    delete_input=True  # Remove original
+)
+
+# Mirror across XY plane (Z=0)
+mirror_object(
+    object_id="guid-123",
+    plane_origin=[0, 0, 0],
+    plane_normal=[0, 0, 1]
+)
+```
+
+#### array_linear
+
+Create a linear array of objects along a direction vector.
+
+```python
+# Array 5 objects along X axis, 10 units apart
+array_linear(
+    object_id="guid-123",
+    direction=[1, 0, 0],  # X direction
+    count=5,              # Total count (including original)
+    spacing=10.0          # Distance between objects
+)
+
+# Array along diagonal
+array_linear(
+    object_id="guid-123",
+    direction=[1, 1, 0],  # 45° in XY plane
+    count=8,
+    spacing=15.0
+)
+
+# Vertical array
+array_linear(
+    object_id="guid-123",
+    direction=[0, 0, 1],  # Z direction
+    count=10,
+    spacing=5.0
+)
+```
+
+#### array_polar
+
+Create a polar (radial) array around a center point.
+
+```python
+# Full circle array of 6 objects around Z axis
+array_polar(
+    object_id="guid-123",
+    center=[0, 0, 0],
+    axis=[0, 0, 1],  # Z axis
+    count=6          # 6 objects = 60° apart
+)
+
+# Half circle (180°) with 4 objects
+array_polar(
+    object_id="guid-123",
+    center=[0, 0, 0],
+    axis=[0, 0, 1],
+    count=4,
+    angle=180.0  # Partial arc
+)
+
+# Array around Y axis
+array_polar(
+    object_id="guid-123",
+    center=[10, 0, 0],  # Off-center rotation
+    axis=[0, 1, 0],     # Y axis
+    count=8
+)
+```
+
+#### Transform Notes
+- All transform tools return the new object GUIDs
+- Original objects are preserved unless `delete_input=True`
+- Direction and axis vectors are automatically normalized
+- For `array_linear` and `array_polar`, `count` includes the original object
+- New objects are created on the current layer
+
+### Curve Operations
+
+| Tool | Description |
+|------|-------------|
+| `offset_curve` | Offset a curve by a specified distance |
+| `fillet_curves` | Create a fillet arc between two curves |
+| `chamfer_curves` | Create a chamfer (angled line) between two curves |
+
+#### offset_curve
+
+Offset a curve by a specified distance. Works with both open and closed curves.
+
+```python
+# Basic offset (positive = right side, negative = left side)
+offset_curve(
+    curve_id="guid-123",
+    distance=5.0
+)
+
+# Offset with custom corner style
+offset_curve(
+    curve_id="guid-123",
+    distance=10.0,
+    corner_style="round"  # "sharp", "round", "smooth", "chamfer"
+)
+
+# Offset in a specific plane
+offset_curve(
+    curve_id="guid-123",
+    distance=5.0,
+    plane_origin=[0, 0, 0],
+    plane_normal=[0, 0, 1]  # XY plane
+)
+```
+
+#### fillet_curves
+
+Create a fillet arc between two curves at their intersection.
+
+```python
+# Basic fillet
+fillet_curves(
+    curve_id_1="guid-123",
+    curve_id_2="guid-456",
+    radius=2.0
+)
+
+# Fillet with join (creates single curve)
+fillet_curves(
+    curve_id_1="guid-123",
+    curve_id_2="guid-456",
+    radius=3.0,
+    join=True  # Joins fillet with trimmed curves
+)
+
+# Fillet with point hints (for curves with multiple intersections)
+fillet_curves(
+    curve_id_1="guid-123",
+    curve_id_2="guid-456",
+    radius=2.0,
+    point_on_curve_1=[5, 0, 0],
+    point_on_curve_2=[0, 5, 0]
+)
+```
+
+#### chamfer_curves
+
+Create a chamfer (straight line) between two curves at their intersection.
+
+```python
+# Symmetric chamfer (same distance on both curves)
+chamfer_curves(
+    curve_id_1="guid-123",
+    curve_id_2="guid-456",
+    distance_1=3.0  # distance_2 defaults to distance_1
+)
+
+# Asymmetric chamfer
+chamfer_curves(
+    curve_id_1="guid-123",
+    curve_id_2="guid-456",
+    distance_1=2.0,
+    distance_2=4.0  # Different distance on curve 2
+)
+
+# Chamfer with join
+chamfer_curves(
+    curve_id_1="guid-123",
+    curve_id_2="guid-456",
+    distance_1=3.0,
+    join=True  # Joins chamfer with trimmed curves
+)
+
+# Chamfer without trimming (just add chamfer line)
+chamfer_curves(
+    curve_id_1="guid-123",
+    curve_id_2="guid-456",
+    distance_1=3.0,
+    trim=False  # Keep original curves, only add chamfer line
+)
+```
+
+#### Curve Operations Notes
+- All curve tools return new curve GUIDs
+- Original curves are preserved unless `join=True`
+- `offset_curve` may return multiple curves if the offset self-intersects
+- `fillet_curves` and `chamfer_curves` require intersecting curves
+- Point hints help select the correct fillet/chamfer location when curves have multiple intersections
+
 ### Layer Management
 
 | Tool | Description |
