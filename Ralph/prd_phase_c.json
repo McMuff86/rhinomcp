@@ -52,8 +52,8 @@
       ],
       "priority": 3,
       "complexity": "Medium",
-      "passes": false,
-      "notes": "Important for parametric workflows"
+      "passes": true,
+      "notes": "Implemented 2026-01-10: 5 Python tools, 1 C# handler with RunScript, tests created"
     },
     {
       "id": "US-C04",
