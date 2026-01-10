@@ -45,7 +45,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (138 tests)
+# Run pytest suite (143 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -112,6 +112,22 @@ rhinomcp/
 - **Colors:** `[r, g, b]` (0-255)
 - **Points:** `[x, y, z]`
 - **IDs:** GUID strings
+
+### Type Hints (MCP Schema Best Practices)
+```python
+from typing import Literal, Optional, List, Dict, Any
+
+# Use Literal types for enum-like parameters (helps MCP clients)
+ObjectType = Literal["POINT", "LINE", "POLYLINE", "CIRCLE", "BOX", "SPHERE", ...]
+BooleanOperationType = Literal["union", "difference", "intersection"]
+
+# Use Optional with None default (avoid mutable defaults!)
+def my_tool(
+    params: Optional[Dict[str, Any]] = None,  # NOT: Dict = {}
+    filters: Optional[List[str]] = None,      # NOT: List = []
+) -> str:
+    params = params if params is not None else {}  # Runtime fallback
+```
 
 ### Python Response Format
 ```python

@@ -449,3 +449,53 @@ All 6 user stories implemented:
 - US-B06: Object Properties ✅
 
 ---
+
+## Session 2026-01-10: Quick Wins for Better MCP Schema
+
+### Implemented
+Based on Oracle analysis for improving agent tool usage:
+
+1. **Literal Types** - Added type aliases for schema-friendly enums:
+   - `ObjectType = Literal["POINT", "LINE", "POLYLINE", ...]`
+   - `BooleanOperationType = Literal["union", "difference", "intersection"]`
+   - `LoftType = Literal["normal", "loose", "tight", "straight"]`
+   - `FilterType = Literal["and", "or"]`
+
+2. **Mutable Default Fix** - Changed `Dict = {}` to `Optional[Dict] = None`:
+   - `create_object.py`: `params: Optional[Dict] = None`
+   - `select_objects.py`: `filters: Optional[Dict] = None`
+   - Runtime fallback: `params if params is not None else {}`
+
+3. **Explicit Return Examples** - Added JSON examples in docstrings:
+   ```
+   Returns:
+       {"ok": true, "message": "Created BOX", "data": {"id": "guid", "name": "Box_1"}}
+   ```
+
+4. **Tuple → Array in Examples** - Changed Python syntax to JSON:
+   - `(3, 3)` → `[3, 3]`
+   - `True` → `true`
+
+5. **Standardized Error Responses** - All tools now return JSON:
+   - `modify_object.py` and `modify_objects.py` updated
+   - Use `from_exception(e, code=ErrorCode.XXX)`
+
+### Files Changed
+- `create_object.py`, `create_objects.py` - Literal types, return examples
+- `boolean_operation.py` - BooleanOperationType Literal
+- `loft_curves.py` - LoftType Literal
+- `select_objects.py` - FilterType Literal, mutable default fix
+- `modify_object.py`, `modify_objects.py` - JSON error responses
+- `test_modify_object.py` - Updated for JSON responses
+
+### Key Learnings
+- **Literal types** help MCP clients understand valid parameter values
+- **Mutable defaults** are a Python antipattern - always use `None` with fallback
+- **JSON examples** in docstrings help agents construct correct tool calls
+- **Consistent error format** enables programmatic error handling
+
+### Test Results
+- 138 tests passed, 5 skipped
+- Live test in Rhino: All Quick Wins working
+
+---
