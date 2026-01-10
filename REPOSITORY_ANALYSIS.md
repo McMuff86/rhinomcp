@@ -401,4 +401,350 @@ Based on comparison with [snarktank/ralph](https://github.com/snarktank/ralph):
 
 ---
 
+## 8. Deep Research: Advanced Integration Strategies
+
+> This section addresses the request for deep research on multi-tool workflows, ML integration, RAG, and local model usage.
+
+### 8.1 Dual Tool Strategy: Amp (Ralph) vs. Cursor
+
+#### Problem Statement
+The repository currently uses Ralph workflow (originally for Amp CLI) but has been adapted for Cursor. The user needs to sometimes use Ralph/Amp and sometimes native Cursor agents.
+
+#### Solution: Tool Selection Flag
+
+**Option A: Document-Level Flag in AGENTS.md**
+Add to root `AGENTS.md`:
+```markdown
+## Agent Tool Selection
+
+Before starting work, determine which tool to use:
+
+| Scenario | Tool | Reason |
+|----------|------|--------|
+| Autonomous iteration loops | **Amp (Ralph)** | Auto-handoff, fresh context per iteration |
+| Interactive development | **Cursor** | Real-time feedback, debugging |
+| Large refactoring | **Amp (Ralph)** | Context persistence via progress.txt |
+| Quick fixes | **Cursor** | Direct, no overhead |
+
+**Ask prompt:** "Which workflow should I use for this task? (1) Amp/Ralph autonomous loop (2) Cursor interactive"
+```
+
+**Option B: Workflow-Specific Prompt Files**
+```
+Ralph/
+├── prompt_amp.md      # For Amp CLI execution
+├── prompt_cursor.md   # For Cursor execution
+└── prompt_select.md   # Decision helper
+```
+
+**Recommendation:** Implement Option A first, then Option B for complex workflows.
+
+---
+
+### 8.2 Improving MCP Tools in Cursor for Rhino
+
+#### Current Architecture
+```
+┌─────────────────┐    TCP/JSON    ┌──────────────────┐
+│ Cursor + MCP    │ ◄───────────► │ Rhino Plugin     │
+│ (FastMCP)       │   localhost:1999│ (C# RhinoCommon) │
+└─────────────────┘               └──────────────────┘
+```
+
+#### Improvement Opportunities
+
+| Area | Current | Improvement | Effort |
+|------|---------|-------------|--------|
+| **Tool Discovery** | Manual docs | Auto-generated schema from C# | High |
+| **Context Awareness** | Per-call | Persistent model state cache | Medium |
+| **Feedback Loop** | Logs only | Screenshot/viewport capture | Medium |
+| **Batch Operations** | Limited | Transactional batch API | High |
+| **Error Recovery** | Manual retry | Auto-retry with backoff | Low |
+
+#### Priority Improvements
+
+1. **Viewport Capture Tool** (US-C02 in Phase C)
+   - Add `capture_viewport` MCP tool for visual feedback
+   - Allows agents to "see" results without user intervention
+
+2. **Enhanced Schema Generation**
+   ```python
+   # Auto-generate schema from C# handlers
+   def get_tool_schema() -> dict:
+       """Returns JSON Schema for all available tools."""
+       return rhino.send_command("get_tool_schemas", {})
+   ```
+
+3. **Persistent Context via Resources**
+   ```python
+   @mcp.resource("rhino://document/state")
+   def get_document_state() -> str:
+       """MCP Resource for current document state."""
+       return json.dumps(rhino.send_command("get_document_info"))
+   ```
+
+---
+
+### 8.3 Machine Learning Integration
+
+#### Current ML-Ready Features
+- ✅ **Interaction Logging** (`utils/interaction_logger.py`) - JSONL logs of all tool calls
+- ✅ **Session Stats** (`get_session_stats` tool) - Success rates, tool usage patterns
+- ✅ **Structured Responses** - Consistent JSON format for training data
+
+#### ML Integration Roadmap
+
+| Phase | Capability | Approach |
+|-------|-----------|----------|
+| **1. Data Collection** | Gather interaction data | Already implemented via interaction_logger |
+| **2. Pattern Analysis** | Identify common workflows | Analyze JSONL logs with pandas/duckdb |
+| **3. Workflow Suggestions** | Recommend next tools | Rule-based initially, then ML |
+| **4. Fine-tuning** | Rhino-specific model | LoRA on code model (see 8.6) |
+
+#### Training Data Format
+```json
+{
+  "timestamp": "2026-01-10T11:21:28+00:00",
+  "session_id": "fde7c7b5",
+  "tool_name": "create_object",
+  "tool_args": {"type": "BOX", "params": {"width": 10}},
+  "success": true,
+  "response_summary": {"id": "guid", "name": "Box_1"},
+  "duration_ms": 43.05
+}
+```
+
+---
+
+### 8.4 RAG (Retrieval Augmented Generation) Integration
+
+#### Use Cases for RAG in RhinoMCP
+
+1. **RhinoCommon API Documentation**
+   - Embed the entire RhinoCommon API reference
+   - Agent can query: "How do I create a NURBS surface?"
+   
+2. **Previous Session Context**
+   - Embed `progress.txt` and past conversations
+   - Agent recalls: "Last time we created a parametric chair using..."
+
+3. **User's 3DM File History**
+   - Embed object metadata from previous documents
+   - Agent suggests: "You often use this layer structure..."
+
+#### Implementation Options
+
+| Approach | Stack | Pros | Cons |
+|----------|-------|------|------|
+| **LangChain + ChromaDB** | Python | Rich ecosystem, easy setup | Heavy dependencies |
+| **LlamaIndex** | Python | Better for document retrieval | Learning curve |
+| **Ollama + Embeddings** | Local | Privacy, no cloud | Requires embedding model |
+| **Custom MCP Resource** | Python | Integrated with existing tools | Build from scratch |
+
+#### Recommended Architecture
+```
+┌───────────────────────────────────────────────────────────────┐
+│                        RAG Pipeline                           │
+├───────────────────────────────────────────────────────────────┤
+│  1. Embed: RhinoCommon docs, progress.txt, .3dm metadata     │
+│  2. Store: ChromaDB or local SQLite + embeddings             │
+│  3. Query: MCP tool "search_rhino_knowledge"                 │
+│  4. Augment: Add context to LLM prompts                       │
+└───────────────────────────────────────────────────────────────┘
+```
+
+#### New MCP Tool Proposal
+```python
+@mcp.tool()
+def search_rhino_knowledge(ctx: Context, query: str, top_k: int = 5) -> str:
+    """Search RhinoCommon documentation and past sessions for relevant context."""
+    # Implementation using embedding search
+    pass
+```
+
+---
+
+### 8.5 Local Model Usage (Integration with LocAI)
+
+#### LocAI Repository Analysis
+
+**Repository:** https://github.com/McMuff86/locai
+
+**Technology Stack:**
+- Next.js frontend
+- Ollama API backend
+- Local model hosting (Llama3, Gemma, Mistral, DeepSeek)
+- Vision model support (llama3.2-vision)
+
+#### Integration Possibilities
+
+| Integration | Direction | Benefit |
+|-------------|-----------|---------|
+| **LocAI → RhinoMCP** | LocAI calls RhinoMCP tools | Local LLM controls Rhino |
+| **RhinoMCP → LocAI** | RhinoMCP uses LocAI as backend | Privacy-first, no cloud |
+| **Shared RAG** | Both use same vector store | Consistent knowledge base |
+
+#### Architecture: LocAI + RhinoMCP Integration
+
+```
+┌─────────────────┐    HTTP/JSON    ┌─────────────────┐
+│ LocAI (Next.js) │ ◄────────────► │ Ollama          │
+│ - UI            │                 │ - llama3        │
+│ - Chat          │                 │ - DeepSeek      │
+└────────┬────────┘                 │ - Vision models │
+         │                          └─────────────────┘
+         │ MCP
+         ▼
+┌─────────────────┐    TCP/JSON    ┌─────────────────┐
+│ RhinoMCP Server │ ◄────────────► │ Rhino 8         │
+│ (Python)        │   localhost:1999│ (C# Plugin)     │
+└─────────────────┘                 └─────────────────┘
+```
+
+#### Implementation Steps
+
+1. **Add MCP Client to LocAI**
+   ```typescript
+   // In LocAI: Add MCP client for RhinoMCP
+   import { MCPClient } from '@modelcontextprotocol/sdk';
+   
+   const rhinoMCP = new MCPClient({
+     transport: 'stdio',
+     command: 'uvx rhinomcp'
+   });
+   ```
+
+2. **Create Bridge Tool in LocAI**
+   ```typescript
+   // Tool that routes Rhino commands through MCP
+   async function executeRhinoCommand(command: string, params: object) {
+     return await rhinoMCP.callTool(command, params);
+   }
+   ```
+
+3. **Shared Context via RAG**
+   - Both LocAI and RhinoMCP use same ChromaDB instance
+   - Rhino operations logged to shared knowledge base
+   - LocAI can query Rhino history
+
+---
+
+### 8.6 Training a Model for Rhino
+
+#### Approaches
+
+| Approach | Data Required | Effort | Quality |
+|----------|--------------|--------|---------|
+| **Prompt Engineering** | None | Low | Medium |
+| **RAG + Base Model** | Docs, examples | Medium | Good |
+| **LoRA Fine-tuning** | 1k-10k examples | High | Excellent |
+| **Full Fine-tuning** | 100k+ examples | Very High | Best |
+
+#### Recommended: LoRA Fine-tuning
+
+**Why LoRA?**
+- Small adapter (~50MB) on top of base model
+- Can train on consumer GPU (16GB VRAM)
+- Preserves base model knowledge while adding Rhino expertise
+
+**Training Data Sources:**
+1. **RhinoMCP interaction logs** (already collected)
+2. **RhinoScript documentation** (in `static/rhinoscriptsyntax.py`)
+3. **Grasshopper forums** (scrape Q&A)
+4. **McNeel Developer docs** (RhinoCommon API)
+
+**Example Training Data Format (Alpaca-style):**
+```json
+{
+  "instruction": "Create a parametric box in Rhino",
+  "input": "Width: 10, Length: 20, Height: 5",
+  "output": "{\"tool\": \"create_object\", \"params\": {\"type\": \"BOX\", \"params\": {\"width\": 10, \"length\": 20, \"height\": 5}}}"
+}
+```
+
+**Training Infrastructure:**
+- **Local:** RTX 3090/4090 with unsloth/axolotl
+- **Cloud:** RunPod/Vast.ai for larger models
+- **Framework:** unsloth (fast LoRA training), axolotl (configurable)
+
+#### Training Pipeline
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Rhino Model Training                       │
+├─────────────────────────────────────────────────────────────┤
+│  1. Collect: interaction_logs + RhinoScript docs + forums   │
+│  2. Format: Convert to instruction-following format          │
+│  3. Train: LoRA on deepseek-coder-7b or codellama-7b        │
+│  4. Merge: Create merged model for Ollama                    │
+│  5. Deploy: Host in LocAI or use via MCP                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 8.7 Updated Improvement Plan
+
+Based on deep research, here's the updated phased approach:
+
+#### Phase 1: Documentation & Quick Wins (Current)
+- [ ] Fix version inconsistency
+- [ ] Update C# tool registry
+- [ ] Fix select_objects.py response format
+- [x] Add tool selection guidance to AGENTS.md
+- [x] Document Amp vs Cursor workflow
+
+#### Phase 2: Enhanced MCP Tools
+- [ ] Add viewport capture tool (US-C02)
+- [ ] Add auto-retry with backoff
+- [ ] Enhanced error messages with suggestions
+- [ ] Tool schema auto-generation
+
+#### Phase 3: RAG Integration
+- [ ] Set up ChromaDB for embeddings
+- [ ] Embed RhinoCommon documentation
+- [ ] Embed progress.txt and interaction logs
+- [ ] Create `search_rhino_knowledge` MCP tool
+
+#### Phase 4: Local Model Integration (LocAI)
+- [ ] Add MCP client to LocAI
+- [ ] Create RhinoMCP → LocAI bridge
+- [ ] Shared RAG vector store
+- [ ] Test with local Llama3/DeepSeek
+
+#### Phase 5: Model Training
+- [ ] Collect 1000+ training examples from logs
+- [ ] Format training data (Alpaca style)
+- [ ] LoRA fine-tune on deepseek-coder-7b
+- [ ] Deploy to Ollama via LocAI
+
+---
+
+## 9. Next Steps
+
+### Immediate (Before Code Changes)
+
+1. **Review this analysis** - User to approve the improvement plan
+2. **Decide tool strategy** - Amp vs Cursor usage pattern
+3. **Prioritize ML/RAG** - Is this a priority or future work?
+
+### Short-term (Phase 1-2)
+
+1. Fix critical issues (version, tool registry, response format)
+2. Add viewport capture for visual feedback
+3. Document Amp/Cursor workflow selection
+
+### Medium-term (Phase 3-4)
+
+1. RAG integration for context-aware responses
+2. LocAI integration for local model usage
+3. Shared knowledge base
+
+### Long-term (Phase 5)
+
+1. Fine-tune a Rhino-specific model
+2. Deploy via LocAI + Ollama
+3. Continuous learning from interaction logs
+
+---
+
 *This analysis was created without modifying any code. Follow the improvement plan to address identified issues.*
