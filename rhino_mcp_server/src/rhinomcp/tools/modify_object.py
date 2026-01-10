@@ -15,6 +15,7 @@ def modify_object(
     name: Optional[str] = None,
     new_name: Optional[str] = None,
     new_color: Optional[List[int]] = None,
+    layer: Optional[str] = None,
     translation: Optional[List[float]] = None,
     rotation: Optional[List[float]] = None,
     scale: Optional[List[float]] = None,
@@ -28,6 +29,7 @@ def modify_object(
     - name: The name of the object to modify (provide either id or name)
     - new_name: New name for the object
     - new_color: [r, g, b] color values (0-255)
+    - layer: Name of the layer to assign the object to
     - translation: [x, y, z] translation vector
     - rotation: [x, y, z] rotation in radians
     - scale: [x, y, z] scale factors
@@ -50,6 +52,8 @@ def modify_object(
             params["new_name"] = new_name
         if new_color is not None:
             params["new_color"] = new_color
+        if layer is not None:
+            params["layer"] = layer
         if translation is not None:
             params["translation"] = translation
         if rotation is not None:

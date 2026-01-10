@@ -386,10 +386,11 @@ namespace RhinoMCPPlugin
                                             RhinoApp.WriteLine($"Error executing command: {e.Message}\nStackTrace: {e.StackTrace}");
                                             try
                                             {
+                                                string errorCmdType = command["type"]?.ToString() ?? "unknown";
                                                 JObject errorResponse = new JObject
                                                 {
                                                     ["status"] = "error",
-                                                    ["error_code"] = ErrorCode.FromException(e, cmdType),
+                                                    ["error_code"] = ErrorCode.FromException(e, errorCmdType),
                                                     ["message"] = e.Message
                                                 };
 
