@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -98,6 +98,11 @@ namespace RhinoMCPPlugin
         public bool GetDebugMode()
         {
             return debugMode;
+        }
+
+        public bool IsRunning()
+        {
+            return running;
         }
 
 
@@ -317,14 +322,6 @@ namespace RhinoMCPPlugin
             }
 
             RhinoApp.WriteLine("Server thread stopped");
-        }
-
-        private bool IsRunning()
-        {
-            lock (lockObject)
-            {
-                return running;
-            }
         }
 
         private void HandleClient(TcpClient client)
