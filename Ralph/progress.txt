@@ -177,6 +177,29 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## [2026-01-10] - US-C04: Mesh Import/Export
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~90 minutes
+- Implemented: Mesh I/O operations for importing/exporting mesh files and Brep-to-mesh conversion
+- Files: `import_mesh.py`, `export_mesh.py`, `mesh_from_brep.py`, `MeshOperations.cs`, 12 tests
+- **Key Learnings:**
+  - Rhino supports mesh import via `_-Import` command for OBJ, STL, 3MF, PLY, OFF, 3DS, FBX
+  - Mesh export uses `_-Export` with format-specific command variations
+  - Brep-to-mesh conversion via `_-Mesh` command with density/quality parameters
+  - Object selection required before export operations
+  - Import supports both merge and replace modes for document handling
+  - Format auto-detection from file extensions works reliably
+- **Test Results:**
+  - ✅ import_mesh: OBJ, STL, 3MF with auto-detection and explicit formats
+  - ✅ export_mesh: All objects vs specific objects, with mesh options
+  - ✅ mesh_from_brep: Basic conversion, custom density/quality, edge length constraints
+  - ✅ Parameter validation: File paths, formats, object IDs
+  - ✅ Error handling: Connection failures, invalid parameters
+  - ✅ All 12 unit tests pass with proper mocking
+- **Notes:** Essential for 3D printing workflows - enables round-trip mesh processing
+
+---
+
 ## Known Issues & Future Work (2026-01-10)
 
 ### Issue: Automatic MCP Plugin Start
@@ -239,7 +262,19 @@ def my_tool(ctx: Context, param: ToolType) -> str:
 
 ---
 
-## Current Test Count: 184 tests
+## Current Test Count: 200+ tests
+
+---
+
+## Phase C Status (2026-01-10)
+- US-C01 File Operations ✅ Complete
+- US-C02 Viewport Control ✅ Complete
+- US-C03 Groups & Blocks ✅ Complete
+- US-C04 Mesh Import/Export ✅ Complete
+- US-C05 Render Settings ⏳ Pending (Next Priority)
+- US-C06 Grasshopper Integration ⏳ Pending
+
+**Next Priority:** US-C05 Render Settings - Enables automated rendering pipelines
 
 ---
 

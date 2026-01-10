@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -549,6 +549,10 @@ namespace RhinoMCPPlugin
                 ["create_block"] = this.handler.CreateBlock,
                 ["insert_block"] = this.handler.InsertBlock,
                 ["explode_block"] = this.handler.ExplodeBlock,
+                // Mesh Operations
+                ["import_mesh"] = this.handler.ImportMesh,
+                ["export_mesh"] = this.handler.ExportMesh,
+                ["mesh_from_brep"] = this.handler.MeshFromBrep,
                 // Command History (for agent communication)
                 ["get_command_history"] = this.handler.GetCommandHistory,
                 ["get_logs"] = (p) => {

@@ -2,9 +2,9 @@
 
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
-**Last Updated:** 2026-01-10  
-**Version:** 0.1.3.9  
-**Phase:** B Complete (see ROADMAP.md for Phase C)
+**Last Updated:** 2026-01-10
+**Version:** 0.1.3.9
+**Phase:** C In Progress (US-C04 Mesh Import/Export complete)
 
 ---
 
@@ -98,7 +98,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (184 tests)
+# Run pytest suite (200+ tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -244,6 +244,7 @@ When adding new tools, register them in `RhinoMCPServer.cs`:
 | Dimension Tools | `DimensionOperations.cs` |
 | Object Properties | `ObjectProperties.cs` |
 | Viewport Operations | `ViewportOperations.cs` |
+| Mesh Operations | `MeshOperations.cs` |
 | Script Execution | `ExecuteCode.cs` |
 
 ---
@@ -351,7 +352,7 @@ uv run pytest tests/ -v
 | US-C01 | File Operations | ✅ |
 | US-C02 | Viewport Control | ✅ |
 | US-C03 | Groups & Blocks | ✅ |
-| US-C04 | Mesh Import/Export | ⏳ Pending |
+| US-C04 | Mesh Import/Export | ✅ |
 | US-C05 | Render Settings | ⏳ Pending |
 | US-C06 | Grasshopper Integration | ⏳ Pending |
 
