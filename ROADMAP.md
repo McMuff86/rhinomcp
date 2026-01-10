@@ -3,7 +3,7 @@
 > Strategic plan for evolving RhinoMCP from proof-of-concept to professional product.
 
 **Last Updated:** 2026-01-10  
-**Current Version:** 0.1.3.6
+**Current Version:** 0.1.3.7
 
 ---
 
@@ -18,7 +18,7 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 | Phase | Focus | Status | Timeline |
 |-------|-------|--------|----------|
 | **A** | Stability & Foundation | ✅ Complete | Q1 2026 |
-| **B** | Core Features | 🔄 In Progress | Q2 2026 |
+| **B** | Core Features | ✅ Complete | Q1 2026 |
 | **C** | Advanced Features | 📋 Planned | Q3 2026 |
 | **D** | Monetization | 📋 Planned | Q4 2026 |
 
@@ -55,7 +55,7 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 
 ---
 
-## Phase B: Core Features 🔄
+## Phase B: Core Features ✅
 
 **Goal:** Add essential geometry and transformation capabilities.
 
@@ -63,18 +63,18 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 
 | ID | Title | Priority | Status |
 |----|-------|----------|--------|
-| US-B01 | Boolean Operations (Union, Difference, Intersection) | 1 | ⬜ |
-| US-B02 | Transform Tools (Copy, Mirror, Array) | 2 | ⬜ |
-| US-B03 | Curve Operations (Offset, Fillet, Chamfer) | 3 | ⬜ |
-| US-B04 | Surface from Curves (Loft, Extrude, Revolve) | 4 | ⬜ |
-| US-B05 | Dimension Tools (Linear, Angular, Radial) | 5 | ⬜ |
-| US-B06 | Get/Set Object Properties | 6 | ⬜ |
+| US-B01 | Boolean Operations (Union, Difference, Intersection) | 1 | ✅ |
+| US-B02 | Transform Tools (Copy, Mirror, Array) | 2 | ✅ |
+| US-B03 | Curve Operations (Offset, Fillet, Chamfer) | 3 | ✅ |
+| US-B04 | Surface from Curves (Loft, Extrude, Revolve) | 4 | ✅ |
+| US-B05 | Dimension Tools (Linear, Angular, Radial) | 5 | ✅ |
+| US-B06 | Get/Set Object Properties | 6 | ✅ |
 
-### Success Criteria
-- [ ] Boolean operations work reliably on solids
-- [ ] At least 5 new geometry operations supported
-- [ ] All new features have tests
-- [ ] Documentation updated for each feature
+### Achievements
+- ✅ All 6 Phase B stories completed
+- ✅ 17 new tools implemented
+- ✅ 138 pytest tests (was 34 after Phase A)
+- ✅ Documentation updated for all features
 
 ---
 

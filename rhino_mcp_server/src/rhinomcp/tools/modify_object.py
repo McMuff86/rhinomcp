@@ -1,33 +1,38 @@
 from mcp.server.fastmcp import Context
 import json
 from rhinomcp.server import get_rhino_connection, mcp, logger
-from typing import Any, List, Dict
+from rhinomcp.utils.responses import ok, from_exception
+from rhinomcp.utils.errors import ErrorCode
+from typing import Any, List, Dict, Optional
 
 
 @mcp.tool()
 def modify_object(
     ctx: Context,
-    id: str = None,
-    name: str = None,
-    new_name: str = None,
-    new_color: List[int] = None,
-    translation: List[float] = None,
-    rotation: List[float] = None,
-    scale: List[float] = None,
-    visible: bool = None
+    id: Optional[str] = None,
+    name: Optional[str] = None,
+    new_name: Optional[str] = None,
+    new_color: Optional[List[int]] = None,
+    translation: Optional[List[float]] = None,
+    rotation: Optional[List[float]] = None,
+    scale: Optional[List[float]] = None,
+    visible: Optional[bool] = None
 ) -> str:
     """
     Modify an existing object in the Rhino document.
     
     Parameters:
-    - id: The id of the object to modify
-    - name: The name of the object to modify
-    - new_name: Optional new name for the object
-    - new_color: Optional [r, g, b] color values (0-255) for the object
-    - translation: Optional [x, y, z] translation vector
-    - rotation: Optional [x, y, z] rotation in radians
-    - scale: Optional [x, y, z] scale factors
-    - visible: Optional boolean to set visibility
+    - id: The GUID of the object to modify (provide either id or name)
+    - name: The name of the object to modify (provide either id or name)
+    - new_name: New name for the object
+    - new_color: [r, g, b] color values (0-255)
+    - translation: [x, y, z] translation vector
+    - rotation: [x, y, z] rotation in radians
+    - scale: [x, y, z] scale factors
+    - visible: Boolean to set visibility
+    
+    Returns:
+        {"ok": true, "message": "Modified object: Box_1", "data": {"name": "Box_1", "id": "guid-here"}}
     """
     try:
         # Get the global connection
@@ -53,7 +58,11 @@ def modify_object(
             params["visible"] = visible
             
         result = rhino.send_command("modify_object", params)
-        return f"Modified object: {result['name']}"
+        
+        return json.dumps(ok(
+            message=f"Modified object: {result['name']}",
+            data=result
+        ))
     except Exception as e:
         logger.error(f"Error modifying object: {str(e)}")
-        return f"Error modifying object: {str(e)}"
+        return json.dumps(from_exception(e, code=ErrorCode.RHINO_ERROR))

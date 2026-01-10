@@ -3,18 +3,20 @@ import json
 from rhinomcp.server import get_rhino_connection, mcp, logger
 from rhinomcp.utils.responses import ok, from_exception
 from rhinomcp.utils.errors import ErrorCode
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Literal, Optional
+
+ObjectType = Literal["POINT", "LINE", "POLYLINE", "CIRCLE", "ARC", "ELLIPSE", "CURVE", "BOX", "SPHERE", "CONE", "CYLINDER", "PIPE", "SURFACE"]
 
 @mcp.tool()
 def create_object(
     ctx: Context,
-    type: str = "BOX",
-    name: str = None,
-    color: List[int]= None,
-    params: Dict[str, Any] = {},
-    translation: List[float]= None,
-    rotation: List[float]= None,
-    scale: List[float]= None,
+    type: ObjectType = "BOX",
+    name: Optional[str] = None,
+    color: Optional[List[int]] = None,
+    params: Optional[Dict[str, Any]] = None,
+    translation: Optional[List[float]] = None,
+    rotation: Optional[List[float]] = None,
+    scale: Optional[List[float]] = None,
 ) -> str:
     """
     Create a new object in the Rhino document.
@@ -79,13 +81,13 @@ def create_object(
     - cap: Boolean to indicate if the cylinder should be capped at the base, default is True
 
     For SURFACE, the params dictionary should contain the following keys:
-    - count : ([number, number]) Tuple of two numbers defining number of points in the u,v directions
+    - count : [number, number] Array of two numbers defining number of points in the u,v directions
     - points: List of [x, y, z] points that define the surface
-    - degree: ([number, number], optional) Degree of the surface (default is 3, if user asked for smoother surface, degree can be higher)
-    - closed: ([bool, bool], optional) Two booleans defining if the surface is closed in the u,v directions
+    - degree: [number, number] (optional) Degree of the surface (default is 3, if user asked for smoother surface, degree can be higher)
+    - closed: [bool, bool] (optional) Two booleans defining if the surface is closed in the u,v directions
     
     Returns:
-    A message indicating the created object name.
+        {"ok": true, "message": "Created BOX object: Box_1", "data": {"name": "Box_1", "id": "guid-here", "type": "BOX"}}
     
     Examples of params:
     - POINT: {"x": 0, "y": 0, "z": 0}
@@ -95,9 +97,9 @@ def create_object(
     - CURVE: {"points": [[0, 0, 0], [1, 1, 1], [2, 2, 2]], "degree": 3}
     - BOX: {"width": 1.0, "length": 1.0, "height": 1.0}
     - SPHERE: {"radius": 1.0}
-    - CONE: {"radius": 1.0, "height": 1.0, "cap": True}
-    - CYLINDER: {"radius": 1.0, "height": 1.0, "cap": True}
-    - SURFACE: {"count": (3, 3), "points": [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0], [1, 1, 0], [2, 1, 0], [0, 2, 0], [1, 2, 0], [2, 2, 0]], "degree": (3, 3), "closed": (False, False)}
+    - CONE: {"radius": 1.0, "height": 1.0, "cap": true}
+    - CYLINDER: {"radius": 1.0, "height": 1.0, "cap": true}
+    - SURFACE: {"count": [3, 3], "points": [[0, 0, 0], [1, 0, 0], [2, 0, 0], [0, 1, 0], [1, 1, 0], [2, 1, 0], [0, 2, 0], [1, 2, 0], [2, 2, 0]], "degree": [3, 3], "closed": [false, false]}
     """
     try:
         # Get the global connection
@@ -105,7 +107,7 @@ def create_object(
 
         command_params = {
             "type": type,
-            "params": params
+            "params": params if params is not None else {}
         }
 
         if translation is not None: command_params["translation"] = translation

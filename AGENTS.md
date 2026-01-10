@@ -4,7 +4,7 @@
 
 **Last Updated:** 2026-01-10  
 **Version:** 0.1.3.7  
-**Phase:** B (Core Features)
+**Phase:** B Complete (see ROADMAP.md for Phase C)
 
 ---
 
@@ -45,7 +45,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (126 tests)
+# Run pytest suite (138 tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -72,7 +72,7 @@ dotnet build --configuration Release
 rhinomcp/
 ├── rhino_mcp_server/           # Python MCP server
 │   ├── src/rhinomcp/
-│   │   ├── tools/              # MCP tool implementations (33 tools)
+│   │   ├── tools/              # MCP tool implementations
 │   │   ├── utils/              # Helpers (responses.py, errors.py)
 │   │   └── server.py           # Main server + RhinoConnection
 │   ├── tests/                  # Pytest test suite
@@ -80,7 +80,7 @@ rhinomcp/
 │   └── pyproject.toml
 │
 ├── rhino_mcp_plugin/           # C# Rhino plugin
-│   ├── Functions/              # Command handlers (22 handlers)
+│   ├── Functions/              # Command handlers
 │   ├── Serializers/            # JSON serialization
 │   ├── Commands/               # Rhino command definitions
 │   ├── RhinoMCPServer.cs       # TCP server + command dispatch
@@ -88,7 +88,7 @@ rhinomcp/
 │
 ├── Ralph/                      # Structured development workflow
 │   ├── prd.json                # Phase A user stories (complete)
-│   ├── prd_phase_b.json        # Phase B user stories (in progress)
+│   ├── prd_phase_b.json        # Phase B user stories (complete)
 │   └── progress.txt            # Codebase patterns & learnings
 │
 ├── .github/workflows/          # CI/CD
@@ -214,6 +214,12 @@ public JObject CreateObject(JObject parameters)
 | `create_angular_dimension` | `DimensionOperations.cs` | Angle dimension at vertex |
 | `create_radial_dimension` | `DimensionOperations.cs` | Radius/diameter dimension |
 
+### Object Properties
+| Tool | Handler | Description |
+|------|---------|-------------|
+| `get_object_properties` | `ObjectProperties.cs` | Get bounding box, area, volume, centroid |
+| `set_object_properties` | `ObjectProperties.cs` | Set name, layer, color, material |
+
 ### Script Execution
 | Tool | Handler | Description |
 |------|---------|-------------|
@@ -326,7 +332,7 @@ uv run pytest tests/ -v
 | US-B03 | Curve Operations | ✅ |
 | US-B04 | Surface from Curves | ✅ |
 | US-B05 | Dimension Tools | ✅ |
-| US-B06 | Object Properties | ⬜ |
+| US-B06 | Object Properties | ✅ |
 
 ---
 

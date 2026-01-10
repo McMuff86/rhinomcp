@@ -3,15 +3,16 @@ import json
 from rhinomcp.server import get_rhino_connection, mcp, logger
 from rhinomcp.utils.responses import ok, from_exception
 from rhinomcp.utils.errors import ErrorCode
-from typing import List
+from typing import List, Literal
 
+LoftType = Literal["normal", "loose", "tight", "straight"]
 
 @mcp.tool()
 def loft_curves(
     ctx: Context,
     curve_ids: List[str],
     closed: bool = False,
-    loft_type: str = "normal"
+    loft_type: LoftType = "normal"
 ) -> str:
     """
     Create a lofted surface or solid between multiple curves.

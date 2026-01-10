@@ -48,7 +48,9 @@ uv run rhinomcp
 | `modify_objects` | Batch transform |
 | `delete_object` | Delete by ID |
 | `select_objects` | Select by ID |
-| `get_object_info` | Get properties |
+| `get_object_info` | Get object details |
+| `get_object_properties` | Get bounding box, area, volume, centroid |
+| `set_object_properties` | Set name, layer, color, material |
 | `get_selected_objects_info` | Selected objects info |
 
 ### Boolean Operations

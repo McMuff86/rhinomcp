@@ -1,8 +1,5 @@
 """
 Tests for the modify_object tool.
-
-Note: modify_object returns plain strings, not structured JSON responses.
-This is a known inconsistency that could be improved in future versions.
 """
 import json
 import pytest
@@ -141,9 +138,10 @@ class TestModifyObjectErrors:
             id="nonexistent-guid"
         )
         
-        # modify_object returns plain string errors
-        assert "Error" in result
-        assert "Object not found" in result
+        # modify_object returns JSON error response
+        response = json.loads(result)
+        assert response["success"] is False
+        assert "Object not found" in response["message"]
 
     @patch("rhinomcp.tools.modify_object.get_rhino_connection")
     def test_connection_error(self, mock_get_conn):
@@ -157,6 +155,7 @@ class TestModifyObjectErrors:
             id="test-guid"
         )
         
-        # modify_object returns plain string errors
-        assert "Error" in result
-        assert "Connection refused" in result
+        # modify_object returns JSON error response
+        response = json.loads(result)
+        assert response["success"] is False
+        assert "Connection refused" in response["message"]

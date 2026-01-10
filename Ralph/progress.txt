@@ -410,3 +410,42 @@ using (var completionEvent = new ManualResetEventSlim(false))
 **Added:** `get_logs` and `clear_logs` commands for debugging.
 
 ---
+
+## Session 2026-01-10: US-B06 Object Properties
+
+### Implemented
+- `get_object_properties` - Get bounding box, area, volume, centroid
+- `set_object_properties` - Set name, layer, color, material
+
+### Key Learnings
+
+1. **AreaMassProperties.Compute()**: Returns area and centroid for Breps, Meshes, and Surfaces.
+
+2. **VolumeMassProperties.Compute()**: Only valid for closed solids (`brep.IsSolid` must be true).
+
+3. **Extrusion handling**: Must convert to Brep via `extrusion.ToBrep()` before computing properties.
+
+4. **Batch support pattern**: Accept both `object_id` (single) and `object_ids` (list) parameters.
+
+5. **Return format**: Single object returns properties directly, batch returns `{ objects: [...], count: n }`.
+
+### Files Created
+- `rhino_mcp_server/src/rhinomcp/tools/get_object_properties.py`
+- `rhino_mcp_server/src/rhinomcp/tools/set_object_properties.py`
+- `rhino_mcp_plugin/Functions/ObjectProperties.cs`
+- `rhino_mcp_server/tests/test_object_properties.py` (12 tests)
+
+### Test Results
+- 138 tests passed (12 new object property tests)
+- Build successful
+
+### Phase B Complete! 🎉
+All 6 user stories implemented:
+- US-B01: Boolean Operations ✅
+- US-B02: Transform Tools ✅
+- US-B03: Curve Operations ✅
+- US-B04: Surface from Curves ✅
+- US-B05: Dimension Tools ✅
+- US-B06: Object Properties ✅
+
+---

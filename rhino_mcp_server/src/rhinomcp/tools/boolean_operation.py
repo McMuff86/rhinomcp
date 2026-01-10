@@ -3,13 +3,14 @@ import json
 from rhinomcp.server import get_rhino_connection, mcp, logger
 from rhinomcp.utils.responses import ok, from_exception
 from rhinomcp.utils.errors import ErrorCode
-from typing import List
+from typing import List, Literal
 
+BooleanOperationType = Literal["union", "difference", "intersection"]
 
 @mcp.tool()
 def boolean_operation(
     ctx: Context,
-    operation: str,
+    operation: BooleanOperationType,
     object_ids: List[str],
     delete_input: bool = True
 ) -> str:

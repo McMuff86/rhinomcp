@@ -53,17 +53,19 @@ rhino_mcp_server/
 
 ## Available Tools
 
-| Tool | Description |
-|------|-------------|
-| `create_object` | Create geometry (BOX, SPHERE, CYLINDER, etc.) |
-| `create_objects` | Batch create multiple objects |
-| `modify_object` | Change object properties |
-| `get_document_info` | Query document state |
-| `get_object_info` | Get object details |
-| `execute_rhinoscript_python_code` | Run Python scripts in Rhino |
-| `create_layer` | Create new layers |
-| `create_material` | Create render materials (PBR supported) |
-| `ping` | Health check |
+For the complete and up-to-date tool list, see [USAGE.md](../USAGE.md).
+
+**Categories:**
+- **System**: ping, get_document_info, get_logs, set_debug_mode
+- **Object Creation**: create_object, create_objects, create_text, create_text_dot
+- **Object Manipulation**: modify_object, delete_object, select_objects, get_object_properties, set_object_properties
+- **Boolean Operations**: boolean_operation (union, difference, intersection)
+- **Transform**: copy_object, mirror_object, array_linear, array_polar
+- **Curves**: offset_curve, fillet_curves, chamfer_curves
+- **Surfaces**: loft_curves, extrude_curve, revolve_curve
+- **Dimensions**: create_linear_dimension, create_angular_dimension, create_radial_dimension
+- **Layers & Materials**: create_layer, create_material, assign_material_to_layer
+- **Scripts**: execute_rhinoscript_python_code
 
 ## Development
 
@@ -82,5 +84,4 @@ uv publish
 
 - [Main README](../README.md) - Installation and usage
 - [AGENTS.md](../AGENTS.md) - Agent-focused guide
-- [README_MCP.md](../README_MCP.md) - MCP tools guide
-- [USAGE.md](../USAGE.md) - Detailed usage examples
+- [USAGE.md](../USAGE.md) - Tool reference and usage examples

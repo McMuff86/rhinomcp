@@ -505,6 +505,8 @@ namespace RhinoMCPPlugin
                 ["create_linear_dimension"] = this.handler.CreateLinearDimension,
                 ["create_angular_dimension"] = this.handler.CreateAngularDimension,
                 ["create_radial_dimension"] = this.handler.CreateRadialDimension,
+                ["get_object_properties"] = this.handler.GetObjectProperties,
+                ["set_object_properties"] = this.handler.SetObjectProperties,
                 ["get_logs"] = (p) => {
                     int count = p["count"]?.Value<int>() ?? 50;
                     var logs = GetRecentLogs(count);

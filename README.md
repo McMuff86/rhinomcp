@@ -18,10 +18,13 @@ RhinoMCP connects Rhino to AI agents through the Model Context Protocol (MCP), a
 - **Material Management**: Create and assign render materials to layers for enhanced rendering
 - **Enhanced debugging**: Detailed logging of AI thought processes and object creation with configurable debug modes
 - **Learning data collection**: Structured export of object properties for AI training and analysis
+- **Boolean operations**: Union, difference, intersection on solids
+- **Transform tools**: Copy, mirror, linear and polar arrays
+- **Curve & surface operations**: Offset, fillet, chamfer, loft, extrude, revolve
+- **Dimensions & properties**: Create dimensions and query/set object properties
 
 > [!NOTE]  
-> So far the tool only supports creating primitive objects for proof of concept. More geometries will be added in the future.
-> Supported objects: Point, Line, Polyline, Circle, Arc, Ellipse, Curve, Box, Sphere, Cone, Cylinder, Surface (from points)
+> The tool supports a growing set of primitive and derived geometries and operations. See [USAGE.md](USAGE.md) for the full list of object types and tools.
 
 ## Demo
 
@@ -169,7 +172,7 @@ uv publish
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-See `AGENTS.md` for development guidelines and `Ralph/README.md` for the structured development workflow.
+See [AGENTS.md](AGENTS.md) for development guidelines and [Ralph/README.md](Ralph/README.md) for the structured development workflow.
 
 ## License
 
