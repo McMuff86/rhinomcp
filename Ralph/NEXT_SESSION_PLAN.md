@@ -175,6 +175,40 @@ Key Methods:
 
 ---
 
+## Rhino Native Commands (NEU!)
+
+Für komplexe Operationen können native Rhino-Commands verwendet werden:
+
+### Option 1: RhinoApp.RunScript() in C#
+```csharp
+// Execute native command
+string script = "_Loft _Pause _Pause _Enter";
+RhinoApp.RunScript(script, false);
+```
+
+### Option 2: Curve.CreateFilletCurves mit radius=0 für Chamfer
+```csharp
+// Built-in chamfer with automatic trim
+var result = Curve.CreateFilletCurves(curve1, pt1, curve2, pt2, 
+    0.0,    // radius=0 = chamfer
+    true,   // join
+    true,   // trim
+    false,  // arcExtension
+    tolerance, angleTolerance);
+```
+
+### Wann Native Commands verwenden:
+- **Loft, Sweep, Revolve** - Komplexe Surface-Erstellung
+- **Boolean2D** - 2D Boolean-Operationen
+- Operationen mit vielen Edge Cases
+
+### Wann Manual Implementation:
+- Einfache Operationen (offset, copy, array)
+- Wenn Kontrolle über Ergebnis wichtig
+- Wenn native Command User-Interaktion braucht
+
+---
+
 ## Prompt für neues Fenster
 
 ```

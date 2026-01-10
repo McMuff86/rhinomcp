@@ -388,6 +388,37 @@ uv run pytest tests/test_connection.py -v
 
 ---
 
+## Using Native Rhino Commands
+
+For complex operations, you can use native Rhino commands instead of manual implementations:
+
+### RhinoApp.RunScript() - Execute Native Commands
+```csharp
+// Execute native Rhino command from C# handler
+string script = "_Loft _Pause _Pause _Enter";
+bool echo = false;
+RhinoApp.RunScript(script, echo);
+```
+
+### Built-in Alternatives
+| Manual Implementation | Native Alternative |
+|-----------------------|-------------------|
+| Complex chamfer | `Curve.CreateFilletCurves(radius=0)` |
+| Loft surfaces | `RhinoApp.RunScript("_Loft")` |
+| Sweep surfaces | `RhinoApp.RunScript("_Sweep1")` |
+
+### When to Use Native Commands
+- Complex surface operations (Loft, Sweep, Revolve)
+- Operations with many edge cases
+- Features already perfected in Rhino
+
+### Caveats
+- Object references may become invalid after RunScript
+- Re-fetch objects by GUID after native command execution
+- Some commands require object selection first
+
+---
+
 ## External Resources (Rhino Developer Docs)
 
 When unsure how to implement a feature or which RhinoCommon/RhinoScript API to use, **always consult the official Rhino Developer Documentation**:

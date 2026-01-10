@@ -276,6 +276,40 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## [2026-01-10] - Learnings: Rhino Native Commands
+- Thread: Cursor Agent Session
+- Discovered: How to use native Rhino commands instead of manual implementations
+
+### RhinoApp.RunScript() - Execute Native Commands
+```csharp
+// Execute native Rhino command from C# plugin
+string script = "_Chamfer _Distance 5 _Polyline";
+bool echo = false;  // Don't show in command line
+RhinoApp.RunScript(script, echo);
+```
+
+### Key Findings:
+1. **Curve.CreateFilletCurves with radius=0** creates a chamfer with automatic trim
+2. **RhinoApp.RunScript()** can execute any native Rhino command
+3. For complex operations, prefer native commands over manual implementation
+
+### When to Use Native Commands:
+- Complex operations already built into Rhino (Loft, Sweep, Boolean2D, etc.)
+- Operations with many edge cases (chamfers, fillets with complex curves)
+- Features that would require extensive code to replicate
+
+### When to Use Manual Implementation:
+- Simple geometric operations (offset, copy, array)
+- When you need fine control over the result
+- When native command requires user interaction
+
+### Important Caveats:
+- `RhinoApp.RunScript()` should be called from commands marked `[CommandStyle(Style.ScriptRunner)]`
+- Object references may become invalid after RunScript - re-fetch by GUID
+- Native commands may require selection - use `rs.SelectObject()` first
+
+---
+
 ## Codebase Patterns (SACRED - use exactly these conventions)
 
 ### Project Structure
