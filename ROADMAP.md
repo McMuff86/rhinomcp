@@ -139,7 +139,7 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 ## How to Contribute
 
 1. Read `Ralph/progress.txt` for codebase patterns
-2. Check `Ralph/prd_phase_b.json` for current stories
+2. Check `Ralph/prd_phase_xxx.json` for current stories -> xxx could be phase a,b,c, any, try to pick highest
 3. Pick highest priority story with `passes: false`
 4. Implement in small steps
 5. Update `Ralph/progress.txt` with learnings
