@@ -2,7 +2,7 @@
 
 > Strategic plan for evolving RhinoMCP from proof-of-concept to professional product.
 
-**Last Updated:** 2026-01-09  
+**Last Updated:** 2026-01-10  
 **Current Version:** 0.1.3.6
 
 ---
@@ -17,55 +17,64 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 
 | Phase | Focus | Status | Timeline |
 |-------|-------|--------|----------|
-| **A** | Stability & Foundation | 🔄 In Progress | Q1 2026 |
-| **B** | Core Features | 📋 Planned | Q2 2026 |
+| **A** | Stability & Foundation | ✅ Complete | Q1 2026 |
+| **B** | Core Features | 🔄 In Progress | Q2 2026 |
 | **C** | Advanced Features | 📋 Planned | Q3 2026 |
 | **D** | Monetization | 📋 Planned | Q4 2026 |
 
 ---
 
-## Phase A: Stability & Foundation
+## Phase A: Stability & Foundation ✅
 
 **Goal:** Make RhinoMCP reliable and maintainable.
 
-### User Stories (see `Ralph/prd.json`)
+### User Stories (Complete)
 
-| ID | Title | Priority | Status |
-|----|-------|----------|--------|
-| US-001 | Structured error codes | 1 | ⬜ |
-| US-002 | Auto-reconnect on connection drop | 2 | ⬜ |
-| US-003 | Complete C# handlers for annotations | 3 | ⬜ |
-| US-004 | Pytest test suite | 4 | ⬜ |
-| US-005 | GitHub Actions CI | 5 | ⬜ |
-| US-006 | Configurable script timeout | 6 | ⬜ |
+| ID | Title | Status |
+|----|-------|--------|
+| US-001 | Structured error codes | ✅ |
+| US-002 | Auto-reconnect on connection drop | ✅ |
+| US-003 | Complete C# handlers for annotations | ✅ |
+| US-004 | Pytest test suite (34 tests) | ✅ |
+| US-005 | GitHub Actions CI | ✅ |
+| US-006 | Configurable script timeout | ✅ |
 
-### Success Criteria
-- [ ] All 6 stories completed
-- [ ] CI pipeline green on every PR
-- [ ] Zero known critical bugs
-- [ ] Documentation up-to-date
+### Bug Fixes
+
+| ID | Issue | Status |
+|----|-------|--------|
+| P-0002 | PBR material not visible in Rhino | ✅ Fixed |
+| P-0003 | Objects created on wrong layer | ✅ Fixed |
+| P-0004 | assign_material_to_layer null error | ✅ Fixed |
+
+### Achievements
+- ✅ All 6 stories completed
+- ✅ CI pipeline green on every PR
+- ✅ Zero known critical bugs
+- ✅ Documentation up-to-date
 
 ---
 
-## Phase B: Core Features
+## Phase B: Core Features 🔄
 
 **Goal:** Add essential geometry and transformation capabilities.
 
-### Planned Features
+### User Stories (see `Ralph/prd_phase_b.json`)
 
-| Feature | Description | Complexity |
-|---------|-------------|------------|
-| Boolean Operations | Union, Difference, Intersection | Medium |
-| NURBS Curves | Create/modify NURBS curves | Medium |
-| NURBS Surfaces | Create/modify NURBS surfaces | High |
-| Dimensions | Linear, Angular, Radial dimensions | Medium |
-| Transform Tools | Copy, Mirror, Array patterns | Medium |
-| Curve Operations | Offset, Fillet, Chamfer | Medium |
+| ID | Title | Priority | Status |
+|----|-------|----------|--------|
+| US-B01 | Boolean Operations (Union, Difference, Intersection) | 1 | ⬜ |
+| US-B02 | Transform Tools (Copy, Mirror, Array) | 2 | ⬜ |
+| US-B03 | Curve Operations (Offset, Fillet, Chamfer) | 3 | ⬜ |
+| US-B04 | Surface from Curves (Loft, Extrude, Revolve) | 4 | ⬜ |
+| US-B05 | Dimension Tools (Linear, Angular, Radial) | 5 | ⬜ |
+| US-B06 | Get/Set Object Properties | 6 | ⬜ |
 
 ### Success Criteria
-- [ ] Boolean operations work reliably
-- [ ] At least 5 new geometry types supported
+- [ ] Boolean operations work reliably on solids
+- [ ] At least 5 new geometry operations supported
 - [ ] All new features have tests
+- [ ] Documentation updated for each feature
 
 ---
 
@@ -86,7 +95,7 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 
 ### Success Criteria
 - [ ] Grasshopper integration functional
-- [ ] Mesh round-trip works
+- [ ] Mesh round-trip works (import → modify → export)
 - [ ] 90% of common Rhino workflows possible via MCP
 
 ---
@@ -113,33 +122,38 @@ Transform RhinoMCP into a **professional, monetizable** MCP integration that ena
 
 ---
 
-## Technical Debt to Address
+## Technical Debt
 
-| Item | Description | Phase |
-|------|-------------|-------|
-| Socket handling | Fragile, no keepalive | A |
-| Missing tests | Only dev_test.py exists | A |
-| Inconsistent returns | Mix of strings and dicts | A |
-| No type hints in C# | JObject everywhere | B |
-| Large files | server.py could be split | B |
+| Item | Description | Phase | Status |
+|------|-------------|-------|--------|
+| Socket handling | Fragile, no keepalive | A | ✅ Fixed (auto-reconnect) |
+| Missing tests | Only dev_test.py exists | A | ✅ Fixed (34 pytest tests) |
+| Inconsistent returns | Mix of strings and dicts | A | ✅ Fixed (structured responses) |
+| No type hints in C# | JObject everywhere | B | ⬜ |
+| Large files | server.py could be split | B | ⬜ |
 
 ---
 
 ## How to Contribute
 
-1. Pick a story from `Ralph/prd.json` where `passes: false`
-2. Read `Ralph/progress.txt` for patterns
-3. Implement in small steps
-4. Update documentation
-5. Mark story as `passes: true`
+1. Read `Ralph/progress.txt` for codebase patterns
+2. Check `Ralph/prd_phase_b.json` for current stories
+3. Pick highest priority story with `passes: false`
+4. Implement in small steps
+5. Update `Ralph/progress.txt` with learnings
+6. Mark story as `passes: true`
 
-See `Ralph/README.md` for the complete workflow.
+See [Ralph/README.md](Ralph/README.md) for the complete workflow.
 
 ---
 
 ## References
 
-- [AGENTS.md](AGENTS.md) - Agent development guide
-- [Ralph/README.md](Ralph/README.md) - Structured development workflow
-- [FUNCTIONAL_STATUS.md](FUNCTIONAL_STATUS.md) - What works/problems/solutions
-- [MCP_TOOL_STANDARDS.md](MCP_TOOL_STANDARDS.md) - Tool development standards
+| Document | Purpose |
+|----------|---------|
+| [AGENTS.md](AGENTS.md) | Agent development guide |
+| [USAGE.md](USAGE.md) | Tool usage guide |
+| [Ralph/README.md](Ralph/README.md) | Development workflow |
+| [Ralph/progress.txt](Ralph/progress.txt) | Patterns & learnings |
+| [FUNCTIONAL_STATUS.md](FUNCTIONAL_STATUS.md) | Feature status log |
+| [MCP_TOOL_STANDARDS.md](MCP_TOOL_STANDARDS.md) | Tool standards |

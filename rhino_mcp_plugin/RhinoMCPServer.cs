@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -350,7 +350,8 @@ namespace RhinoMCPPlugin
                 ["set_debug_mode"] = this.handler.SetDebugMode,
                 ["log_thought"] = this.handler.LogThought,
                 ["create_material"] = this.handler.CreateMaterial,
-                ["assign_material_to_layer"] = this.handler.AssignMaterialToLayer
+                ["assign_material_to_layer"] = this.handler.AssignMaterialToLayer,
+                ["boolean_operation"] = this.handler.BooleanOperation
                 // Add more handlers as needed
             };
 

@@ -138,6 +138,70 @@ Project: RhinoMCP Professionalization
 
 ---
 
+## [2026-01-10] - Bug Fixes: P-0002, P-0003, P-0004
+- Thread: Amp Agent Session
+- Implemented: Fixed three bugs discovered during Phase A testing
+- Files changed:
+  - `rhino_mcp_plugin/Functions/GetDocumentInfo.cs`:
+    - **P-0002:** PBR materials now use `RenderMaterial.CreateBasicMaterial(baseMaterial, doc)` and add to `doc.RenderMaterials` table (visible in panel)
+    - **P-0004:** Added validation for `layer_name` and `material_id`, use `int.TryParse()`, range validation
+  - `rhino_mcp_plugin/Functions/CreateObject.cs`:
+    - **P-0003:** Added `rhinoObject.Attributes.LayerIndex = doc.Layers.CurrentLayerIndex` to ensure objects are created on current layer
+  - `rhino_mcp_server/src/rhinomcp/tools/assign_material_to_layer.py`:
+    - Added defensive validation for required parameters
+  - `FUNCTIONAL_STATUS.md`: Marked P-0002, P-0003, P-0004 as RESOLVED
+  - `rhino_mcp_server/dev/test_fixes.py`: Created test script for verifying fixes
+- **Learnings for future iterations:**
+  - PBR materials must go in `doc.RenderMaterials` not `doc.Materials`
+  - `RenderMaterial.CreateBasicMaterial()` takes (Material, RhinoDoc), not just RhinoDoc
+  - `Material.ToPhysicallyBased()` returns void, must access `.PhysicallyBased` after calling
+  - Always set LayerIndex explicitly when creating objects
+  - Use `int.TryParse()` instead of `int.Parse()` for user input
+
+---
+
+## [2026-01-10] - Phase A Complete, Phase B Planning
+- Thread: Amp Agent Session
+- Implemented: Phase A completion, Phase B roadmap
+- Files changed:
+  - `ROADMAP.md`: Updated Phase A status to Complete, Phase B to In Progress
+  - `Ralph/prd_phase_b.json`: Created 6 user stories for Phase B (Core Features)
+- **Phase B User Stories:**
+  - US-B01: Boolean Operations (Union, Difference, Intersection)
+  - US-B02: Transform Tools (Copy, Mirror, Array)
+  - US-B03: Curve Operations (Offset, Fillet, Chamfer)
+  - US-B04: Surface from Curves (Loft, Extrude, Revolve)
+  - US-B05: Dimension Tools
+  - US-B06: Get/Set Object Properties
+
+---
+
+## [2026-01-10] - US-B01: Boolean Operations
+- Thread: Amp Agent Session
+- Implemented: Boolean operations for solid geometry (union, difference, intersection)
+- Files changed:
+  - Created `rhino_mcp_server/src/rhinomcp/tools/boolean_operation.py` - Python MCP tool
+  - Created `rhino_mcp_plugin/Functions/BooleanOperations.cs` - C# handler
+  - Updated `rhino_mcp_plugin/RhinoMCPServer.cs` - Registered handler
+  - Created `rhino_mcp_server/tests/test_boolean_operation.py` - 9 unit tests
+  - Updated `USAGE.md` - Added Boolean Operations section with examples
+  - Updated `Ralph/prd_phase_b.json` - Marked US-B01 as passes: true
+- **Learnings for future iterations:**
+  - New patterns discovered:
+    - `Brep.CreateBooleanUnion(breps, tolerance)` for union
+    - `Brep.CreateBooleanDifference(firstSet, secondSet, tolerance)` for difference
+    - `Brep.CreateBooleanIntersection(brep1, brep2, tolerance)` for intersection
+  - Gotchas / pitfalls:
+    - Boolean operations return null for disjoint geometry
+    - Must handle Extrusion objects by converting to Brep first
+    - Objects must be closed solids (`brep.IsSolid`)
+  - Useful context to remember:
+    - Always use `doc.ModelAbsoluteTolerance` for boolean tolerance
+    - Set `LayerIndex` on new objects to current layer
+    - Return result_ids as list (booleans can produce multiple objects)
+
+---
+
 ## Codebase Patterns (SACRED - use exactly these conventions)
 
 ### Project Structure

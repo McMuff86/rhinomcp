@@ -164,55 +164,60 @@ Outcome:
 ---
 
 ### P-0002 — PBR material creation reports success but material not visible in Rhino
-Type: PROBLEM • Status: OPEN • Date: 2026-01-10
+Type: PROBLEM • Status: RESOLVED • Date: 2026-01-10
 Environment: { OS: Windows 10 (10.0.26200), Rhino: unknown, MCP server: 0.1.3.6, Plugin: 0.1.3.6 }
 Related: W-0004
 
 Summary:
 - `create_material` with `material_type='pbr'` returns success message with material ID
 - However, material is not visible in Rhino's material panel
-- Response shows: `"PBR Material GoldMaterial created with ID 1"`
 
-Details:
-- Repro: Run `gold_cube_test.py` or call `create_material` with PBR params
-- Expected: Material appears in Rhino material panel, can be assigned to objects/layers
-- Actual: Success returned but no material visible in Rhino
+**Root Cause:**
+- PBR materials were being added to `doc.Materials` (legacy table) instead of `doc.RenderMaterials`
+- The UI and `AssignMaterialToLayer` expect render materials in the `RenderMaterials` table
+
+**Solution (S-0002):**
+- Changed `CreateMaterial` in C# to use `RenderMaterial.CreateBasicMaterial(doc)` for PBR materials
+- Now adds to `doc.RenderMaterials.Add()` so materials appear in the panel
+- Returns render material index for use with `assign_material_to_layer`
 
 ---
 
 ### P-0003 — Objects created on Default layer instead of current layer
-Type: PROBLEM • Status: OPEN • Date: 2026-01-10
+Type: PROBLEM • Status: RESOLVED • Date: 2026-01-10
 Environment: { OS: Windows 10 (10.0.26200), Rhino: unknown, MCP server: 0.1.3.6, Plugin: 0.1.3.6 }
 
 Summary:
 - After calling `get_or_set_current_layer` to set a new layer, objects still get created on "Default" layer
 - Response from `create_object` shows `"layer": "Default"` instead of expected layer
 
-Details:
-- Repro: 
-  1. Create layer "GoldPBR"
-  2. Call `get_or_set_current_layer(layer_name="GoldPBR")`
-  3. Create object with `create_object`
-  4. Object appears on "Default" layer
-- Expected: Object should be on "GoldPBR" layer
-- Actual: Object is on "Default" layer
-- Possible cause: C# handler may not respect current layer or layer param not passed
+**Root Cause:**
+- `CreateObject.cs` used `doc.Objects.AddXxx()` which creates objects with default attributes
+- The code modified name/color attributes but never set `LayerIndex`
+
+**Solution (S-0003):**
+- Added explicit `rhinoObject.Attributes.LayerIndex = doc.Layers.CurrentLayerIndex` before `ModifyAttributes`
+- Objects now correctly inherit the current layer at creation time
 
 ---
 
 ### P-0004 — assign_material_to_layer fails with null parameter error
-Type: PROBLEM • Status: OPEN • Date: 2026-01-10
+Type: PROBLEM • Status: RESOLVED • Date: 2026-01-10
 Environment: { OS: Windows 10 (10.0.26200), Rhino: unknown, MCP server: 0.1.3.6, Plugin: 0.1.3.6 }
 
 Summary:
-- Calling `assign_material_to_layer` with `material_name` parameter fails
+- Calling `assign_material_to_layer` with missing/null `material_id` parameter fails
 - Error: `Value cannot be null. (Parameter 's')`
 
-Details:
-- Repro: `assign_material_to_layer(layer_name="Gold_Material", material_name="PBR_Gold")`
-- Expected: Material assigned to layer
-- Actual: Null parameter error from C# side
-- Possible cause: C# handler expects material_index instead of material_name, or lookup by name fails
+**Root Cause:**
+- C# code used `int.Parse(materialId)` which throws when `materialId` is null
+- No validation of required parameters before parsing
+
+**Solution (S-0004):**
+- Added parameter validation for `layer_name` and `material_id` (throw clear `ArgumentException`)
+- Changed to `int.TryParse()` with proper error message
+- Added range validation against `doc.RenderMaterials.Count`
+- Also added defensive validation on Python side
 
 ---
 
@@ -220,8 +225,8 @@ Details:
 
 - ~~Expose configurable timeout for `execute_rhinoscript_python_code`~~ (DONE - US-006)
 - ~~Add health-check tool (`ping`) returning immediate OK from plugin~~ (EXISTS)
-- Fix P-0002: Investigate PBR material creation in C# plugin
-- Fix P-0003: Ensure objects respect current layer setting
-- Fix P-0004: Fix material assignment by name lookup
+- ~~Fix P-0002: PBR material creation~~ (RESOLVED - S-0002)
+- ~~Fix P-0003: Objects respect current layer~~ (RESOLVED - S-0003)
+- ~~Fix P-0004: Material assignment validation~~ (RESOLVED - S-0004)
 - Add batch endpoints for bulk geometry operations (create_objects for parametric primitives)
 - Extend serializer coverage for more geometry types and attributes

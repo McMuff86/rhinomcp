@@ -163,16 +163,12 @@ public partial class RhinoMCPFunctions
         var doc = RhinoDoc.ActiveDoc;
 
         // Create material based on type
-        if (materialType.ToLower() == "pbr")
+        if (string.Equals(materialType, "pbr", StringComparison.OrdinalIgnoreCase))
         {
-            // Create a PBR material using a concrete render material implementation
-            // Since RenderMaterial is abstract, we need to use a different approach
-
             try
             {
-                // Try to find an existing render material type that works
-                // For now, create a material with PBR parameters using the legacy API
-                var pbrMaterial = new Material
+                // Create a base Material first, then convert to RenderMaterial
+                var baseMaterial = new Material
                 {
                     Name = name,
                     DiffuseColor = Color.FromArgb(color[0], color[1], color[2]),
@@ -181,37 +177,40 @@ public partial class RhinoMCPFunctions
                     Transparency = 0.0
                 };
 
-                // Store PBR parameters as user data for proper identification and display
-                pbrMaterial.SetUserString("material_type", "pbr");
-                pbrMaterial.SetUserString("metallic", metallic.ToString());
-                pbrMaterial.SetUserString("roughness", roughness.ToString());
-                pbrMaterial.SetUserString("base_color", $"{color[0]},{color[1]},{color[2]}");
-                pbrMaterial.SetUserString("is_pbr", "true");
-                pbrMaterial.SetUserString("pbr_display_name", "Physically Based");
-
-                pbrMaterial.CommitChanges();
-                var materialId = doc.Materials.Add(pbrMaterial);
-
-                if (materialId >= 0)
+                // Convert to PhysicallyBased and set PBR parameters
+                baseMaterial.ToPhysicallyBased();
+                var pbr = baseMaterial.PhysicallyBased;
+                if (pbr != null)
                 {
-                    RhinoApp.WriteLine($"[PBR MATERIAL CREATED] Successfully created PBR-style material: {name} with ID: {materialId} (metallic: {metallic}, roughness: {roughness})");
-                    return JObject.FromObject(new
-                    {
-                        status = "success",
-                        message = $"PBR Material {name} created with ID {materialId}",
-                        id = materialId.ToString(),
-                        type = "pbr",
-                        metallic = metallic,
-                        roughness = roughness,
-                        note = "Created as enhanced material with PBR parameters - will appear as Custom but with PBR properties"
-                    });
+                    pbr.Metallic = metallic;
+                    pbr.Roughness = roughness;
+                    pbr.BaseColor = new Rhino.Display.Color4f(Color.FromArgb(color[0], color[1], color[2]));
                 }
 
-                throw new InvalidOperationException("Failed to create PBR material");
+                baseMaterial.CommitChanges();
+
+                // Create RenderMaterial from the base material and add to RenderMaterials table
+                var renderMaterial = Rhino.Render.RenderMaterial.CreateBasicMaterial(baseMaterial, doc);
+                doc.RenderMaterials.Add(renderMaterial);
+
+                // Get the index of the just-added render material
+                int renderIndex = doc.RenderMaterials.Count - 1;
+
+                RhinoApp.WriteLine($"[PBR MATERIAL CREATED] PBR material '{name}' created with RenderMaterials index {renderIndex} (metallic: {metallic}, roughness: {roughness})");
+
+                return JObject.FromObject(new
+                {
+                    status = "success",
+                    message = $"PBR Material {name} created with render index {renderIndex}",
+                    id = renderIndex.ToString(),
+                    type = "pbr",
+                    metallic = metallic,
+                    roughness = roughness
+                });
             }
             catch (Exception ex)
             {
-                RhinoApp.WriteLine($"[PBR ERROR] Failed to create PBR material: {ex.Message}");
+                RhinoApp.WriteLine($"[PBR ERROR] Failed to create PBR render material: {ex.Message}");
 
                 // Fallback: create a basic legacy material
                 var fallbackMaterial = new Material
@@ -234,7 +233,7 @@ public partial class RhinoMCPFunctions
                     type = "pbr_basic",
                     metallic = metallic,
                     roughness = roughness,
-                    note = "Created as basic material - PBR parameters stored in user data"
+                    note = "Created as basic legacy material - PBR parameters not fully supported"
                 });
             }
         }
@@ -273,6 +272,13 @@ public partial class RhinoMCPFunctions
         string layerName = parameters["layer_name"]?.ToString();
         string materialId = parameters["material_id"]?.ToString();
 
+        // Validate required parameters
+        if (string.IsNullOrWhiteSpace(layerName))
+            throw new ArgumentException("Parameter 'layer_name' is required.");
+
+        if (string.IsNullOrWhiteSpace(materialId))
+            throw new ArgumentException("Parameter 'material_id' is required.");
+
         var doc = RhinoDoc.ActiveDoc;
         var layer = doc.Layers.FindName(layerName);
         if (layer == null)
@@ -280,13 +286,18 @@ public partial class RhinoMCPFunctions
             throw new InvalidOperationException($"Layer {layerName} not found");
         }
 
-        // Assign material to layer - use RenderMaterialIndex for all materials in modern Rhino
-        var materialIndex = int.Parse(materialId);
-        layer.RenderMaterialIndex = materialIndex;
+        // Parse and validate material index
+        if (!int.TryParse(materialId, out var materialIndex))
+            throw new InvalidOperationException($"Invalid material_id '{materialId}'. Expected an integer index.");
 
+        if (materialIndex < 0 || materialIndex >= doc.RenderMaterials.Count)
+            throw new InvalidOperationException($"Material index {materialIndex} is out of range. There are {doc.RenderMaterials.Count} render materials in the document.");
+
+        // Assign material to layer - use RenderMaterialIndex for modern Rhino render materials
+        layer.RenderMaterialIndex = materialIndex;
         doc.Layers.Modify(layer, layer.Index, true);
 
-        RhinoApp.WriteLine($"[MATERIAL ASSIGNED] Material {materialId} assigned to layer {layerName}");
+        RhinoApp.WriteLine($"[MATERIAL ASSIGNED] Render material {materialIndex} assigned to layer {layerName}");
         return JObject.FromObject(new { status = "success", message = $"Material assigned to layer {layerName}" });
     }
 }

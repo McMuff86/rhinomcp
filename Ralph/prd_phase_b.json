@@ -1,0 +1,96 @@
+{
+  "project": "RhinoMCP",
+  "branchName": "feature/phase-b-core-features",
+  "description": "Phase B: Core Features - Add essential geometry and transformation capabilities",
+  "userStories": [
+    {
+      "id": "US-B01",
+      "title": "Boolean Operations (Union, Difference, Intersection)",
+      "description": "As a user, I want to perform boolean operations on solid objects.",
+      "acceptanceCriteria": [
+        "Add boolean_operation tool accepting operation type, object IDs",
+        "Support UNION, DIFFERENCE, INTERSECTION operations",
+        "Handle errors gracefully (non-solid objects, disjoint geometry)",
+        "Return new object ID after operation",
+        "Add tests for each operation type"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Implemented 2026-01-10. Python tool + C# handler + 9 tests."
+    },
+    {
+      "id": "US-B02",
+      "title": "Transform Tools (Copy, Mirror, Array)",
+      "description": "As a user, I want to copy, mirror, and array objects.",
+      "acceptanceCriteria": [
+        "Add copy_object tool (single object duplication with optional transform)",
+        "Add mirror_object tool (mirror across plane)",
+        "Add array_linear tool (linear array with count and spacing)",
+        "Add array_polar tool (polar array around center point)",
+        "All tools return new object IDs"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-B03",
+      "title": "Curve Operations (Offset, Fillet, Chamfer)",
+      "description": "As a user, I want to offset curves and add fillets/chamfers to corners.",
+      "acceptanceCriteria": [
+        "Add offset_curve tool with distance parameter",
+        "Add fillet_curves tool with radius parameter",
+        "Add chamfer_curves tool with distance parameters",
+        "Handle open and closed curves appropriately",
+        "Return new curve IDs"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-B04",
+      "title": "Surface from Curves (Loft, Extrude, Revolve)",
+      "description": "As a user, I want to create surfaces from curves.",
+      "acceptanceCriteria": [
+        "Add loft_curves tool (loft between multiple curves)",
+        "Add extrude_curve tool (extrude along vector or path)",
+        "Add revolve_curve tool (revolve around axis)",
+        "Support closed surfaces where applicable",
+        "Return new surface/brep IDs"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-B05",
+      "title": "Dimension Tools",
+      "description": "As a user, I want to add dimensions to my model.",
+      "acceptanceCriteria": [
+        "Add create_linear_dimension tool",
+        "Add create_angular_dimension tool",
+        "Add create_radial_dimension tool",
+        "Dimensions update correctly with object changes",
+        "Support dimension style parameters"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-B06",
+      "title": "Get/Set Object Properties",
+      "description": "As a user, I want to query and modify object properties.",
+      "acceptanceCriteria": [
+        "Add get_object_properties tool (bounding box, area, volume, centroid)",
+        "Add set_object_properties tool (name, layer, color, material)",
+        "Support batch operations for multiple objects",
+        "Return structured property data"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

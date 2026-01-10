@@ -181,6 +181,13 @@ public partial class RhinoMCPFunctions
         var rhinoObject = doc.Objects.Find(objectId);
         if (rhinoObject != null)
         {
+            // Ensure object is created on the current layer
+            int currentLayerIndex = doc.Layers.CurrentLayerIndex;
+            if (currentLayerIndex >= 0)
+            {
+                rhinoObject.Attributes.LayerIndex = currentLayerIndex;
+            }
+
             if (!string.IsNullOrEmpty(name)) rhinoObject.Attributes.Name = name;
             if (customColor)
             {
