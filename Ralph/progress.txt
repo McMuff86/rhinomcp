@@ -390,6 +390,23 @@ RhinoApp.RunScript(script, echo);
 ### Test Results
 - 126 tests passed (9 new dimension tests)
 - Build successful
-- RhinoScript dimensions tested and working
+- All dimension handlers working via socket
+
+### Socket Timeout Fix (2026-01-10)
+**Problem:** `RhinoApp.InvokeOnUiThread` is non-blocking. The client handler thread continued before the response was sent, causing timeouts.
+
+**Solution:** Added `ManualResetEventSlim` to wait for UI thread completion:
+```csharp
+using (var completionEvent = new ManualResetEventSlim(false))
+{
+    RhinoApp.InvokeOnUiThread(() => {
+        try { /* execute command, send response */ }
+        finally { completionEvent.Set(); }
+    });
+    completionEvent.Wait(TimeSpan.FromSeconds(60));
+}
+```
+
+**Added:** `get_logs` and `clear_logs` commands for debugging.
 
 ---

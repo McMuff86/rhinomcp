@@ -34,6 +34,50 @@ namespace RhinoMCPPlugin
         private readonly object lockObject = new object();
         private RhinoMCPFunctions handler;
         private bool debugMode = true;
+        
+        // Static log buffer for capturing Rhino command line output
+        private static readonly Queue<string> _logBuffer = new Queue<string>();
+        private static readonly object _logLock = new object();
+        private const int MaxLogEntries = 100;
+        
+        /// <summary>
+        /// Add a log entry to the buffer and also write to Rhino command line.
+        /// </summary>
+        public static void Log(string message)
+        {
+            lock (_logLock)
+            {
+                string timestampedMessage = $"[{DateTime.Now:HH:mm:ss.fff}] {message}";
+                _logBuffer.Enqueue(timestampedMessage);
+                while (_logBuffer.Count > MaxLogEntries)
+                {
+                    _logBuffer.Dequeue();
+                }
+            }
+            RhinoApp.WriteLine(message);
+        }
+        
+        /// <summary>
+        /// Get recent log entries.
+        /// </summary>
+        public static List<string> GetRecentLogs(int count = 50)
+        {
+            lock (_logLock)
+            {
+                return _logBuffer.TakeLast(Math.Min(count, _logBuffer.Count)).ToList();
+            }
+        }
+        
+        /// <summary>
+        /// Clear the log buffer.
+        /// </summary>
+        public static void ClearLogs()
+        {
+            lock (_logLock)
+            {
+                _logBuffer.Clear();
+            }
+        }
 
         public RhinoMCPServer(string host = "127.0.0.1", int port = 1999)
         {
@@ -290,44 +334,64 @@ namespace RhinoMCPPlugin
                                 JObject command = JObject.Parse(incompleteData);
                                 incompleteData = string.Empty;
 
-                                // Execute command on Rhino's main thread
-                                RhinoApp.InvokeOnUiThread(new Action(() =>
+                                // Use ManualResetEventSlim to wait for UI thread completion
+                                using (var completionEvent = new System.Threading.ManualResetEventSlim(false))
                                 {
-                                    try
+                                    Exception caughtException = null;
+                                    
+                                    // Execute command on Rhino's main thread
+                                    RhinoApp.InvokeOnUiThread(new Action(() =>
                                     {
-                                        JObject response = ExecuteCommand(command);
-                                        string responseJson = JsonConvert.SerializeObject(response);
+                                        try
+                                        {
+                                            JObject response = ExecuteCommand(command);
+                                            string responseJson = JsonConvert.SerializeObject(response);
 
-                                        try
-                                        {
-                                            byte[] responseBytes = Encoding.UTF8.GetBytes(responseJson);
-                                            stream.Write(responseBytes, 0, responseBytes.Length);
-                                        }
-                                        catch
-                                        {
-                                            RhinoApp.WriteLine("Failed to send response - client disconnected");
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        RhinoApp.WriteLine($"Error executing command: {e.Message}");
-                                        try
-                                        {
-                                            JObject errorResponse = new JObject
+                                            try
                                             {
-                                                ["status"] = "error",
-                                                ["message"] = e.Message
-                                            };
-
-                                            byte[] errorBytes = Encoding.UTF8.GetBytes(errorResponse.ToString());
-                                            stream.Write(errorBytes, 0, errorBytes.Length);
+                                                byte[] responseBytes = Encoding.UTF8.GetBytes(responseJson);
+                                                stream.Write(responseBytes, 0, responseBytes.Length);
+                                                stream.Flush();
+                                            }
+                                            catch (Exception sendEx)
+                                            {
+                                                RhinoApp.WriteLine($"Failed to send response - client disconnected: {sendEx.Message}");
+                                            }
                                         }
-                                        catch
+                                        catch (Exception e)
                                         {
-                                            // Ignore send errors
+                                            caughtException = e;
+                                            RhinoApp.WriteLine($"Error executing command: {e.Message}\nStackTrace: {e.StackTrace}");
+                                            try
+                                            {
+                                                JObject errorResponse = new JObject
+                                                {
+                                                    ["status"] = "error",
+                                                    ["message"] = e.Message
+                                                };
+
+                                                byte[] errorBytes = Encoding.UTF8.GetBytes(errorResponse.ToString());
+                                                stream.Write(errorBytes, 0, errorBytes.Length);
+                                                stream.Flush();
+                                            }
+                                            catch
+                                            {
+                                                // Ignore send errors
+                                            }
                                         }
+                                        finally
+                                        {
+                                            // Signal completion
+                                            completionEvent.Set();
+                                        }
+                                    }));
+                                    
+                                    // Wait for UI thread to complete (with timeout)
+                                    if (!completionEvent.Wait(TimeSpan.FromSeconds(60)))
+                                    {
+                                        RhinoApp.WriteLine("WARNING: Command execution timed out after 60 seconds");
                                     }
-                                }));
+                                }
                             }
                             catch (JsonException)
                             {
@@ -440,7 +504,20 @@ namespace RhinoMCPPlugin
                 ["revolve_curve"] = this.handler.RevolveCurve,
                 ["create_linear_dimension"] = this.handler.CreateLinearDimension,
                 ["create_angular_dimension"] = this.handler.CreateAngularDimension,
-                ["create_radial_dimension"] = this.handler.CreateRadialDimension
+                ["create_radial_dimension"] = this.handler.CreateRadialDimension,
+                ["get_logs"] = (p) => {
+                    int count = p["count"]?.Value<int>() ?? 50;
+                    var logs = GetRecentLogs(count);
+                    return new JObject
+                    {
+                        ["logs"] = new JArray(logs),
+                        ["count"] = logs.Count
+                    };
+                },
+                ["clear_logs"] = (p) => {
+                    ClearLogs();
+                    return new JObject { ["message"] = "Logs cleared" };
+                }
                 // Add more handlers as needed
             };
 

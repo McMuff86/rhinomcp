@@ -162,6 +162,8 @@ public JObject CreateObject(JObject parameters)
 | Tool | Handler | Description |
 |------|---------|-------------|
 | `ping` | Inline | Health check |
+| `get_logs` | Inline | Get recent server logs |
+| `clear_logs` | Inline | Clear log buffer |
 | `get_document_info` | `GetDocumentInfo.cs` | Document metadata |
 | `create_object` | `CreateObject.cs` | Create geometry |
 | `create_objects` | `CreateObjects.cs` | Batch create |

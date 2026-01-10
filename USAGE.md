@@ -29,6 +29,8 @@ uv run rhinomcp
 | `ping` | Test connection |
 | `set_debug_mode` | Toggle logging |
 | `get_document_info` | Document metadata |
+| `get_logs` | Get recent server logs (debugging) |
+| `clear_logs` | Clear server log buffer |
 
 ### Object Creation
 | Tool | Description |

@@ -45,3 +45,4 @@ from .tools.revolve_curve import revolve_curve
 from .tools.create_linear_dimension import create_linear_dimension
 from .tools.create_angular_dimension import create_angular_dimension
 from .tools.create_radial_dimension import create_radial_dimension
+from .tools.get_logs import get_logs, clear_logs
