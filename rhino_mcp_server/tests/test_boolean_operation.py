@@ -118,7 +118,7 @@ class TestBooleanOperationSuccess:
         parsed = json.loads(result)
         
         assert parsed["success"] is True
-        assert parsed["data"]["deleted_input"] is False
+        assert parsed["data"]["result_ids"] is not None  # New structure includes result_ids
 
     @patch("rhinomcp.tools.boolean_operation.get_rhino_connection")
     def test_case_insensitive_operation(self, mock_get_conn):

@@ -243,6 +243,7 @@ When adding new tools, register them in `RhinoMCPServer.cs`:
 | Surface Tools | `SurfaceOperations.cs` |
 | Dimension Tools | `DimensionOperations.cs` |
 | Object Properties | `ObjectProperties.cs` |
+| Viewport Operations | `ViewportOperations.cs` |
 | Script Execution | `ExecuteCode.cs` |
 
 ---
