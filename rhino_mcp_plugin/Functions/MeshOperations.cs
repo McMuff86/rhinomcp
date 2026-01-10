@@ -217,7 +217,7 @@ public partial class RhinoMCPFunctions
             if (Guid.TryParse(idStr, out Guid guid))
             {
                 RhinoObject obj = doc.Objects.FindId(guid);
-                if (obj != null && obj.Geometry is Brep)
+                if (obj != null && (obj.Geometry is Brep || obj.Geometry is Extrusion))
                 {
                     sourceGuids.Add(guid);
                 }

@@ -209,7 +209,11 @@ public partial class RhinoMCPFunctions
         if (doc.Objects.Count > objectCountBefore)
         {
             // Get the last added object (assuming it's the block instance)
-            RhinoObject lastObj = doc.Objects[doc.Objects.Count - 1];
+            RhinoObject lastObj = null;
+            foreach (RhinoObject obj in doc.Objects)
+            {
+                lastObj = obj; // Keep overwriting to get the last one
+            }
             if (lastObj != null)
             {
                 instanceId = lastObj.Id.ToString();
