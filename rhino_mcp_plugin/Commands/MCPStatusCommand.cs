@@ -25,9 +25,22 @@ namespace RhinoMCPPlugin.Commands
             }
 
             bool debugMode = plugin.Server.GetDebugMode();
+            var wsStatus = plugin.Server.GetWebSocketStatus();
+            
             RhinoApp.WriteLine($"MCP Server Status:");
             RhinoApp.WriteLine($"  - Debug Mode: {(debugMode ? "Enabled" : "Disabled")}");
-            RhinoApp.WriteLine($"  - Connection: Active on 127.0.0.1:1999");
+            RhinoApp.WriteLine($"  - TCP Server: Active on 127.0.0.1:1999");
+            
+            if (wsStatus.IsRunning)
+            {
+                RhinoApp.WriteLine($"  - WebSocket Server: Active on {wsStatus.Endpoint}");
+                RhinoApp.WriteLine($"  - WebSocket Clients: {wsStatus.ClientCount}");
+            }
+            else
+            {
+                RhinoApp.WriteLine($"  - WebSocket Server: Not running");
+            }
+            
             RhinoApp.WriteLine($"  - Active Features: {(debugMode ? "Enhanced Logging, AI Thoughts" : "Basic Logging")}");
 
             return Result.Success;

@@ -71,4 +71,28 @@ from .tools.ungroup import ungroup
 
 # Grasshopper Operations
 from .tools.run_grasshopper import run_grasshopper
-from .tools.run_grasshopper_automated import run_door_script, run_grasshopper_automated
+from .tools.grasshopper_interactive import (
+    run_door_script,
+    run_grasshopper_interactive,
+)
+
+# WebSocket Streaming (Real-Time Events)
+from .tools.stream_commands import (
+    cancel_rhino_command,
+    clear_stream_buffer,
+    connect_rhino_stream,
+    disconnect_rhino_stream,
+    get_stream_events,
+    get_stream_status,
+    run_script_async,
+    send_rhino_input,
+    wait_for_prompt,
+)
+
+# WebSocket Client
+from .websocket_client import (
+    RhinoWebSocketClient,
+    WebSocketEvent,
+    get_websocket_client,
+    reset_websocket_client,
+)

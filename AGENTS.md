@@ -3,8 +3,8 @@
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
 **Last Updated:** 2026-01-11
-**Version:** 0.1.3.10
-**Phase:** C Complete (US-C06 Grasshopper Integration complete)
+**Version:** 0.1.4.2
+**Phase:** C Complete + Grasshopper Automation (Multi-door creation working!)
 
 ---
 
@@ -41,6 +41,24 @@ Before starting, determine which workflow to use:
 | Update `progress.txt` after each story | Forget to document learnings |
 | Follow existing patterns in the codebase | Invent new conventions |
 | Use same progress.txt for Cursor AND Amp | Create separate progress logs |
+| **Keep documentation clean** | Leave solved problems in active docs |
+| **Archive solved issues** to `docs/archive/solved_issues/` | Delete problem history entirely |
+
+### Documentation Hygiene (IMPORTANT!)
+
+**Keep all documentation clean and current:**
+
+1. **Remove solved problems** from `progress.txt` and other active docs
+2. **Archive valuable learnings** to `docs/archive/solved_issues/ISSUE_NAME.md`
+3. **Each archived issue should contain:**
+   - Problem description
+   - Failed attempts (brief)
+   - Working solution
+   - Key learnings
+4. **Never leave** "TODO", "INCOMPLETE", or "PROBLEM" entries in active docs after resolution
+5. **Check archives** before debugging - the problem may already be solved!
+
+**Archive location:** `docs/archive/solved_issues/`
 
 ### Response Format (SACRED)
 
@@ -59,40 +77,63 @@ return json.dumps(from_exception(e, code=ErrorCode.CREATE_OBJECT_ERROR))
 
 ---
 
-## 🚀 NEW: Real-Time Rhino Monitoring
+## 🚀 Real-Time Rhino Monitoring (WebSocket)
 
-**Since Version 0.1.4.0**
+**Since Version 0.1.4.0 - Refactored in 0.1.4.1**
 
-AI agents can now "see" what's happening in Rhino in real-time using command line monitoring.
+AI agents can now "see" what's happening in Rhino in real-time using **WebSocket streaming** (Port 2000).
 
 ### Quick Start
 
 ```python
-# 1. Clear monitoring buffer
-clear_command_output()
+# 1. Connect to WebSocket stream
+connect_rhino_stream()
 
-# 2. Run operation that might prompt for input
-run_grasshopper(file_path="script.gh")
+# 2. Run interactive Grasshopper script
+run_script_async('_-GrasshopperPlayer "path/to/script.gh"')
 
-# 3. Check what Rhino is asking for
-result = get_command_output(count=20)
-events = result["data"]["events"]
-current_prompt = result["data"]["current_prompt"]
+# 3. Wait for prompts and respond
+prompt = wait_for_prompt("lichthoehe", timeout=10)
+if prompt:
+    send_rhino_input("2200")
 
-# 4. Detect if manual input is needed
-prompts = [e for e in events if e["type"] == "Prompt"]
-if prompts:
-    print(f"Rhino is asking: {prompts[-1]['text']}")
+# 4. Or use the automated helper
+run_grasshopper_interactive(
+    file_path="script.gh",
+    inputs={"lichthoehe": "2200", "lichtbreite": "910"}
+)
 ```
 
-### Use Cases
+### Recommended: Use GetPoint Scripts
 
-| Scenario | Benefit |
-|----------|---------|
-| Grasshopper automation | Detect when parameters are requested |
-| Long-running scripts | Monitor progress and detect errors |
-| Interactive commands | See what Rhino is asking for |
-| Debugging | Track command execution flow |
+For reliable automation, use Grasshopper scripts with **GetPoint** instead of **GetPlane**:
+
+```python
+# Rahmentuer_UD4.gh - simplified with GetPoint
+# Only 3 prompts: Lichthoehe, Lichtbreite, Get Point
+
+# Single door
+await ws.send({"command": "run_script", "script": '_-GrasshopperPlayer "Rahmentuer_UD4.gh"'})
+# React to: Lichthoehe -> 2200, Lichtbreite -> 1200, Get Point -> 0,0,0
+
+# Multi-door: See dev/create_3_doors.py for pattern
+```
+
+**Key timing rules:**
+- 0.5s delay before each input
+- 2.0s wait between scripts
+
+### WebSocket Tools
+
+| Tool | Description |
+|------|-------------|
+| `connect_rhino_stream()` | Connect to WebSocket (Port 2000) |
+| `disconnect_rhino_stream()` | Disconnect from stream |
+| `send_rhino_input(value)` | Send input to Rhino command line |
+| `wait_for_prompt(pattern)` | Wait for specific prompt |
+| `run_script_async(script)` | Run script without blocking |
+| `cancel_rhino_command()` | Cancel current command |
+| `run_grasshopper_interactive()` | Run GH with auto-input |
 
 ### Documentation
 
@@ -492,8 +533,9 @@ uv run pytest tests/test_connection.py -v
 | `docs/archive/PHASE_B_CONTEXT.md` | Phase B implementation details (archived) |
 | `docs/archive/REPOSITORY_ANALYSIS.md` | Codebase analysis & insights (archived) |
 | `docs/archive/development_guide.md` | Development workflow (deprecated) |
+| `docs/archive/solved_issues/` | **Solved issues archive - check before debugging!** |
 | `Ralph/README.md` | Ralph workflow documentation |
-| `Ralph/progress.txt` | Codebase patterns & learnings |
+| `Ralph/progress.txt` | Codebase patterns & learnings (keep clean!)
 
 ### Tool Documentation
 

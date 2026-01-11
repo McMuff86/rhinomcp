@@ -35,34 +35,14 @@ namespace RhinoMCPPlugin
         private RhinoMCPFunctions handler;
         private bool debugMode = true;
         
+        // WebSocket server for real-time event streaming
+        private RhinoMCPWebSocketServer wsServer;
+        private const int DefaultWebSocketPort = 2000;
+        
         // Static log buffer for capturing Rhino command line output
         private static readonly Queue<string> _logBuffer = new Queue<string>();
         private static readonly object _logLock = new object();
         private const int MaxLogEntries = 100;
-        
-        // Command line output monitoring (polling-based approach)
-        private static readonly Queue<CommandLineEvent> _commandLineBuffer = new Queue<CommandLineEvent>();
-        private static readonly object _commandLineLock = new object();
-        private const int MaxCommandLineEntries = 200;
-        private static string _lastCommandPrompt = "";
-        private static string _lastCommandHistory = "";
-        
-        /// <summary>
-        /// Represents a command line event with timestamp and text.
-        /// </summary>
-        public class CommandLineEvent
-        {
-            public DateTime Timestamp { get; set; }
-            public string Text { get; set; }
-            public string EventType { get; set; }  // "Out", "Prompt", "History"
-            
-            public CommandLineEvent(string text, string eventType = "Out")
-            {
-                Timestamp = DateTime.Now;
-                Text = text;
-                EventType = eventType;
-            }
-        }
         
         /// <summary>
         /// Add a log entry to the buffer and also write to Rhino command line.
@@ -103,109 +83,6 @@ namespace RhinoMCPPlugin
             }
         }
         
-        /// <summary>
-        /// Capture current command line state (polling approach).
-        /// Call this periodically to track command line changes.
-        /// </summary>
-        public static void CaptureCommandLineState()
-        {
-            lock (_commandLineLock)
-            {
-                // Get current command prompt
-                string currentPrompt = RhinoApp.CommandPrompt ?? "";
-                if (currentPrompt != _lastCommandPrompt && !string.IsNullOrEmpty(currentPrompt))
-                {
-                    _commandLineBuffer.Enqueue(new CommandLineEvent(currentPrompt, "Prompt"));
-                    _lastCommandPrompt = currentPrompt;
-                    
-                    // Keep buffer size manageable
-                    while (_commandLineBuffer.Count > MaxCommandLineEntries)
-                    {
-                        _commandLineBuffer.Dequeue();
-                    }
-                }
-                
-                // Get command history and extract new lines
-                string historyText = RhinoApp.CommandHistoryWindowText ?? "";
-                if (historyText != _lastCommandHistory && !string.IsNullOrEmpty(historyText))
-                {
-                    // Find what's new
-                    if (historyText.StartsWith(_lastCommandHistory))
-                    {
-                        string newText = historyText.Substring(_lastCommandHistory.Length);
-                        if (!string.IsNullOrWhiteSpace(newText))
-                        {
-                            var newLines = newText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (var line in newLines)
-                            {
-                                if (!string.IsNullOrWhiteSpace(line))
-                                {
-                                    _commandLineBuffer.Enqueue(new CommandLineEvent(line, "History"));
-                                }
-                            }
-                        }
-                    }
-                    _lastCommandHistory = historyText;
-                    
-                    // Keep buffer size manageable
-                    while (_commandLineBuffer.Count > MaxCommandLineEntries)
-                    {
-                        _commandLineBuffer.Dequeue();
-                    }
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Get recent command line events.
-        /// </summary>
-        public static List<CommandLineEvent> GetCommandLineEvents(int count = 50)
-        {
-            // Capture current state before returning
-            CaptureCommandLineState();
-            
-            lock (_commandLineLock)
-            {
-                return _commandLineBuffer.TakeLast(Math.Min(count, _commandLineBuffer.Count)).ToList();
-            }
-        }
-        
-        /// <summary>
-        /// Get command line events since a specific timestamp.
-        /// </summary>
-        public static List<CommandLineEvent> GetCommandLineEventsSince(DateTime since)
-        {
-            // Capture current state before returning
-            CaptureCommandLineState();
-            
-            lock (_commandLineLock)
-            {
-                return _commandLineBuffer.Where(e => e.Timestamp > since).ToList();
-            }
-        }
-        
-        /// <summary>
-        /// Clear command line event buffer.
-        /// </summary>
-        public static void ClearCommandLineEvents()
-        {
-            lock (_commandLineLock)
-            {
-                _commandLineBuffer.Clear();
-                _lastCommandPrompt = "";
-                _lastCommandHistory = "";
-            }
-        }
-        
-        /// <summary>
-        /// Get the current command prompt text.
-        /// </summary>
-        public static string GetCurrentPrompt()
-        {
-            // Capture current state
-            CaptureCommandLineState();
-            return RhinoApp.CommandPrompt ?? "";
-        }
 
         public RhinoMCPServer(string host = "127.0.0.1", int port = 1999)
         {
@@ -231,6 +108,18 @@ namespace RhinoMCPPlugin
         public bool IsRunning()
         {
             return running;
+        }
+
+        /// <summary>
+        /// Gets information about the WebSocket server status.
+        /// </summary>
+        public (bool IsRunning, string Endpoint, int ClientCount) GetWebSocketStatus()
+        {
+            if (wsServer != null && wsServer.IsRunning)
+            {
+                return (true, wsServer.Endpoint, wsServer.ClientCount);
+            }
+            return (false, null, 0);
         }
 
 
@@ -260,6 +149,11 @@ namespace RhinoMCPPlugin
                 serverThread.Start();
 
                 RhinoApp.WriteLine($"RhinoMCP server started on {host}:{port}");
+                
+                // Start WebSocket server for real-time event streaming
+                wsServer = new RhinoMCPWebSocketServer();
+                wsServer.Start(host, DefaultWebSocketPort);
+                
                 RhinoApp.WriteLine("-------------------------------------------");
                 PrintAvailableTools();
                 RhinoApp.WriteLine("-------------------------------------------");
@@ -321,8 +215,7 @@ namespace RhinoMCPPlugin
                 "get_logs",
                 "clear_logs",
                 "get_command_history",
-                "get_command_output",
-                "clear_command_output",
+                // Note: Command monitoring now via WebSocket (port 2000)
                 // Objects
                 "create_object",
                 "create_objects",
@@ -384,6 +277,20 @@ namespace RhinoMCPPlugin
             lock (lockObject)
             {
                 running = false;
+            }
+
+            // Stop WebSocket server
+            if (wsServer != null)
+            {
+                try
+                {
+                    wsServer.Stop();
+                }
+                catch
+                {
+                    // Ignore errors on WebSocket shutdown
+                }
+                wsServer = null;
             }
 
             // Close listener
@@ -593,8 +500,21 @@ namespace RhinoMCPPlugin
 
         private JObject ExecuteCommand(JObject command)
         {
-            string cmdType = command["type"]?.ToString();
+            // Accept both "type" and "command" keys for compatibility
+            string cmdType = command["type"]?.ToString() ?? command["command"]?.ToString();
             JObject parameters = command["params"] as JObject ?? new JObject();
+
+            // Validate cmdType
+            if (string.IsNullOrEmpty(cmdType))
+            {
+                RhinoApp.WriteLine($"ERROR: Missing or empty command type. Received: {command.ToString()}");
+                return new JObject
+                {
+                    ["status"] = "error",
+                    ["message"] = "Missing or empty command type. Expected 'type' or 'command' field.",
+                    ["received_keys"] = new JArray(command.Properties().Select(p => p.Name))
+                };
+            }
 
             try
             {
@@ -696,10 +616,11 @@ namespace RhinoMCPPlugin
                 ["mesh_from_brep"] = this.handler.MeshFromBrep,
                 // Grasshopper Operations
                 ["run_grasshopper"] = this.handler.RunGrasshopper,
-                ["run_grasshopper_with_params"] = this.handler.RunGrasshopperWithParams,
-                ["run_grasshopper_automated"] = this.handler.RunGrasshopperAutomated,
-                ["create_door_from_plan"] = this.handler.CreateDoorFromPlan,
                 ["generate_bill_of_materials"] = this.handler.GenerateBillOfMaterials,
+                // Async Script Execution (for WebSocket-based control)
+                ["start_script_async"] = this.handler.StartScriptAsync,
+                ["send_command_input"] = this.handler.SendCommandInput,
+                ["get_current_prompt"] = this.handler.GetCurrentPrompt,
                 // Command History (for agent communication)
                 ["get_command_history"] = this.handler.GetCommandHistory,
                 ["get_logs"] = (p) => {
@@ -714,37 +635,8 @@ namespace RhinoMCPPlugin
                 ["clear_logs"] = (p) => {
                     ClearLogs();
                     return new JObject { ["message"] = "Logs cleared" };
-                },
-                // Command Line Monitoring
-                ["get_command_output"] = (p) => {
-                    int count = p["count"]?.Value<int>() ?? 50;
-                    DateTime? since = null;
-                    if (p["since"] != null)
-                    {
-                        since = p["since"].Value<DateTime>();
-                    }
-                    
-                    var events = since.HasValue 
-                        ? GetCommandLineEventsSince(since.Value)
-                        : GetCommandLineEvents(count);
-                    
-                    return new JObject
-                    {
-                        ["events"] = new JArray(events.Select(e => new JObject
-                        {
-                            ["timestamp"] = e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff"),
-                            ["text"] = e.Text,
-                            ["type"] = e.EventType
-                        })),
-                        ["count"] = events.Count,
-                        ["current_prompt"] = GetCurrentPrompt()
-                    };
-                },
-                ["clear_command_output"] = (p) => {
-                    ClearCommandLineEvents();
-                    return new JObject { ["message"] = "Command output cleared" };
                 }
-                // Add more handlers as needed
+                // Note: Command line monitoring now uses WebSocket (port 2000)
             };
 
             if (handlers.TryGetValue(cmdType, out var handler))
