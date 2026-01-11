@@ -12,9 +12,10 @@
 
 **ALWAYS do this first when starting a new session (Both Cursor and Amp!):**
 
-1. **Read learnings:** `Ralph/progress.txt` - Contains patterns, gotchas, and context from previous sessions
-2. **Check current phase:** `docs/ROADMAP.md` - What's the current focus?
-3. **Find next task:** `Ralph/prd_phase_c.json` - Pick highest priority story with `passes: false`
+1. **Read progress:** `Ralph/progress.txt` - Current status, quick commands, recent sessions
+2. **Check learnings:** `docs/learnings/*.md` - Technical patterns from previous work
+3. **Check current phase:** `docs/ROADMAP.md` - What's the current focus?
+4. **Find next task:** `Ralph/prd_phase_c.json` - Pick highest priority story with `passes: false`
 
 ### Tool Selection: Cursor vs Amp (Ralph)
 
@@ -60,6 +61,31 @@ Before starting, determine which workflow to use:
 
 **Archive location:** `docs/archive/solved_issues/`
 
+### Learning Documentation System
+
+**Where to Document:**
+
+| Content Type | Location | When to Update |
+|--------------|----------|----------------|
+| Session logs | `Ralph/progress.txt` | Each session (brief) |
+| Technical learnings | `docs/learnings/*.md` | After solving problems |
+| Solved issues | `docs/archive/solved_issues/` | After issue resolved |
+| Future work | `FUTURE_ISSUES.md` | When deferring work |
+| Codebase patterns | `AGENTS.md` | When patterns stabilize |
+
+**Progress.txt Rules:**
+- Keep entries brief (5-10 lines per session)
+- Reference learning files: "See: docs/learnings/TOPIC.md"
+- Archive completed phases to `progress_archive_phase_X.txt`
+- Remove detailed learnings after moving to learning files
+- Max ~100-150 lines in active progress.txt
+
+**Available Learning Files:**
+- `docs/learnings/rhinocommon-api.md` - RhinoCommon patterns
+- `docs/learnings/grasshopper-automation.md` - GH automation learnings
+- `docs/learnings/websocket-patterns.md` - WebSocket streaming patterns
+- `docs/learnings/boolean-operations.md` - Boolean ops learnings
+
 ### Response Format (SACRED)
 
 All MCP tools MUST return JSON via helper functions:
@@ -92,7 +118,7 @@ connect_rhino_stream()
 # 2. Run interactive Grasshopper script
 run_script_async('_-GrasshopperPlayer "path/to/script.gh"')
 
-# 3. Wait for prompts and respond
+# 3. Wait for prompts and respond -> this is just an example, it could be anything, 
 prompt = wait_for_prompt("lichthoehe", timeout=10)
 if prompt:
     send_rhino_input("2200")
@@ -528,14 +554,21 @@ uv run pytest tests/test_connection.py -v
 | `docs/ROADMAP.md` | Project phases & development roadmap |
 | `docs/FUNCTIONAL_STATUS.md` | Current status, known issues & solutions |
 | `docs/MCP_TOOL_STANDARDS.md` | Tool development standards & patterns |
-| `docs/AI_AGENT_RHINO_VISIBILITY.md` | **NEW: Guide for monitoring Rhino state in real-time** |
-| `docs/GRASSHOPPER_AUTOMATION.md` | **Updated: Grasshopper Automation with command monitoring** |
+| `docs/AI_AGENT_RHINO_VISIBILITY.md` | Guide for monitoring Rhino state in real-time |
+| `docs/GRASSHOPPER_AUTOMATION.md` | Grasshopper Automation with command monitoring |
+| **`docs/learnings/`** | **Technical learnings by topic** |
+| `docs/learnings/rhinocommon-api.md` | RhinoCommon API patterns |
+| `docs/learnings/grasshopper-automation.md` | Grasshopper automation learnings |
+| `docs/learnings/websocket-patterns.md` | WebSocket streaming patterns |
+| `docs/learnings/boolean-operations.md` | Boolean operations learnings |
 | `docs/archive/PHASE_B_CONTEXT.md` | Phase B implementation details (archived) |
 | `docs/archive/REPOSITORY_ANALYSIS.md` | Codebase analysis & insights (archived) |
 | `docs/archive/development_guide.md` | Development workflow (deprecated) |
-| `docs/archive/solved_issues/` | **Solved issues archive - check before debugging!** |
+| `docs/archive/solved_issues/` | Solved issues archive - check before debugging! |
 | `Ralph/README.md` | Ralph workflow documentation |
-| `Ralph/progress.txt` | Codebase patterns & learnings (keep clean!)
+| `Ralph/progress.txt` | Session logs & quick commands (keep brief!) |
+| `Ralph/progress_archive_phase_a.txt` | Archived Phase A sessions |
+| `Ralph/progress_archive_phase_b.txt` | Archived Phase B+C sessions
 
 ### Tool Documentation
 
@@ -611,6 +644,7 @@ When unsure how to implement a feature or which RhinoCommon/RhinoScript API to u
 
 - [docs/USAGE.md](docs/USAGE.md) - Quick reference (tool list, conventions)
 - [docs/ROADMAP.md](docs/ROADMAP.md) - Project roadmap
-- [Ralph/progress.txt](Ralph/progress.txt) - Codebase patterns
+- [Ralph/progress.txt](Ralph/progress.txt) - Session logs & quick commands
+- [docs/learnings/](docs/learnings/) - Technical learnings by topic
 - [Rhino Developer Docs](https://developer.rhino3d.com/) - Official API documentation
 - Tool docstrings: `rhino_mcp_server/src/rhinomcp/tools/*.py` - Detailed tool documentation

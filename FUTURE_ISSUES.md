@@ -1,5 +1,9 @@
 # RhinoMCP Future Issues
 
+> Known issues and planned improvements. Check here before starting new work.
+
+---
+
 ## Issue: Automatic MCP Plugin Start
 
 **Priority:** Medium
@@ -40,3 +44,61 @@ Users must manually run `mcpstart` in Rhino command line after startup.
 - Uses `Task.Run()` for background server startup
 - Server configured for `127.0.0.1:1999`
 - Related code in `RhinoMCPServerController.cs`
+
+---
+
+## Issue: modify_object Layer Parameter Not Functional
+
+**Priority:** Low
+**Status:** Open
+**Created:** 2026-01-11
+**Related:** Galaxy Scene Creation session
+
+### Description
+The `modify_object` tool's layer parameter does not correctly assign objects to layers.
+
+### Workaround
+Use RhinoScript for layer assignment:
+
+```python
+import rhinoscriptsyntax as rs
+rs.ObjectLayer(obj_id, 'LayerName')
+```
+
+### Pattern
+Create objects with MCP tools, then assign layers with RhinoScript.
+
+### Acceptance Criteria
+- `modify_object(object_id="...", layer="LayerName")` correctly moves object to layer
+- No RhinoScript workaround needed
+
+---
+
+## Future Enhancements
+
+### Grasshopper API Direct Access
+**Priority:** Low
+**Status:** Planned
+
+Bypass GrasshopperPlayer prompts entirely by directly accessing Grasshopper API:
+- Introspect .gh files to find required inputs
+- Set parameters programmatically without prompts
+- Bake geometry directly
+
+### Parameter Discovery for GH Files
+**Priority:** Low
+**Status:** Planned
+
+Analyze .gh files to discover:
+- Required input parameters
+- Parameter types and ranges
+- Output geometry types
+
+### ML-Based Prompt Understanding
+**Priority:** Low
+**Status:** Planned
+
+Smarter prompt parsing for:
+- Automatic prompt type detection
+- Intelligent response generation
+- Multi-language support

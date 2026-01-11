@@ -2,884 +2,106 @@
 Started: 2026-01-09
 Project: RhinoMCP Professionalization
 
-> **Format:** Each entry includes Thread (Agent Type + Model), Duration, Implementation details
-> **Note:** Entries before Phase B have been archived to `progress_archive_phase_a.txt`
-> Last archived: 2026-01-10 (Phase A: Ralph setup, US-001 to US-006, bug fixes P-0002/P-0003/P-0004)
+> **Purpose:** Current session log. Keep entries brief (5-10 lines).
+> **Learnings:** Move detailed learnings to `docs/learnings/*.md`
+> **Archives:**
+> - Phase A → `progress_archive_phase_a.txt`
+> - Phase B+C → `progress_archive_phase_b.txt`
 
 ---
 
-## Phase B Summary (Complete)
+## Current Status
 
-| Story | Title | Status |
-|-------|-------|--------|
-| US-B01 | Boolean Operations | ✅ Complete |
-| US-B02 | Transform Tools | ✅ Complete |
-| US-B03 | Curve Operations | ✅ Complete |
-| US-B04 | Surface from Curves | ✅ Complete |
-| US-B05 | Dimension Tools | ✅ Complete |
-| US-B06 | Object Properties | ✅ Complete |
+**Version:** 0.1.4.2
+**Phase:** C Complete + Grasshopper Automation
+**Test Count:** 300+ tests
 
----
-
-## [2026-01-10] - US-B01: Boolean Operations
-- Thread: Amp Agent Session (Grok-1.5)
-- Duration: ~45 minutes
-- Implemented: Boolean operations for solid geometry (union, difference, intersection)
-- Files: `boolean_operation.py`, `BooleanOperations.cs`, 9 tests
-- **Key Learnings:**
-  - `Brep.CreateBooleanUnion/Difference/Intersection()` for operations
-  - Must convert Extrusion to Brep first
-  - Objects must be closed solids (`brep.IsSolid`)
+| Phase | Status |
+|-------|--------|
+| Phase A | ✅ Archived |
+| Phase B | ✅ Archived |
+| Phase C | ✅ Complete |
+| Grasshopper Automation | ✅ Multi-door working! |
 
 ---
 
-## [2026-01-10] - US-B02: Transform Tools
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~30 minutes
-- Implemented: Transform operations (copy, mirror, linear array, polar array)
-- Files: `copy_object.py`, `mirror_object.py`, `array_linear.py`, `array_polar.py`, `TransformOperations.cs`, 14 tests
-- **Key Learnings:**
-  - `doc.Objects.Transform(objId, xform, false)` creates copy
-  - Normalize vectors with `Unitize()`
-  - All new objects inherit current layer
+## Quick Commands
 
-## [2026-01-11] - Galaxy Scene Creation & Layer Management
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~45 minutes
-- **Critical Finding:** modify_object layer parameter NOT functional
-- **Solution:** Use RhinoScript for layer assignment: `rs.ObjectLayer(obj_id, 'LayerName')`
-- **Pattern:** Create objects with MCP tools, then assign layers with RhinoScript
-- **Documentation Updated:** AGENTS.md corrected - MCP server does NOT start automatically
+```bash
+# Build & Test
+cd rhino_mcp_server && uv run pytest tests/ -v
 
----
+# Build C# Plugin
+cd rhino_mcp_plugin && dotnet build -c Release
 
-## [2026-01-10] - US-B03: Curve Operations
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~40 minutes
-- Implemented: Curve operations (offset, fillet, chamfer)
-- Files: `offset_curve.py`, `fillet_curves.py`, `chamfer_curves.py`, `CurveOperations.cs`, 19 tests
-- **Key Learnings:**
-  - **IMPORTANT:** Validate parameters BEFORE `get_rhino_connection()`
-  - `Curve.CreateFilletCurves()` with radius=0 creates chamfer
-  - CurveOffsetCornerStyle enum for offset corner types
-
----
-
-## [2026-01-10] - US-B04: Surface from Curves
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~35 minutes
-- Implemented: Surface operations (loft, extrude, revolve)
-- Files: `loft_curves.py`, `extrude_curve.py`, `revolve_curve.py`, `SurfaceOperations.cs`, 22 tests
-- **Key Learnings:**
-  - `Brep.CreateFromLoft()` for lofting curves
-  - `Extrusion.Create()` for capped solids
-  - Convert RevSurface to Brep before adding to document
-
----
-
-## [2026-01-10] - US-B05: Dimension Tools
-- Thread: Cursor/Amp Session (Grok-1.5)
-- Duration: ~50 minutes
-- Implemented: Dimension creation tools
-- Files: `create_linear_dimension.py`, `create_angular_dimension.py`, `create_radial_dimension.py`, `DimensionOperations.cs`, 9 tests
-- **Key Learnings:**
-  - DimensionStyle API changed in Rhino 8: `doc.DimStyles.FindName()` returns style directly
-  - Socket timeout fix: `ManualResetEventSlim` to wait for UI thread
-
----
-
-## [2026-01-10] - US-B06: Object Properties
-- Thread: Cursor/Amp Session (Grok-1.5)
-- Duration: ~25 minutes
-- Implemented: Get/Set object properties
-- Files: `get_object_properties.py`, `set_object_properties.py`, `ObjectProperties.cs`, 12 tests
-- **Key Learnings:**
-  - `VolumeMassProperties.Compute()` only valid for closed solids
-  - Batch support: Accept both `object_id` and `object_ids`
-
----
-
-## Phase C Summary (In Progress)
-
-| Story | Title | Status |
-|-------|-------|--------|
-| US-C01 | File Operations | ✅ Complete |
-| US-C02 | Viewport Control | ✅ Complete |
-| US-C03 | Groups & Blocks | ✅ Complete |
-| US-C04 | Mesh Import/Export | ✅ Complete |
-| US-C05 | Render Settings | ✅ Complete |
-| US-C06 | Grasshopper Integration | ⚠️ Teilweise - Plane manuell |
-
----
-
-## [2026-01-10] - US-C01: File Operations
-- Thread: Cursor/Amp Session (Grok-1.5)
-- Duration: ~30 minutes
-- Implemented: File operations (open, save, export)
-- Files: `open_file.py`, `save_file.py`, `export_file.py`, `FileOperations.cs`, 12 tests
-- **Key Learnings:**
-  - `RhinoApp.RunScript()` for file commands
-  - `ExportFormat = Literal["STEP", "IGES", ...]` for schema clarity
-  - Export with selection: `obj.Select(true)`, export, then `UnselectAll()`
-
----
-
-## [2026-01-10] - Integration Test: Layer + Boolean Operations
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~60 minutes
-- Implemented: Comprehensive integration test for Layer Management + Boolean Operations
-- Files: `dev/test_layer_boolean_integration.py`, updated `boolean_operation.py`
-- **Key Learnings:**
-  - Layer creation and object assignment works perfectly
-  - Boolean operations execute successfully in C# but need proper result parsing
-  - Fixed `boolean_operation.py` to return `result_ids[0]` instead of expecting single `id`
-  - Objects must overlap geometrically for valid boolean operations
-  - Translation parameter in `create_object` enables precise positioning
-- **Test Results:**
-  - ✅ Layer creation: 3 layers with custom colors
-  - ✅ Object creation: Boxes and spheres with translations
-  - ✅ Layer assignment: Objects correctly assigned to layers
-  - ✅ Boolean operations: Union/Difference/Intersection execute (results need verification)
-  - ✅ MCP functions: All core functions verified working
-- **Notes:** Test requires manual "mcpstart" in Rhino command line after restart
-
----
-
-## [2026-01-10] - US-C02: Viewport Control
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~90 minutes
-- Implemented: Viewport control tools for programmatic camera and zoom operations
-- Files: `set_view.py`, `zoom_extents.py`, `zoom_selected.py`, `capture_viewport.py`, `ViewportOperations.cs`, 17 tests
-- **Key Learnings:**
-  - Rhino viewport API uses `SetCameraDirection()` with Vector3d parameters
-  - `ZoomBoundingBox()` for precise zoom to geometry bounds
-  - `CaptureToBitmap()` for viewport screenshots with custom dimensions
-  - `IsHidden` property for filtering hidden objects in zoom operations
-  - System.Drawing.Common package required for image capture functionality
-- **Test Results:**
-  - ✅ set_view: 8 standard views (Top, Front, Perspective, etc.)
-  - ✅ zoom_extents: Fit all objects with hidden object filtering
-  - ✅ zoom_selected: Zoom to specific objects or selection
-  - ✅ capture_viewport: Screenshot to file or base64 data
-  - ✅ Tests: 17 unit tests with full parameter validation
-- **Notes:** Enhanced workflow for automated documentation and view management
-
----
-
-## [2026-01-10] - US-C03: Groups & Blocks
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~120 minutes
-- Implemented: Group and block operations for geometric organization
-- Files: `create_group.py`, `ungroup.py`, `create_block.py`, `insert_block.py`, `explode_block.py`, `GroupOperations.cs`, 29 tests
-- **Key Learnings:**
-  - Rhino RunScript approach more reliable than complex C# API calls
-  - `RhinoApp.RunScript("_Group")` and `RhinoApp.RunScript("_Ungroup")` for group operations
-  - `RhinoApp.RunScript("_Block")` and `RhinoApp.RunScript("_Insert")` for block operations
-  - Object selection required before group/block operations
-  - `doc.Objects.GetSelectedObjects()` for retrieving selected objects after operations
-- **Test Results:**
-  - ✅ Parameter validation working correctly
-  - ✅ C# plugin compiles successfully with RunScript approach
-  - ⚠️ Unit tests need mock refinement (validation tests pass, integration tests pending Rhino availability)
-- **Notes:** Used RunScript approach instead of complex RhinoCommon APIs for reliability
-
----
-
-## [2026-01-10] - US-C04: Mesh Import/Export
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~90 minutes
-- Implemented: Mesh I/O operations for importing/exporting mesh files and Brep-to-mesh conversion
-- Files: `import_mesh.py`, `export_mesh.py`, `mesh_from_brep.py`, `MeshOperations.cs`, 12 tests
-- **Key Learnings:**
-  - Rhino supports mesh import via `_-Import` command for OBJ, STL, 3MF, PLY, OFF, 3DS, FBX
-  - Mesh export uses `_-Export` with format-specific command variations
-  - Brep-to-mesh conversion via `_-Mesh` command with density/quality parameters
-  - Object selection required before export operations
-  - Import supports both merge and replace modes for document handling
-  - Format auto-detection from file extensions works reliably
-- **Test Results:**
-  - ✅ import_mesh: OBJ, STL, 3MF with auto-detection and explicit formats
-  - ✅ export_mesh: All objects vs specific objects, with mesh options
-  - ✅ mesh_from_brep: Basic conversion, custom density/quality, edge length constraints
-  - ✅ Parameter validation: File paths, formats, object IDs
-  - ✅ Error handling: Connection failures, invalid parameters
-  - ✅ All 12 unit tests pass with proper mocking
-- **Notes:** Essential for 3D printing workflows - enables round-trip mesh processing
-
----
-
-## [2026-01-10] - US-C05: Render Settings
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~75 minutes
-- Implemented: Render settings, lights, camera, and viewport render capture
-- Files: `set_render_settings.py`, `add_light.py`, `set_camera.py`, `render_view.py`, `RenderOperations.cs`, 20 tests
-- **Key Learnings:**
-  - `Rhino.Render.RenderSettings.ImageSize` and `AntialiasLevel` control resolution/quality
-  - Use `Rhino.Geometry.Light` with `doc.Lights.Add()` for point/directional/spot lights
-  - `RhinoViewport.SetCameraLocations()` simplifies camera+target updates
-  - `ViewCapture` with Rendered/Raytraced display mode provides deterministic renders
-
----
-
-## Known Issues & Future Work (2026-01-10)
-
-### Issue: Automatic MCP Plugin Start
-**Status:** Open - Medium Priority
-**Description:** MCP plugin does not start automatically on Rhino launch despite OnLoad/OnShutdown implementation
-**Workaround:** Manual `mcpstart` command required after Rhino startup
-**Files:** `rhino_mcp_plugin/rhinomcpPlugin.cs`, `RhinoMCPServerController.cs`
-**Impact:** User experience - requires manual step after Rhino launch
-
----
-
-## Repository Analysis (2026-01-10)
-
-### Phase 1 Complete ✅
-- Version sync: pyproject.toml 0.1.3.6 → 0.1.3.8
-- C# tool registry: GetAvailableTools() 30 → 48 tools
-- JSON responses: select_objects.py now returns JSON
-- Module exports: Added missing exports to __init__.py
-- Subdirectory AGENTS.md: Created for Python and C#
-
-### Phase 2 Complete ✅
-- Literal types: Added CornerStyle to offset_curve.py
-- README_MCP.md: Updated with current tool list and patterns
-- development_guide.md: Marked as deprecated
-- progress.txt: Archived Phase A entries
-
----
-
-## Codebase Patterns (SACRED)
-
-### Response Format
-```python
-return json.dumps(ok(message="Success", data=result))
-return json.dumps(from_exception(e, code=ErrorCode.RHINO_ERROR))
-```
-
-### Tool Template
-```python
-from rhinomcp.utils.responses import ok, from_exception
-from rhinomcp.utils.errors import ErrorCode
-from typing import Literal
-
-ToolType = Literal["option1", "option2"]  # Use Literal for enums
-
-@mcp.tool()
-def my_tool(ctx: Context, param: ToolType) -> str:
-    try:
-        rhino = get_rhino_connection()
-        result = rhino.send_command("my_command", {"param": param})
-        return json.dumps(ok(message="Success", data=result))
-    except Exception as e:
-        return json.dumps(from_exception(e, code=ErrorCode.RHINO_ERROR))
-```
-
-### Commands
-- Build: `cd rhino_mcp_server && uv build`
-- Run: `uv run python -m rhinomcp`
-- Test: `uv run pytest tests/ -v`
-- Start plugin: `mcpstart` in Rhino
-
----
-
-## Current Test Count: 200+ tests
-
----
-
-## [2026-01-11] - US-C06: Grasshopper Integration
-- Thread: Cursor Agent Session (Grok-1.5)
-- Duration: ~45 minutes
-- Implemented: Grasshopper definition execution via Grasshopper Player
-- Files: `run_grasshopper.py`, `GrasshopperOperations.cs`, `test_run_grasshopper.py`, 4 tests
-- **Key Learnings:**
-  - Rhino's `GrasshopperPlayer` command executes .gh files directly: `_-GrasshopperPlayer "path/to/file.gh"`
-  - No Grasshopper window opens - perfect for automated workflows
-  - Geometry created by Grasshopper definition is automatically baked to Rhino document
-  - Uses `RhinoApp.RunScript()` for command execution (same pattern as other tools)
-- **Test Results:**
-  - ✅ All 4 unit tests pass with proper mocking
-  - ✅ Parameter validation: empty path, wrong extension, paths with spaces
-  - ✅ C# plugin compiles successfully with new GrasshopperOperations.cs
-  - ✅ Command registered in ExecuteCommandInternal dictionary
-- **Notes:** Ready for live testing once MCP plugin is started in Rhino with `mcpstart`
-
----
-
-## Phase C Status (2026-01-11)
-- US-C01 File Operations ✅ Complete
-- US-C02 Viewport Control ✅ Complete
-- US-C03 Groups & Blocks ✅ Complete
-- US-C04 Mesh Import/Export ✅ Complete
-- US-C05 Render Settings ✅ Complete
-- US-C06 Grasshopper Integration ✅ **ENHANCED** - Command monitoring implemented!
-
-**BLOCKER RESOLVED! 🎉**
-Agent can now see Rhino Command Output via `get_command_output()` tool!
-→ See docs/AI_AGENT_RHINO_VISIBILITY.md for complete guide
-
----
-
-## [2026-01-10 13:34] - Phase 3 Complete (Structural Improvements)
-- Thread: Copilot Agent Session (Grok-1.5)
-- Duration: ~90 minutes
-- Implemented: Phase 3 structural improvements
-- Files changed:
-  - `rhino_mcp_plugin/ErrorCode.cs`: **NEW** - C# error codes mirroring Python
-  - `rhino_mcp_plugin/RhinoMCPServer.cs`: Added error_code to all error responses
-  - `scripts/sync_version.py`: **NEW** - Version sync utility
-  - `README.md`: Added test count and version badges
-  - `rhino_mcp_server/src/rhinomcp/tools/*.py`: Fixed import ordering (48 files)
-  - `REPOSITORY_ANALYSIS.md`: Marked Phase 3 as complete
-- **Learnings for future iterations:**
-  - New patterns discovered: C# error codes enable consistent cross-language error handling
-  - Gotchas / pitfalls: ruff can auto-fix import ordering with --select I --fix
-  - Useful context to remember:
-    - ErrorCode.FromException(e, context) determines code from exception message and context
-    - Version sync script: `python scripts/sync_version.py --check` or `--set X.Y.Z`
-    - All phases (1, 2, 3) of documentation cleanup complete
-
----
-
-## [2026-01-11] - Command Line Monitoring Implementation (BREAKTHROUGH!)
-- Thread: GitHub Copilot Agent Session (Claude Opus 4.5)
-- Duration: ~3 hours (research + implementation + testing + documentation)
-- Status: ✅ COMPLETE - AI agents can now "see" Rhino!
-- Implemented: Real-time command line monitoring for AI agent visibility
-
-### Problem Solved
-The AI agent was "blind" to Rhino's state:
-- ❌ Cannot see when Rhino prompts for input
-- ❌ Cannot detect Grasshopper Player prompts
-- ❌ `run_grasshopper()` returns True even when manual input needed
-
-### Solution Implemented
-
-#### C# Plugin Changes (`rhino_mcp_plugin/RhinoMCPServer.cs`)
-- Added `CommandLineEvent` class (timestamp, text, type)
-- Implemented `CaptureCommandLineState()` - polls Rhino command line state
-  - Monitors `RhinoApp.CommandPrompt` for current prompt changes
-  - Monitors `RhinoApp.CommandHistoryWindowText` for new history entries
-- Buffer management: Queue<CommandLineEvent> (max 200 entries)
-- Thread-safe with lock-based synchronization
-- Methods added:
-  - `GetCommandLineEvents(count)` - retrieve recent events
-  - `GetCommandLineEventsSince(DateTime)` - time-filtered events
-  - `ClearCommandLineEvents()` - reset buffer
-  - `GetCurrentPrompt()` - current Rhino prompt
-- Command handlers: `get_command_output`, `clear_command_output`
-
-#### Python MCP Tools (`rhino_mcp_server/src/rhinomcp/tools/get_command_output.py`)
-- `get_command_output(count=50, since=None)` - retrieve command line events
-- `clear_command_output()` - reset monitoring buffer
-- Full parameter validation and error handling
-- JSON response format with structured event data
-
-#### Tests (`rhino_mcp_server/tests/test_get_command_output.py`)
-- 9 comprehensive test cases
-- Tests for: default params, custom count, time filtering, error handling
-- Mock-based testing for all tools
-- All tests pass ✅
-
-#### Documentation
-- **NEW:** `docs/AI_AGENT_RHINO_VISIBILITY.md` (13KB, comprehensive guide)
-  - Complete usage patterns and examples
-  - Grasshopper automation workflows
-  - Best practices and troubleshooting
-  - Example: Smart door generation with visibility
-- **Updated:** `docs/GRASSHOPPER_AUTOMATION.md` - marked as ENHANCED
-- **Updated:** `AGENTS.md` - added monitoring quick start section
-
-### Technical Approach
-
-**Why Polling Instead of Events:**
-- `RhinoApp.CommandLineOut` event not available/reliable in all Rhino versions
-- Polling approach is simpler and more compatible
-- Captures state on-demand (no background thread needed)
-- Performance impact minimal (only polls when queried)
-
-**Event Types:**
-- `"Prompt"`: Current command prompt changed (Rhino asking for input)
-- `"History"`: New command history entry (command executed/output)
-
-### Key Learnings
-
-1. **Polling is Reliable:** Better than trying to hook into Rhino events
-2. **Buffer Management:** Keep max 200 events, oldest dropped automatically
-3. **Thread Safety:** All operations use lock-based synchronization
-4. **State Capture:** Auto-capture on each query ensures fresh data
-5. **Event Type Detection:** Heuristic-based (prompt changes vs history changes)
-
-### Usage Patterns for AI Agents
-
-```python
-# Pattern 1: Detect prompts
-clear_command_output()
-run_grasshopper(file_path="script.gh")
-result = get_command_output(count=20)
-prompts = [e for e in result["data"]["events"] if e["type"] == "Prompt"]
-
-# Pattern 2: Monitor long operations
-execute_rhinoscript_python_code(code="# long script", timeout=60)
-for i in range(12):
-    time.sleep(5)
-    result = get_command_output(count=5)
-    if "Command:" in result["data"]["current_prompt"]:
-        break  # Operation complete
-
-# Pattern 3: Smart Grasshopper execution with feedback
-def smart_grasshopper_execution(file_path, expected_params):
-    clear_command_output()
-    run_grasshopper(file_path=file_path)
-    time.sleep(1.5)
-    result = get_command_output(count=30)
-    prompts = [e for e in result["data"]["events"] if e["type"] == "Prompt"]
-    if not prompts:
-        return {"status": "success", "automated": True}
-    # Analyze and respond to prompts...
-```
-
-### Files Changed
-- `rhino_mcp_plugin/RhinoMCPServer.cs` - command monitoring core
-- `rhino_mcp_server/src/rhinomcp/tools/get_command_output.py` - NEW
-- `rhino_mcp_server/tests/test_get_command_output.py` - NEW
-- `docs/AI_AGENT_RHINO_VISIBILITY.md` - NEW
-- `docs/GRASSHOPPER_AUTOMATION.md` - UPDATED
-- `AGENTS.md` - UPDATED
-
-### Build Status
-- ✅ C# plugin compiles successfully (Release mode)
-- ✅ Python tests created (9 test cases)
-- ✅ Documentation complete and comprehensive
-
-### Next Steps (Future Work)
-1. **Grasshopper API Direct Access** - Bypass GrasshopperPlayer prompts entirely
-2. **Parameter Discovery** - Introspect .gh files to find required inputs
-3. **Automated Response System** - AI decides how to respond to prompts
-4. **ML-Based Prompt Understanding** - Smarter prompt parsing
-5. **Real-Time Event Streaming** - WebSocket push notifications (future)
-
-### Impact
-This is a **game-changer** for AI agent capabilities:
-- Agents are no longer blind to Rhino's state
-- Grasshopper automation becomes much more intelligent
-- Long-running operations can be monitored
-- Interactive workflows become possible
-- Foundation for fully automated building model generation
-
----
-
-## [2026-01-11] - WebSocket Real-Time Streaming (Phase 1 Complete)
-- Thread: Cursor Agent Session (Claude Opus 4.5)
-- Duration: ~30 minutes
-- Status: ✅ C# WebSocket Server implemented and building
-
-### Implementation Summary
-Implemented WebSocket real-time event streaming for AI agents to receive push notifications from Rhino.
-
-### Files Created/Modified
-- **NEW:** `rhino_mcp_plugin/RhinoMCPWebSocketServer.cs` - WebSocket server using Fleck
-- **MODIFIED:** `rhino_mcp_plugin/rhinomcp.csproj` - Added Fleck NuGet package
-- **MODIFIED:** `rhino_mcp_plugin/RhinoMCPServer.cs` - WebSocket server integration
-- **MODIFIED:** `rhino_mcp_plugin/Commands/MCPStatusCommand.cs` - Shows WS status
-
-### Key Features
-- WebSocket server runs on port 2000 alongside TCP server (1999)
-- Monitors command line changes every 100ms
-- Broadcasts "Prompt", "History", "Heartbeat" events to all connected clients
-- Thread-safe client management with ToList() snapshots
-- Heartbeat ping every 30 seconds for connection health
-- Welcome message with current state on connect
-- MCPStatus command now shows WebSocket server status
-
-### Architecture
-```
-Port 1999 (TCP)              Port 2000 (WebSocket)
-┌─────────────────┐          ┌─────────────────┐
-│  Command API    │          │  Event Stream   │
-│  (existing)     │          │  (NEW)          │
-└────────┬────────┘          └────────┬────────┘
-         └────────────┬───────────────┘
-                      │
-            ┌─────────┴─────────┐
-            │  RhinoMCPServer   │
-            └───────────────────┘
-```
-
-### Event Types
-| Type | Description |
-|------|-------------|
-| Connected | Sent on WebSocket connect with current prompt |
-| Prompt | Command prompt changed (Rhino asking for input) |
-| History | New command history entry |
-| Heartbeat | Periodic ping for connection health (30s) |
-| Pong | Response to client ping |
-| State | Response to get_state command |
-
-### Next Steps (Phase 2)
-- Create Python WebSocket client
-- Implement MCP tools: subscribe_command_stream, unsubscribe_command_stream, get_stream_events
-- Add websockets dependency to pyproject.toml
-- Write unit tests
-
-### Key Learnings
-1. **Fleck is simple** - Just create WebSocketServer and call Start()
-2. **Thread safety** - Use ToList() snapshot when broadcasting to avoid lock during I/O
-3. **Background monitoring** - IsBackground=true thread to poll command line state
-4. **Graceful shutdown** - Stop monitoring thread before disposing server
-
----
-
-## [2026-01-11] - WebSocket Real-Time Streaming (Phase 2 Complete)
-- Thread: Cursor Agent Session (Claude Opus 4.5)
-- Duration: ~45 minutes
-- Status: ✅ Python WebSocket Client and MCP Tools implemented
-
-### Implementation Summary
-Implemented the Python side of WebSocket streaming: async client, MCP tools, and unit tests.
-
-### Files Created/Modified
-- **MODIFIED:** `rhino_mcp_server/pyproject.toml` - Added websockets dependency
-- **NEW:** `rhino_mcp_server/src/rhinomcp/websocket_client.py` - Async WebSocket client
-- **NEW:** `rhino_mcp_server/src/rhinomcp/tools/stream_commands.py` - MCP streaming tools
-- **NEW:** `rhino_mcp_server/tests/test_websocket_client.py` - 18 tests
-- **NEW:** `rhino_mcp_server/tests/test_stream_commands.py` - 11 tests
-- **MODIFIED:** `rhino_mcp_server/src/rhinomcp/__init__.py` - Registered tools
-- **FIX:** `rhino_mcp_server/tests/test_get_command_output.py` - Fixed broken imports
-
-### New MCP Tools
-| Tool | Description |
-|------|-------------|
-| `subscribe_command_stream()` | Connect to WebSocket server, start receiving events |
-| `unsubscribe_command_stream()` | Disconnect from WebSocket server |
-| `get_stream_events()` | Get buffered events from stream |
-| `wait_for_prompt(pattern, timeout)` | Wait for specific prompt pattern |
-| `get_stream_status()` | Check WebSocket connection status |
-| `clear_stream_buffer()` | Clear buffered events |
-
-### WebSocket Client Features
-- Async WebSocket connection with auto-reconnect
-- Event buffering with max 500 events
-- Callback system for real-time event handling
-- Thread-safe operations
-- Singleton pattern for global access
-
-### Test Results
-- 29 WebSocket-specific tests pass ✅
-- 308 total tests pass (16 pre-existing failures unrelated to WebSocket)
-
-### Usage Example
-```python
-# Subscribe to real-time events
-await subscribe_command_stream()
-
-# Wait for Rhino to ask for input
-event = await wait_for_prompt("Pick a point", timeout=10.0)
-if event:
-    print(f"Rhino asked: {event.text}")
-
-# Get recent events
-events = await get_stream_events()
-for e in events:
-    print(f"{e.type}: {e.text}")
-
-# Cleanup
-await unsubscribe_command_stream()
-```
-
-### Key Learnings
-1. **Import order matters** - websockets imported inside function to avoid module-level issues
-2. **Async in sync tests** - Use `asyncio.get_event_loop().run_until_complete()` wrapper
-3. **Mock complexity** - Simpler tests with import validation are more reliable than deep mocking
-4. **Deque with maxlen** - Perfect for bounded event buffer
-
----
-
-## [2026-01-11] - WebSocket Cleanup & Refactoring
-- Thread: Cursor Agent Session (Claude Opus 4.5)
-- Duration: ~90 minutes
-- Status: ✅ COMPLETE - Saubere WebSocket-Implementierung
-
-### Was implementiert wurde
-
-#### Phase 1: GetPlane Debug-Script
-- **Neu:** `dev/debug_getplane.py` - Systematisches Testing verschiedener GetPlane-Inputs
-- Testet: "", "_Enter", "Enter", "_Accept", "0,0,1", "1,0,0"
-
-#### Phase 2: WebSocket-Architektur überarbeitet
-
-**C# WebSocket Server** (`RhinoMCPWebSocketServer.cs`):
-- Neue Befehle über WebSocket: `send_input`, `run_script`, `cancel`
-- Verbesserte Event-Typen: InputResult, ScriptStarted, ScriptCompleted, CancelResult
-- Request-ID Tracking für async Operationen
-
-**Python WebSocket Client** (`websocket_client.py`):
-- Neue Methoden: `send_input()`, `run_script()`, `cancel()`
-- Request-Response Pattern mit UUID tracking
-- Verbesserte Event-Behandlung
-
-**Stream Commands** (`stream_commands.py`):
-- Umbenannt: `subscribe_command_stream` → `connect_rhino_stream`
-- Neue Tools: `send_rhino_input`, `run_script_async`, `cancel_rhino_command`
-- Vereinfachte API
-
-#### Phase 3: Alter Code entfernt
-
-**Gelöschte Dateien:**
-- `tools/get_command_output.py` - Polling-basiert (ersetzt durch WebSocket)
-- `tools/run_grasshopper_automated.py` - Timer-basiert (funktionierte nicht)
-- `tools/run_grasshopper_with_params.py` - Veraltet
-- `tests/test_get_command_output.py` - Tests für gelöschten Code
-- `tests/test_run_grasshopper_automated.py` - Tests für gelöschten Code
-- `dev/test_automated_door.py`, `dev/test_door_with_websocket.py`, etc.
-
-**C# Code entfernt:**
-- `RhinoMCPServer.cs`: CommandLineEvent, CaptureCommandLineState, GetCommandLineEvents
-- `GrasshopperOperations.cs`: RunGrasshopperWithParams, RunGrasshopperAutomated, ScheduleInputs
-
-#### Phase 4: Neue saubere Implementierung
-
-**Neu:** `tools/grasshopper_interactive.py`
-- `run_grasshopper_interactive()` - Generische interaktive GH-Ausführung
-- `run_door_script()` - Spezifischer Wrapper für Rahmentuer_UD3.gh
-- Pattern-basiertes Prompt-Matching mit Regex
-- Automatische Input-Behandlung
-
-#### Phase 5: Tests
-
-**Neu:** `tests/test_grasshopper_interactive.py`
-- 15 neue Unit Tests
-- Tests für stream_commands und grasshopper_interactive
-- Alle Tests bestanden ✅
-
-### Architektur-Übersicht
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    AI Agent / MCP Client                     │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-         ┌────────────────┴────────────────┐
-         ▼                                 ▼
-┌─────────────────┐              ┌─────────────────┐
-│   TCP Port 1999 │              │  WS Port 2000   │
-│   (Commands)    │              │   (Events)      │
-└────────┬────────┘              └────────┬────────┘
-         │                                 │
-         └────────────────┬────────────────┘
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    RhinoMCP Plugin                           │
-│  - RhinoMCPServer.cs (TCP)                                  │
-│  - RhinoMCPWebSocketServer.cs (WebSocket)                   │
-│  - GrasshopperOperations.cs (Handlers)                      │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Neue MCP Tools
-
-| Tool | Beschreibung |
-|------|-------------|
-| `connect_rhino_stream` | WebSocket-Verbindung herstellen |
-| `disconnect_rhino_stream` | Trennen |
-| `send_rhino_input` | Input an Rhino senden |
-| `wait_for_prompt` | Auf bestimmten Prompt warten |
-| `run_script_async` | Script asynchron starten |
-| `cancel_rhino_command` | Aktiven Befehl abbrechen |
-| `get_stream_status` | WebSocket-Status prüfen |
-| `get_stream_events` | Gepufferte Events abrufen |
-| `clear_stream_buffer` | Event-Buffer leeren |
-| `run_grasshopper_interactive` | GH-Script mit auto Input |
-| `run_door_script` | Rahmentuer-Script ausführen |
-
-### Build/Test Status
-- ✅ C# Plugin kompiliert (0 Errors, 10 Warnings für ImageFormat)
-- ✅ Python Tests: 300 bestanden
-- ✅ Code Cleanup abgeschlossen
-- ✅ **GetPlane GELÖST!** - `_Enter` statt "" verwenden!
-- ✅ **3/3 Türen erfolgreich erstellt!**
-
-### LÖSUNG: GetPlane Schritt 3
-
-**Problem:** Nach Origin-Eingabe erwartet GetPlane eine Bestätigung.
-**Fehlgeschlagen:** Leerer String `""` funktioniert NICHT
-**LÖSUNG:** Rhino-Befehl `_Enter` verwenden!
-
-```python
-# FALSCH:
-send_input("")  # Funktioniert NICHT!
-
-# RICHTIG:
-send_input("_Enter")  # Funktioniert! ✅
-```
-
-### Erfolgreicher Test-Output
-```
-DOOR 1: 2200x910mm at 0,0,0 ✅
-DOOR 2: 2200x910mm at 2000,0,0 ✅
-DOOR 3: 2200x910mm at 4000,0,0 ✅
-RESULT: 3/3 doors
+# Start MCP in Rhino
+mcpstart
 ```
 
 ---
 
-## [2026-01-11] - Vereinfachtes Grasshopper Script (ERFOLG!)
-- Thread: Cursor Agent Session (Claude Opus 4.5)
-- Duration: ~30 minutes
-- Status: ✅ **TÜREN WERDEN ERSTELLT!**
+## Learning Files Index
 
-### Das Problem mit GetPlane
-
-Das ursprüngliche Script `Rahmentuer_UD3.gh` verwendete `GetPlane` mit 3 Schritten:
-1. Plane-Typ wählen (WorldXY/WorldYZ/WorldZX)
-2. Origin eingeben (0,0,0)
-3. Bestätigung (_Enter)
-
-**Problem:** Obwohl `_Enter` technisch funktioniert, gab es Timing-Probleme und 
-die Objekte wurden manchmal nicht korrekt im Dokument registriert.
-
-### Die Lösung: GetPoint statt GetPlane
-
-**Neues Script:** `Rahmentuer_UD4.gh`
-- Plane ist fest auf XY gesetzt (kein GetPlane mehr!)
-- Nur noch **3 einfache Inputs**: Lichthoehe, Lichtbreite, Point
-- Viel zuverlässiger automatisierbar
-
-### Manuelle Sequenz (funktioniert!)
-```
-Command: _GrasshopperPlayer
-Lichthoehe: 2200
-Lichtbreite ( Undo ): 1200
-Get Point ( Undo ): 0,1200,0
-1 closed polysurface added to selection.
-```
-
-### Automatisierte Sequenz (funktioniert!)
-```python
-# test_door_ud4.py
-async with websockets.connect("ws://127.0.0.1:2000") as ws:
-    # Start GrasshopperPlayer
-    await ws.send(json.dumps({
-        "command": "run_script",
-        "script": f'_-GrasshopperPlayer "{GH_FILE}"'
-    }))
-    
-    # Auf Prompts reagieren
-    if "lichthoe" in prompt:
-        await ws.send(json.dumps({"command": "send_input", "input": "2200"}))
-    elif "lichtbreite" in prompt:
-        await ws.send(json.dumps({"command": "send_input", "input": "1200"}))
-    elif "get point" in prompt:
-        await ws.send(json.dumps({"command": "send_input", "input": "0,1200,0"}))
-```
-
-### Ergebnis
-```
-Objects before: 0
-Objects after: 43  (mehrere Türen erstellt!)
-- Intumex_Rahmen (2x)
-- Tuerrahmen (3x)
-- Tuerblatt (1x)
-```
-
-### Key Learnings
-
-1. **GetPoint ist einfacher als GetPlane** - Nur ein Input statt 3
-2. **Grasshopper Script anpassen** - Manchmal ist es besser das GH-Script zu vereinfachen
-3. **WebSocket-Automatisierung funktioniert** - Mit dem richtigen Script!
-4. **Prompt-Matching mit Teilstrings** - "lichthoe" statt "lichthoehe" für robusteres Matching
-
-### Test-Scripts
-- `rhino_mcp_server/dev/test_door_ud4.py` - Einzelne Tür erstellen
-- `rhino_mcp_server/dev/create_3_doors.py` - **Mehrere Türen erstellen**
-
-### Dateien
-- **Neu:** `Rahmentuer_UD4.gh` - Vereinfachtes GH-Script mit GetPoint
-- **Neu:** `dev/test_door_ud4.py` - Automatisierter Test (1 Tür)
-- **Neu:** `dev/create_3_doors.py` - Multi-Door Test (3 Türen)
-- **Neu:** `dev/check_objects.py` - Objekt-Zähler
+| Topic | Location |
+|-------|----------|
+| RhinoCommon API | `docs/learnings/rhinocommon-api.md` |
+| Grasshopper Automation | `docs/learnings/grasshopper-automation.md` |
+| WebSocket Patterns | `docs/learnings/websocket-patterns.md` |
+| Boolean Operations | `docs/learnings/boolean-operations.md` |
 
 ---
 
-## [2026-01-11] - Multi-Door Automation (ERFOLG!)
+## Recent Sessions
+
+### [2026-01-11] - Documentation Cleanup
+- Thread: Cursor Agent Session
+- Implemented: Progress.txt cleanup, learning documentation system
+- Files: `docs/learnings/*.md`, `progress_archive_phase_b.txt`
+- See: AGENTS.md "Learning Documentation System" section
+
+---
+
+### [2026-01-11] - Multi-Door Automation Success
 - Thread: Cursor Agent Session (Claude Opus 4.5)
 - Duration: ~20 minutes
-- Status: ✅ **3 TÜREN AN VERSCHIEDENEN POSITIONEN ERSTELLT!**
-
-### Erfolgreicher Test
-
-```
-DOOR 1: 2200x1200mm at 0,0,0       ✓
-DOOR 2: 2200x900mm  at 2000,0,0    ✓
-DOOR 3: 2400x1000mm at 4000,0,0    ✓
-
-New objects: 18 (6 pro Türe)
-```
-
-### Kritische Erkenntnisse für Multi-Script-Ausführung
-
-1. **Timing zwischen Scripts ist kritisch**
-   - Nach jedem Script 2 Sekunden warten
-   - Auf "Command" Prompt warten bevor nächstes Script starten
-
-2. **Prompt-Reihenfolge einhalten**
-   - Flags verwenden: `sent_height`, `sent_width`, `sent_point`
-   - Nur auf ungesendete Inputs reagieren
-
-3. **ScriptCompleted Event beachten**
-   - Nach ScriptCompleted auf Command-Prompt warten
-   - Erst dann nächstes Script starten
-
-### Pattern für Multi-Script-Ausführung
-
-```python
-async def create_door(ws, height, width, point):
-    # 1. Vor Start warten
-    await asyncio.sleep(0.5)
-    
-    # 2. Script starten
-    await ws.send(json.dumps({
-        "command": "run_script",
-        "script": f'_-GrasshopperPlayer "{GH_FILE}"'
-    }))
-    
-    # 3. Flags für gesendete Inputs
-    sent_height = False
-    sent_width = False
-    sent_point = False
-    
-    # 4. Auf Prompts reagieren
-    for _ in range(40):
-        event = await ws.recv()
-        if event["type"] == "Prompt":
-            await asyncio.sleep(0.5)  # Delay vor Input!
-            
-            if "lichthoe" in text and not sent_height:
-                await ws.send({"command": "send_input", "input": str(height)})
-                sent_height = True
-            elif "lichtbreite" in text and not sent_width:
-                await ws.send({"command": "send_input", "input": str(width)})
-                sent_width = True
-            elif "get point" in text and not sent_point:
-                await ws.send({"command": "send_input", "input": point})
-                sent_point = True
-            elif text == "command":
-                return True  # Fertig!
-                
-        elif event["type"] == "ScriptCompleted":
-            await wait_for_command_prompt(ws)
-            return True
-    
-    # 5. Nach Script warten
-    await asyncio.sleep(2.0)
-```
-
-### Objekt-Struktur pro Türe (6 Objekte)
-
-| Layer | Anzahl | Typ |
-|-------|--------|-----|
-| Intumex_Rahmen | 2 | Brep |
-| Tuerrahmen | 3 | Brep |
-| Tuerblatt | 1 | Brep |
+- Result: 3 doors at different positions created automatically
+- Files: `dev/create_3_doors.py`, `Rahmentuer_UD4.gh`
+- See: `docs/learnings/grasshopper-automation.md`
 
 ---
+
+### [2026-01-11] - WebSocket Streaming Complete
+- Thread: Cursor Agent Session (Claude Opus 4.5)
+- Duration: ~3 hours total
+- Implemented: Real-time Rhino monitoring via WebSocket (Port 2000)
+- Files: `RhinoMCPWebSocketServer.cs`, `websocket_client.py`, `stream_commands.py`
+- See: `docs/learnings/websocket-patterns.md`
+
+---
+
+### [2026-01-11] - Galaxy Scene & Layer Management
+- Thread: Cursor Agent Session
+- Duration: ~45 minutes
+- Finding: modify_object layer parameter not functional
+- Workaround: Use RhinoScript `rs.ObjectLayer(obj_id, 'LayerName')`
+- AGENTS.md updated: MCP server requires manual `mcpstart`
+
+---
+
+## Known Issues
+
+| Issue | Status | Workaround |
+|-------|--------|------------|
+| MCP Plugin Auto-Start | Open | Manual `mcpstart` required |
+| modify_object layer param | Open | Use RhinoScript instead |
+
+See: `FUTURE_ISSUES.md` for full details.
+
+---
+
+## Notes for Agents
+
+1. **Before starting:** Read this file and relevant learning files
+2. **After implementing:** Update this log briefly, add learnings to `docs/learnings/`
+3. **Archive regularly:** Move old sessions to archive files
+4. **Keep clean:** Max ~100-150 lines in this file
