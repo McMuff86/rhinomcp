@@ -59,6 +59,48 @@ return json.dumps(from_exception(e, code=ErrorCode.CREATE_OBJECT_ERROR))
 
 ---
 
+## 🚀 NEW: Real-Time Rhino Monitoring
+
+**Since Version 0.1.4.0**
+
+AI agents can now "see" what's happening in Rhino in real-time using command line monitoring.
+
+### Quick Start
+
+```python
+# 1. Clear monitoring buffer
+clear_command_output()
+
+# 2. Run operation that might prompt for input
+run_grasshopper(file_path="script.gh")
+
+# 3. Check what Rhino is asking for
+result = get_command_output(count=20)
+events = result["data"]["events"]
+current_prompt = result["data"]["current_prompt"]
+
+# 4. Detect if manual input is needed
+prompts = [e for e in events if e["type"] == "Prompt"]
+if prompts:
+    print(f"Rhino is asking: {prompts[-1]['text']}")
+```
+
+### Use Cases
+
+| Scenario | Benefit |
+|----------|---------|
+| Grasshopper automation | Detect when parameters are requested |
+| Long-running scripts | Monitor progress and detect errors |
+| Interactive commands | See what Rhino is asking for |
+| Debugging | Track command execution flow |
+
+### Documentation
+
+- **Full Guide:** <a>docs/AI_AGENT_RHINO_VISIBILITY.md</a>
+- **Grasshopper-Specific:** <a>docs/GRASSHOPPER_AUTOMATION.md</a>
+
+---
+
 ## Project Overview
 
 RhinoMCP enables AI agents to control Rhino 3D via the Model Context Protocol (MCP).
@@ -445,10 +487,11 @@ uv run pytest tests/test_connection.py -v
 | `docs/ROADMAP.md` | Project phases & development roadmap |
 | `docs/FUNCTIONAL_STATUS.md` | Current status, known issues & solutions |
 | `docs/MCP_TOOL_STANDARDS.md` | Tool development standards & patterns |
+| `docs/AI_AGENT_RHINO_VISIBILITY.md` | **NEW: Guide for monitoring Rhino state in real-time** |
+| `docs/GRASSHOPPER_AUTOMATION.md` | **Updated: Grasshopper Automation with command monitoring** |
 | `docs/archive/PHASE_B_CONTEXT.md` | Phase B implementation details (archived) |
 | `docs/archive/REPOSITORY_ANALYSIS.md` | Codebase analysis & insights (archived) |
 | `docs/archive/development_guide.md` | Development workflow (deprecated) |
-| `docs/GRASSHOPPER_AUTOMATION.md` | **Grasshopper Automation Status & Next Steps** |
 | `Ralph/README.md` | Ralph workflow documentation |
 | `Ralph/progress.txt` | Codebase patterns & learnings |
 
