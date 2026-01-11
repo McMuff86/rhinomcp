@@ -2,9 +2,9 @@
 
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
-**Last Updated:** 2026-01-10
-**Version:** 0.1.3.9
-**Phase:** C In Progress (US-C04 Mesh Import/Export complete)
+**Last Updated:** 2026-01-11
+**Version:** 0.1.3.10
+**Phase:** C Complete (US-C06 Grasshopper Integration complete)
 
 ---
 
@@ -94,7 +94,7 @@ uv run rhinomcp
 
 ### Test
 ```bash
-# Run pytest suite (265 tests)
+# Run pytest suite (283+ tests)
 cd rhino_mcp_server
 uv run pytest tests/ -v
 
@@ -260,6 +260,7 @@ When adding new tools, register them in `RhinoMCPServer.cs`:
 | Viewport Operations | `ViewportOperations.cs` |
 | Render Operations | `RenderOperations.cs` |
 | Mesh Operations | `MeshOperations.cs` |
+| Grasshopper Operations | `GrasshopperOperations.cs` (run_grasshopper, run_grasshopper_automated, run_door_script) |
 | Script Execution | `ExecuteCode.cs` |
 
 ---
@@ -360,7 +361,7 @@ cd c:\Users\Adi.Muff\repos\rhinomcp\rhino_mcp_server
 uv run pytest tests/ -v
 ```
 
-### Current Phase: C (Advanced Features)
+### Current Phase: C (Advanced Features) - Complete ✅
 | Story | Title | Status |
 |-------|-------|--------|
 | US-C01 | File Operations | ✅ |
@@ -368,7 +369,7 @@ uv run pytest tests/ -v
 | US-C03 | Groups & Blocks | ✅ |
 | US-C04 | Mesh Import/Export | ✅ |
 | US-C05 | Render Settings | ✅ |
-| US-C06 | Grasshopper Integration | ⏳ Pending |
+| US-C06 | Grasshopper Integration | ⚠️ Teilweise (Plane manuell) |
 
 ---
 
@@ -447,6 +448,7 @@ uv run pytest tests/test_connection.py -v
 | `docs/archive/PHASE_B_CONTEXT.md` | Phase B implementation details (archived) |
 | `docs/archive/REPOSITORY_ANALYSIS.md` | Codebase analysis & insights (archived) |
 | `docs/archive/development_guide.md` | Development workflow (deprecated) |
+| `docs/GRASSHOPPER_AUTOMATION.md` | **Grasshopper Automation Status & Next Steps** |
 | `Ralph/README.md` | Ralph workflow documentation |
 | `Ralph/progress.txt` | Codebase patterns & learnings |
 

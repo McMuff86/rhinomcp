@@ -108,7 +108,7 @@ Project: RhinoMCP Professionalization
 | US-C03 | Groups & Blocks | ✅ Complete |
 | US-C04 | Mesh Import/Export | ✅ Complete |
 | US-C05 | Render Settings | ✅ Complete |
-| US-C06 | Grasshopper Integration | ⏳ Pending |
+| US-C06 | Grasshopper Integration | ⚠️ Teilweise - Plane manuell |
 
 ---
 
@@ -287,15 +287,123 @@ def my_tool(ctx: Context, param: ToolType) -> str:
 
 ---
 
-## Phase C Status (2026-01-10)
+## [2026-01-11] - US-C06: Grasshopper Integration
+- Thread: Cursor Agent Session (Grok-1.5)
+- Duration: ~45 minutes
+- Implemented: Grasshopper definition execution via Grasshopper Player
+- Files: `run_grasshopper.py`, `GrasshopperOperations.cs`, `test_run_grasshopper.py`, 4 tests
+- **Key Learnings:**
+  - Rhino's `GrasshopperPlayer` command executes .gh files directly: `_-GrasshopperPlayer "path/to/file.gh"`
+  - No Grasshopper window opens - perfect for automated workflows
+  - Geometry created by Grasshopper definition is automatically baked to Rhino document
+  - Uses `RhinoApp.RunScript()` for command execution (same pattern as other tools)
+- **Test Results:**
+  - ✅ All 4 unit tests pass with proper mocking
+  - ✅ Parameter validation: empty path, wrong extension, paths with spaces
+  - ✅ C# plugin compiles successfully with new GrasshopperOperations.cs
+  - ✅ Command registered in ExecuteCommandInternal dictionary
+- **Notes:** Ready for live testing once MCP plugin is started in Rhino with `mcpstart`
+
+---
+
+## [2026-01-11] - Grasshopper Automation Attempt (INCOMPLETE!)
+- Thread: Cursor Agent Session (Claude Opus 4.5)
+- Duration: ~4 hours (extensive live testing)
+- Status: **NICHT 100% AUTOMATISIERT - MANUELLE EINGABE NOCH NÖTIG**
+
+### ⚠️ KRITISCHES PROBLEM: Agent kann Rhino-Prompts nicht sehen!
+
+Der Agent bekommt nur `Result: True/False` zurück, aber NICHT:
+- Was GrasshopperPlayer fragt (z.B. "GetPlane ( WorldXY WorldYZ WorldZX )")
+- Ob manuelle Eingabe erfolgte
+- Welche Parameter genau erwartet werden
+
+### Was getestet wurde:
+
+| Befehl | Ergebnis |
+|--------|----------|
+| `_-GrasshopperPlayer "script.gh"` | ❌ Alle Eingaben manuell |
+| `_-GrasshopperPlayer "script.gh" 2200 910` | ⚠️ Height/Width ok, Plane manuell |
+| `_-GrasshopperPlayer "script.gh" 2200 910 0` | ⚠️ Inkonsistent |
+| `_-GrasshopperPlayer "script.gh" 2200 910 0 0 0` | ⚠️ Manchmal ok, manchmal manuell |
+| `_-GrasshopperPlayer "script.gh" 2200 910 w` | ❌ `w` wird als `_SelWindow` interpretiert |
+| `_-GrasshopperPlayer "script.gh" 2200 910 _WorldXY` | ❌ Nicht erkannt |
+| Thread-based `SendKeys` | ❌ Timing-Probleme |
+| Timer-based C# `RunScript` | ❌ UI Thread Deadlock |
+
+### Beobachtete Inkonsistenzen:
+1. Erste Tür am Origin (0,0,0) - funktioniert manchmal
+2. Zweite/Dritte Tür an anderen Positionen - manuelle Plane-Eingabe nötig
+3. `Result: True` kommt auch wenn manuell eingegeben wurde
+
+### Was der Agent BRAUCHT für echte Automatisierung:
+
+1. **Rhino Command Output Stream**
+   - Echtzeit-Feedback was Rhino fragt
+   - Z.B.: "GetPlane ( WorldXY WorldYZ WorldZX Undo )"
+
+2. **GrasshopperPlayer Parameter Discovery**
+   - Welche Inputs hat das Script?
+   - Welche Typen (Number, Point, Plane, etc.)?
+   - Welche Werte sind gültig?
+
+3. **Interaktive Eingabe-Möglichkeit**
+   - Wenn Prompt erscheint → automatisch antworten
+   - Nicht blind Parameter senden
+
+### Mögliche Lösungsansätze (für nächste Session):
+
+#### Ansatz 1: Rhino Command Listener
+```csharp
+// In C# Plugin: Rhino CommandLine Output abfangen
+Rhino.RhinoApp.CommandLineOut += (sender, e) => {
+    // e.Text enthält den Command Output
+    // Kann an MCP Server gesendet werden
+};
+```
+
+#### Ansatz 2: Grasshopper API direkt
+```csharp
+// Grasshopper Definition laden ohne Player
+var archive = new Grasshopper.Kernel.GH_Archive();
+archive.ReadFromFile(filePath);
+var doc = new Grasshopper.Kernel.GH_Document();
+archive.ExtractObject(doc, "Definition");
+
+// Parameter direkt setzen (keine Prompts!)
+foreach (var input in doc.Inputs) {
+    // input.ReceiveData(value);
+}
+```
+
+#### Ansatz 3: Parameter File
+```json
+// temp_params.json
+{"Lichthoehe": 2200, "Lichtbreite": 910, "Plane": "WorldXY"}
+```
+Script modifizieren um von Datei zu lesen
+
+### Dateien erstellt (zum Aufräumen):
+- `run_grasshopper_automated.py` - funktioniert nicht zuverlässig
+- `test_run_grasshopper_automated.py` - Tests passen nicht zur Realität
+- `GrasshopperOperations.cs` - `RunGrasshopperAutomated` unzuverlässig
+
+### Fazit für nächste Session:
+**NICHT weiter mit inline Parameters experimentieren!**
+→ Stattdessen: Rhino CommandLine Output abfangen um zu SEHEN was passiert
+→ Oder: Grasshopper API direkt verwenden (Phase 2 im ursprünglichen Plan)
+
+## Phase C Status (2026-01-11)
 - US-C01 File Operations ✅ Complete
 - US-C02 Viewport Control ✅ Complete
 - US-C03 Groups & Blocks ✅ Complete
 - US-C04 Mesh Import/Export ✅ Complete
 - US-C05 Render Settings ✅ Complete
-- US-C06 Grasshopper Integration ⏳ Pending
+- US-C06 Grasshopper Integration ⚠️ **INCOMPLETE** - Plane-Eingabe noch manuell
 
-**Next Priority:** US-C06 Grasshopper Integration - Requires Grasshopper API integration
+**BLOCKER für 100% Automatisierung:**
+Agent kann Rhino Command Output nicht sehen!
+→ Lösungsansätze dokumentiert in Grasshopper Automation Attempt Sektion oben
 
 ---
 

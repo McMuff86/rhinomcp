@@ -68,3 +68,7 @@ from .tools.create_group import create_group
 from .tools.explode_block import explode_block
 from .tools.insert_block import insert_block
 from .tools.ungroup import ungroup
+
+# Grasshopper Operations
+from .tools.run_grasshopper import run_grasshopper
+from .tools.run_grasshopper_automated import run_door_script, run_grasshopper_automated

@@ -564,6 +564,12 @@ namespace RhinoMCPPlugin
                 ["import_mesh"] = this.handler.ImportMesh,
                 ["export_mesh"] = this.handler.ExportMesh,
                 ["mesh_from_brep"] = this.handler.MeshFromBrep,
+                // Grasshopper Operations
+                ["run_grasshopper"] = this.handler.RunGrasshopper,
+                ["run_grasshopper_with_params"] = this.handler.RunGrasshopperWithParams,
+                ["run_grasshopper_automated"] = this.handler.RunGrasshopperAutomated,
+                ["create_door_from_plan"] = this.handler.CreateDoorFromPlan,
+                ["generate_bill_of_materials"] = this.handler.GenerateBillOfMaterials,
                 // Command History (for agent communication)
                 ["get_command_history"] = this.handler.GetCommandHistory,
                 ["get_logs"] = (p) => {
