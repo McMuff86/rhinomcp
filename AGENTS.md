@@ -85,6 +85,7 @@ Before starting, determine which workflow to use:
 - `docs/learnings/grasshopper-automation.md` - GH automation learnings
 - `docs/learnings/websocket-patterns.md` - WebSocket streaming patterns
 - `docs/learnings/boolean-operations.md` - Boolean ops learnings
+- `docs/learnings/getting-unstuck.md` - **How to handle stuck situations and unknown prompts**
 
 ### Response Format (SACRED)
 
@@ -158,13 +159,14 @@ await ws.send({"command": "run_script", "script": '_-GrasshopperPlayer "Rahmentu
 | `send_rhino_input(value)` | Send input to Rhino command line |
 | `wait_for_prompt(pattern)` | Wait for specific prompt |
 | `run_script_async(script)` | Run script without blocking |
-| `cancel_rhino_command()` | Cancel current command |
+| `cancel_rhino_command()` | Cancel current command (LAST RESORT - only if timeout >60s) |
 | `run_grasshopper_interactive()` | Run GH with auto-input |
 
 ### Documentation
 
 - **Full Guide:** <a>docs/AI_AGENT_RHINO_VISIBILITY.md</a>
 - **Grasshopper-Specific:** <a>docs/GRASSHOPPER_AUTOMATION.md</a>
+- **Getting Unstuck:** <a>docs/learnings/getting-unstuck.md</a> - **When Rhino hangs or asks for unknown input**
 
 ---
 
@@ -195,11 +197,26 @@ uv pip install -e .
 
 ### Run
 ```bash
-
 # 1. Start MCP server
 cd rhino_mcp_server
 uv run rhinomcp
 ```
+
+### Script Organization
+```bash
+# Temporary scripts (auto-cleanup after 7 days)
+python scripts/temp/test_feature.py
+
+# Example scripts (reusable)
+python scripts/examples/complete_door_example.py
+
+# Cleanup temp scripts
+python scripts/cleanup_temp.py --days 7
+python scripts/cleanup_temp.py --all  # Remove all
+python scripts/cleanup_temp.py --dry-run  # Preview
+```
+
+See `scripts/README.md` for script organization guidelines.
 
 ### Test
 ```bash

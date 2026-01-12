@@ -387,6 +387,7 @@ namespace RhinoMCPPlugin
 
         /// <summary>
         /// Handle cancel command - attempts to cancel current operation.
+        /// Sends Escape key to Rhino to cancel any hanging command.
         /// </summary>
         private void HandleCancel(IWebSocketConnection socket)
         {
@@ -394,14 +395,19 @@ namespace RhinoMCPPlugin
             {
                 try
                 {
-                    // Try multiple cancel methods
+                    // Send Escape key to cancel current command (like pressing Esc)
+                    // This is more reliable than _Cancel for emergency situations
+                    RhinoApp.RunScript("_Esc", false);
+                    
+                    // Also try _Cancel as fallback
                     RhinoApp.RunScript("_Cancel", false);
                     
                     socket.Send(new JObject
                     {
                         ["type"] = "CancelResult",
                         ["timestamp"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"),
-                        ["success"] = true
+                        ["success"] = true,
+                        ["method"] = "Esc + Cancel"
                     }.ToString());
                 }
                 catch (Exception ex)

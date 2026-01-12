@@ -1,0 +1,2 @@
+# This file ensures the temp directory is tracked by git
+# Actual temporary scripts (*.py) are ignored via .gitignore

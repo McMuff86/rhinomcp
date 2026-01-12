@@ -27,3 +27,8 @@ rhino_mcp_server/*.mtl
 
 # VS Code workspace
 *.code-workspace
+
+# Temporary scripts (auto-cleanup)
+scripts/temp/*.py
+!scripts/temp/README.md
+!scripts/temp/.gitkeep

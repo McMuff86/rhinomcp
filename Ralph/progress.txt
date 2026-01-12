@@ -53,6 +53,19 @@ mcpstart
 
 ## Recent Sessions
 
+### [2026-01-12] - Rahmentuer_UD5 Analysis & Script Organization
+- Thread: Cursor Agent Session
+- Duration: ~1.5 hours
+- Analyzed: Rahmentuer_UD5.gh script (4 inputs: height, width, point, hinge side)
+- Created: `docs/learnings/getting-unstuck.md` - Complete guide for handling stuck situations
+- Enhanced: `cancel_rhino_command()` now sends both `_Esc` and `_Cancel` for reliability
+- Understanding: WebSocket disconnections are normal - connections are short-lived by design
+- Script Organization: Created `scripts/temp/` and `scripts/examples/` structure with cleanup script
+- Files: `scripts/temp/*.py` (moved), `scripts/cleanup_temp.py`, `scripts/examples/complete_door_example.py`
+- See: `docs/learnings/getting-unstuck.md`, `scripts/README.md`
+
+---
+
 ### [2026-01-11] - Documentation Cleanup
 - Thread: Cursor Agent Session
 - Implemented: Progress.txt cleanup, learning documentation system

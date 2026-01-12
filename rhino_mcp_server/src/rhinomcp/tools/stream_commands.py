@@ -329,17 +329,26 @@ async def run_script_async(
 @mcp.tool()
 async def cancel_rhino_command(ctx: Context) -> str:
     """
-    Cancel the current Rhino command.
+    Cancel the current Rhino command (emergency escape).
     
-    Attempts to cancel any running command in Rhino.
-    Useful for aborting stuck operations.
+    Sends Escape key to Rhino to cancel any hanging command.
+    This is like pressing Esc in Rhino - it cancels the current operation
+    and returns to Command prompt.
+    
+    Use this when:
+    - Rhino is waiting for input you don't recognize
+    - A command is hanging/timed out
+    - You need to abort the current operation
     
     Returns:
-        JSON with cancel status
+        JSON with cancel status and current prompt
     
     Example:
         >>> cancel_rhino_command()
-        {"ok": true, "message": "Cancel sent"}
+        {"ok": true, "message": "Cancel sent", "cancelled": true, "current_prompt": "Command"}
+    
+    See also:
+        docs/learnings/getting-unstuck.md - Complete guide for handling stuck situations
     """
     try:
         ws_client = get_websocket_client()
