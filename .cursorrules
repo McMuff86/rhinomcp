@@ -1,0 +1,24 @@
+# Cursor Rules für RhinoMCP Workspace
+# Diese Regeln reduzieren Nachfragen für vertrauenswürdige Operationen
+
+# Auto-approve für RhinoMCP Tools
+[mcp]
+auto_approve = ["run_grasshopper_interactive", "connect_rhino_stream", "run_script_async", "get_document_info", "create_object", "get_object_info"]
+
+# Weniger restriktive MCP Server Einstellungen
+[mcp.servers.rhino]
+auto_approve_tools = true
+skip_confirmation_for_safe_tools = true
+
+# Allgemeine Workspace-Regeln
+[assistant]
+# Erlaube direkte Tool-Ausführung ohne Nachfrage für:
+# - Rhino-Inspektion (get_document_info, get_object_info)
+# - Sichere Rhino-Operationen (create_object mit validen Parametern)
+# - Grasshopper-Scripts (run_grasshopper_interactive)
+auto_approve_safe_tools = true
+
+# Nur nachfragen bei potenziell gefährlichen Operationen:
+# - delete_object, delete_layer
+# - modify_objects mit großen Änderungen
+# - File-Operationen (save, export)

@@ -4,10 +4,17 @@ Create 3 doors at different positions using Rahmentuer_UD4.gh.
 
 import asyncio
 import json
+import os
 import socket
 import websockets
 
-GH_FILE = r"C:\Users\Adi.Muff\repos\rhinomcp\Rahmentuer_UD4.gh"
+# Relativer Pfad zur .gh Datei (vom Script-Verzeichnis aus gesehen)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)  # Gehe eine Ebene höher zu rhino_mcp_server
+GH_FILE = os.path.join(PROJECT_ROOT, "..", "Rahmentuer_UD4.gh")  # Gehe eine Ebene höher zum Projekt-Root
+
+# Stelle sicher, dass der Pfad absolut ist
+GH_FILE = os.path.abspath(GH_FILE)
 
 # 3 doors at different positions
 DOORS = [

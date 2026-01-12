@@ -138,11 +138,11 @@ For reliable automation, use Grasshopper scripts with **GetPoint** instead of **
 # Rahmentuer_UD4.gh - simplified with GetPoint
 # Only 3 prompts: Lichthoehe, Lichtbreite, Get Point
 
-# Single door
+# Single door (relativer Pfad vom Projekt-Root)
 await ws.send({"command": "run_script", "script": '_-GrasshopperPlayer "Rahmentuer_UD4.gh"'})
 # React to: Lichthoehe -> 2200, Lichtbreite -> 1200, Get Point -> 0,0,0
 
-# Multi-door: See dev/create_3_doors.py for pattern
+# Multi-door: See dev/create_3_doors.py for pattern (verwendet automatische Pfad-Erkennung)
 ```
 
 **Key timing rules:**
