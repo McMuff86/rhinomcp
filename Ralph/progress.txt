@@ -28,6 +28,17 @@ Project: RhinoMCP Professionalization
 
 ## Recent Learnings (2026-01-13)
 
+**Multi-Door Grasshopper Automation - Enhanced ✅**
+- Created: `dev/create_7_doors.py` - Automated creation of 7 doors with WebSocket monitoring
+- Key Learnings:
+  1. **All Prompts Must Be Captured**: Rahmentuer_UD5.gh requires 4 prompts (Lichthoehe, Lichtbreite, Get Point, Bandseite) - missing Bandseite caused failures
+  2. **WebSocket Event Monitoring**: Essential to see ALL prompts Rhino asks - use monitoring script first
+  3. **Timeout Handling**: If no events for 5 seconds, cancel and retry (script is fast, shouldn't hang)
+  4. **Retry Logic**: Up to 3 retries per door improves robustness
+  5. **Random vs Alternating**: Both patterns work - random for variety, alternating for predictable patterns
+- Files: `dev/create_7_doors.py`, `dev/monitor_door_script.py`
+- See: `docs/learnings/grasshopper-automation.md` for patterns
+
 **Material Assignment to Layers - RESOLVED ✅**
 - Fixed: Objects appearing white despite materials assigned to layers
 - Root causes: Missing MaterialSource setting, incorrect Modify() parameters, incomplete material creation
@@ -66,6 +77,22 @@ mcpstart
 ---
 
 ## Recent Sessions
+
+### [2026-01-13] - Multi-Door Grasshopper Automation - Enhanced ✅
+- Thread: Cursor Agent Session
+- Duration: ~1 hour
+- Created: `dev/create_7_doors.py` - Automated creation of 7 doors with WebSocket monitoring
+- Key Achievements:
+  1. Identified missing Bandseite prompt in Rahmentuer_UD5.gh (4 prompts total)
+  2. Created monitoring script (`dev/monitor_door_script.py`) to capture all prompts
+  3. Implemented timeout handling (5s without events = retry)
+  4. Added retry logic (up to 3 retries per door)
+  5. Tested both random and alternating Bandseite patterns
+- Files: `dev/create_7_doors.py`, `dev/monitor_door_script.py`
+- Learnings: See `docs/learnings/grasshopper-automation.md` - Updated with new patterns
+- Status: ✅ Fully working - 7 doors created successfully with random Bandseite
+
+---
 
 ### [2026-01-13] - Material Assignment to Layers - RESOLVED ✅
 - Thread: Cursor Agent Session

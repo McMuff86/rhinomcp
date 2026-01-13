@@ -5,10 +5,13 @@
 ## Quick Reference
 
 - **Use GetPoint instead of GetPlane** - simpler and more reliable
-- **Timing is critical:** 0.5s delay before inputs, 2.0s between scripts
+- **Timing is critical:** 0.3-0.5s delay before inputs, 1-2s between scripts
 - **Use `_Enter` not `""`** to confirm plane origin
 - **Prompt matching:** Use partial strings like "lichthoe" for robustness
 - **Track sent inputs with flags** to avoid duplicate sends
+- **Always monitor first:** Use monitoring script to capture ALL prompts before automation
+- **Handle timeouts:** If no events for 5s, cancel and retry (scripts are fast)
+- **Retry logic:** Up to 3 retries per operation improves robustness
 
 ---
 
@@ -182,7 +185,9 @@ async def create_multiple_doors():
 
 ---
 
-## Door Object Structure (Rahmentuer_UD4.gh)
+## Door Object Structure
+
+### Rahmentuer_UD4.gh (3 prompts: height, width, point)
 
 | Layer | Count | Type |
 |-------|-------|------|
@@ -192,6 +197,101 @@ async def create_multiple_doors():
 
 **Total:** 6 objects per door
 
+### Rahmentuer_UD5.gh (4 prompts: height, width, point, bandseite)
+
+| Layer | Count | Type |
+|-------|-------|------|
+| Intumex_Rahmen | 2 | Brep |
+| Tuerrahmen | 3 | Brep |
+| Tuerblatt | 1 | Brep |
+
+**Total:** 6 objects per door (same structure, adds Bandseite parameter)
+
+---
+
+### Learning: All Prompts Must Be Captured
+**Date:** 2026-01-13
+**Context:** Multi-door automation with Rahmentuer_UD5.gh
+**Problem:** First door worked, subsequent doors failed - missing Bandseite prompt
+**Solution:** Use monitoring script first to capture ALL prompts, then handle each one
+
+```python
+# Rahmentuer_UD5.gh requires 4 prompts:
+# 1. Lichthoehe (height)
+# 2. Lichtbreite (width)
+# 3. Get Point (position)
+# 4. Bandseite (door side/hinge side) ← This was missing!
+
+# Always use monitoring script first:
+# python dev/monitor_door_script.py
+```
+
+**Key Insight:** Missing even one prompt causes script to hang waiting for input.
+
+---
+
+### Learning: Timeout Handling for Fast Scripts
+**Date:** 2026-01-13
+**Context:** Scripts execute quickly, shouldn't hang
+**Solution:** If no events for 5 seconds, cancel and retry
+
+```python
+last_event_time = asyncio.get_event_loop().time()
+no_event_timeout = 5.0  # 5 seconds without events = restart
+
+while iteration < max_iterations:
+    time_since_last_event = current_time - last_event_time
+    
+    if time_since_last_event >= no_event_timeout:
+        print(f"No events for {time_since_last_event:.1f}s - canceling and retrying...")
+        await cancel_current_command(ws)
+        break  # Break to retry
+```
+
+**Key Insight:** Fast scripts shouldn't wait long - if no events, something is wrong.
+
+---
+
+### Learning: Retry Logic Improves Robustness
+**Date:** 2026-01-13
+**Context:** Occasional failures due to timing or missed events
+**Solution:** Retry up to 3 times per door
+
+```python
+async def create_door(ws, ..., max_retries: int = 3) -> bool:
+    for retry in range(max_retries):
+        if retry > 0:
+            print(f"[Retry {retry}/{max_retries-1}] Restarting script...")
+            await cancel_current_command(ws)
+            await asyncio.sleep(0.5)
+        
+        # ... try to create door ...
+        
+        if success:
+            return True
+    
+    return False  # Failed after all retries
+```
+
+**Key Insight:** Transient failures are common - retry logic handles them gracefully.
+
+---
+
+### Learning: Random vs Alternating Patterns
+**Date:** 2026-01-13
+**Context:** Bandseite (door side) selection
+**Solution:** Both patterns work - choose based on use case
+
+```python
+# Random (for variety):
+door_bandseite = random.choice(["Links", "Rechts"])
+
+# Alternating (for predictable patterns):
+door_bandseite = "Links" if (i - 1) % 2 == 0 else "Rechts"
+```
+
+**Key Insight:** Random for variety, alternating for predictable patterns - both are valid.
+
 ---
 
 ## Best Practices
@@ -199,7 +299,10 @@ async def create_multiple_doors():
 1. **Simplify GH scripts** - Use GetPoint instead of GetPlane where possible
 2. **Use fixed planes** - Set plane in GH, only get origin from user
 3. **Test manually first** - Verify prompt sequence before automation
-4. **Use partial matching** - More robust than exact string matching
-5. **Track input state** - Prevent duplicate sends with flags
-6. **Add delays** - Rhino needs time to process inputs
-7. **Wait for completion** - Don't start next script until current finishes
+4. **Use monitoring script** - Always capture ALL prompts first (`dev/monitor_door_script.py`)
+5. **Use partial matching** - More robust than exact string matching
+6. **Track input state** - Prevent duplicate sends with flags
+7. **Add delays** - Rhino needs time to process inputs (0.3-0.5s)
+8. **Wait for completion** - Don't start next script until current finishes
+9. **Handle timeouts** - If no events for 5s, cancel and retry
+10. **Implement retry logic** - Up to 3 retries per operation improves robustness
