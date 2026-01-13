@@ -44,6 +44,7 @@ Before starting, determine which workflow to use:
 | Use same progress.txt for Cursor AND Amp | Create separate progress logs |
 | **Keep documentation clean** | Leave solved problems in active docs |
 | **Archive solved issues** to `docs/archive/solved_issues/` | Delete problem history entirely |
+| **Use plain text markers** (`[OK]`, `[ERROR]`) in console output | **Use emojis in code** (causes UnicodeEncodeError on Windows) |
 
 ### Documentation Hygiene (IMPORTANT!)
 
@@ -63,31 +64,68 @@ Before starting, determine which workflow to use:
 
 ### Learning Documentation System
 
+**CRITICAL: Document in Ralph first, use .md files sparingly!**
+
+**Documentation Hierarchy:**
+
+1. **Ralph (`Ralph/progress.txt`)** - PRIMARY location for learnings
+   - Quick learnings (5-10 lines)
+   - Gotchas and patterns
+   - Session notes
+   - Codebase patterns
+   - **Use this for 90% of learnings**
+
+2. **Learning Files (`docs/learnings/*.md`)** - Only for complex topics
+   - Multi-step workflows requiring detailed guides
+   - Complex API patterns with examples
+   - Troubleshooting guides with multiple solutions
+   - Reference documentation for tools/features
+   - **Use sparingly - only when topic is too complex for progress.txt**
+
+3. **Archive (`docs/archive/solved_issues/`)** - Solved problems
+   - Complete problem descriptions
+   - Failed attempts
+   - Working solutions
+   - **Move from progress.txt after resolution**
+
+**Decision Tree:**
+- Simple learning/gotcha? → `Ralph/progress.txt`
+- Complex topic needing detailed guide? → `docs/learnings/*.md`
+- Solved problem to archive? → `docs/archive/solved_issues/`
+
 **Where to Document:**
 
 | Content Type | Location | When to Update |
 |--------------|----------|----------------|
-| Session logs | `Ralph/progress.txt` | Each session (brief) |
-| Technical learnings | `docs/learnings/*.md` | After solving problems |
+| Session logs | `Ralph/progress.txt` | Each session (brief, 5-10 lines) |
+| Quick learnings | `Ralph/progress.txt` | After solving problems (brief) |
+| Complex technical guides | `docs/learnings/*.md` | Only for complex topics requiring detailed guides |
 | Solved issues | `docs/archive/solved_issues/` | After issue resolved |
 | Future work | `FUTURE_ISSUES.md` | When deferring work |
 | Codebase patterns | `AGENTS.md` | When patterns stabilize |
 
 **Progress.txt Rules:**
 - Keep entries brief (5-10 lines per session)
-- Reference learning files: "See: docs/learnings/TOPIC.md"
+- **Primary location for learnings** - use this for 90% of documentation
+- Reference learning files only when topic is complex: "See: docs/learnings/TOPIC.md"
 - Archive completed phases to `progress_archive_phase_X.txt`
-- Remove detailed learnings after moving to learning files
+- Remove detailed learnings after moving to archive (not to .md files)
 - Max ~100-150 lines in active progress.txt
+- **Don't create new .md files** unless topic is too complex for progress.txt
 
-**Available Learning Files:**
-- `docs/learnings/rhinocommon-api.md` - RhinoCommon patterns
-- `docs/learnings/grasshopper-automation.md` - GH automation learnings
-- `docs/learnings/websocket-patterns.md` - WebSocket streaming patterns
-- `docs/learnings/boolean-operations.md` - Boolean ops learnings
-- `docs/learnings/viewport-camera-operations.md` - Viewport control, camera rotation, screenshots
-- `docs/learnings/material-assignment.md` - **Material assignment to layers - complete guide with best practices**
-- `docs/learnings/getting-unstuck.md` - **How to handle stuck situations and unknown prompts**
+**Available Learning Files (use sparingly - prefer Ralph/progress.txt):**
+- `docs/learnings/rhinocommon-api.md` - Complex RhinoCommon API patterns
+- `docs/learnings/grasshopper-automation.md` - Multi-step GH automation workflows
+- `docs/learnings/websocket-patterns.md` - Complex WebSocket streaming patterns
+- `docs/learnings/boolean-operations.md` - Boolean operations API patterns
+- `docs/learnings/viewport-camera-operations.md` - Viewport control reference guide
+- `docs/learnings/material-assignment.md` - **Complex material assignment troubleshooting guide**
+- `docs/learnings/getting-unstuck.md` - **Troubleshooting guide for stuck situations**
+
+**Quick Learnings (in Ralph/progress.txt):**
+- No emojis in Rhino code (Windows encoding issue) - see "Recent Learnings" section
+- Display mode must be set to "Rendered" to show materials
+- Screenshots directory must be created explicitly (it's in .gitignore)
 
 ### Response Format (SACRED)
 
