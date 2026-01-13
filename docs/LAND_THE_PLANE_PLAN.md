@@ -436,5 +436,45 @@ Eine strukturierte Routine für Session-Ende, die:
 
 ---
 
-**Status:** Draft - Ready for Review
-**Next:** Review with user, refine based on feedback, implement first version
+**Status:** ✅ Implemented - Script available at `scripts/land_the_plane.py`
+**Next:** Test with real session, refine based on feedback
+
+---
+
+## ✅ Implementierung
+
+Das Script `scripts/land_the_plane.py` ist implementiert und bereit zur Nutzung!
+
+### Features:
+
+- ✅ **5-Phasen-Checkliste** - Strukturierte Durchführung aller Phasen
+- ✅ **Git-State-Check** - Automatische Prüfung von stashes, branches, uncommitted changes
+- ✅ **Progress.txt Prüfung** - Warnung wenn >150 Zeilen (Archivierung empfohlen)
+- ✅ **Temp-Scripts Check** - Anzeige alter Scripts die aufgeräumt werden können
+- ✅ **Test-Integration** - Optionales Ausführen der Test-Suite
+- ✅ **Dry-Run Modus** - Sicherheitsmodus ohne Änderungen
+- ✅ **Interaktiv** - Benutzerfreundliche Prompts und Bestätigungen
+- ✅ **Farbige Ausgabe** - Übersichtliche Terminal-Ausgabe
+
+### Verwendung:
+
+```bash
+# Interaktiv (empfohlen)
+python scripts/land_the_plane.py
+
+# Dry-Run (Vorschau ohne Änderungen)
+python scripts/land_the_plane.py --dry-run
+
+# Tests überspringen
+python scripts/land_the_plane.py --skip-tests
+
+# Non-Interactive (vorsichtig!)
+python scripts/land_the_plane.py --non-interactive
+```
+
+### Nächste Schritte:
+
+1. ✅ Script erstellt
+2. ⏳ Mit echter Session testen
+3. ⏳ Basierend auf Erfahrungen verfeinern
+4. ⏳ Compaction-Funktion hinzufügen (Zukünftig)

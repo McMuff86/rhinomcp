@@ -127,6 +127,41 @@ Before starting, determine which workflow to use:
 - Display mode must be set to "Rendered" to show materials
 - Screenshots directory must be created explicitly (it's in .gitignore)
 
+### "Land the Plane" - Session Cleanup Routine
+
+**When context window is full or session ending:**
+
+Use the structured cleanup routine to properly end development sessions:
+
+```bash
+# Interactive cleanup (recommended)
+python scripts/land_the_plane.py
+
+# Preview without changes
+python scripts/land_the_plane.py --dry-run
+
+# Skip test execution
+python scripts/land_the_plane.py --skip-tests
+```
+
+**What it does:**
+- **Phase 1:** Documentation cleanup (progress.txt, learnings, archives)
+- **Phase 2:** Code cleanup (temp scripts, unfertige Features)
+- **Phase 3:** Tests & Status (run tests, update status docs)
+- **Phase 4:** Git State & Sync (stashes, branches, commits)
+- **Phase 5:** Next Session Preparation (identify tasks, prepare context)
+
+**Key principles:**
+- ✅ Follow Ralph workflow patterns (`Ralph/progress.txt` for learnings)
+- ✅ Archive solved issues to `docs/archive/solved_issues/`
+- ✅ Keep `progress.txt` brief (max ~100-150 lines, then archive)
+- ✅ Git-backed persistence (commit important changes)
+- ✅ Prepare context for next session
+
+**Inspiration:** Based on [Beads (steveyegge/beads)](https://github.com/steveyegge/beads) - Git-backed issue tracker for AI agents with compaction/memory decay concepts.
+
+**Full documentation:** `docs/LAND_THE_PLANE_PLAN.md`
+
 ### Response Format (SACRED)
 
 All MCP tools MUST return JSON via helper functions:
@@ -614,6 +649,7 @@ uv run pytest tests/test_connection.py -v
 | `docs/MCP_TOOL_STANDARDS.md` | Tool development standards & patterns |
 | `docs/AI_AGENT_RHINO_VISIBILITY.md` | Guide for monitoring Rhino state in real-time |
 | `docs/GRASSHOPPER_AUTOMATION.md` | Grasshopper Automation with command monitoring |
+| **`docs/LAND_THE_PLANE_PLAN.md`** | **Session cleanup routine plan** (inspired by Beads) |
 | **`docs/learnings/`** | **Technical learnings by topic** |
 | `docs/learnings/rhinocommon-api.md` | RhinoCommon API patterns |
 | `docs/learnings/grasshopper-automation.md` | Grasshopper automation learnings |
