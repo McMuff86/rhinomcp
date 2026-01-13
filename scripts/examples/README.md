@@ -12,6 +12,9 @@ These scripts are kept in the repository as examples and can be referenced or mo
 - `complete_door_example.py` - Example of automating door creation with Grasshopper
 - `websocket_interactive_example.py` - Example of WebSocket-based interactive script execution
 
+### Viewport & Camera Operations
+- `orbit_model_screenshots.py` - Example of creating orbit screenshots around a model
+
 ### Testing & Debugging
 - `test_connection_example.py` - Example of testing MCP connection
 - `check_rhino_state_example.py` - Example of checking Rhino state

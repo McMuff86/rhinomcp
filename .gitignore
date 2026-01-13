@@ -25,6 +25,9 @@ rhino_mcp_server/*.png
 rhino_mcp_server/*.obj
 rhino_mcp_server/*.mtl
 
+# Screenshots (for multimodal model verification)
+screenshots/
+
 # VS Code workspace
 *.code-workspace
 

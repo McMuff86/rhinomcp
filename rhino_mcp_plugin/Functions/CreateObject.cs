@@ -217,6 +217,9 @@ public partial class RhinoMCPFunctions
                 {
                     rhinoObject.Attributes.ColorSource = ObjectColorSource.ColorFromLayer;
                 }
+                
+                // CRITICAL: Set material source to layer so objects use layer materials
+                rhinoObject.Attributes.MaterialSource = ObjectMaterialSource.MaterialFromLayer;
             }
             else
             {
@@ -225,6 +228,8 @@ public partial class RhinoMCPFunctions
                 if (currentLayerIndex >= 0)
                 {
                     rhinoObject.Attributes.LayerIndex = currentLayerIndex;
+                    // Set material source to layer so objects use layer materials
+                    rhinoObject.Attributes.MaterialSource = ObjectMaterialSource.MaterialFromLayer;
                 }
             }
 

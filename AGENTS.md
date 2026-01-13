@@ -2,8 +2,8 @@
 
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
-**Last Updated:** 2026-01-11
-**Version:** 0.1.4.2
+**Last Updated:** 2026-01-13
+**Version:** 0.1.4.3
 **Phase:** C Complete + Grasshopper Automation (Multi-door creation working!)
 
 ---
@@ -85,6 +85,8 @@ Before starting, determine which workflow to use:
 - `docs/learnings/grasshopper-automation.md` - GH automation learnings
 - `docs/learnings/websocket-patterns.md` - WebSocket streaming patterns
 - `docs/learnings/boolean-operations.md` - Boolean ops learnings
+- `docs/learnings/viewport-camera-operations.md` - Viewport control, camera rotation, screenshots
+- `docs/learnings/material-assignment.md` - **Material assignment to layers - complete guide with best practices**
 - `docs/learnings/getting-unstuck.md` - **How to handle stuck situations and unknown prompts**
 
 ### Response Format (SACRED)
@@ -377,6 +379,7 @@ When adding new tools, register them in `RhinoMCPServer.cs`:
 |----------|-----------------|
 | Core (create, modify, delete) | `CreateObject.cs`, `ModifyObject.cs`, `DeleteObject.cs` |
 | Layer & Material | `CreateLayer.cs`, `GetOrSetCurrentLayer.cs`, `GetDocumentInfo.cs` |
+| **Material Assignment** | **See `docs/learnings/material-assignment.md` for complete guide** |
 | Boolean Operations | `BooleanOperations.cs` |
 | Transform Tools | `TransformOperations.cs` |
 | Curve Tools | `CurveOperations.cs` |

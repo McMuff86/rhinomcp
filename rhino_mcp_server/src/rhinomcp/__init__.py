@@ -58,6 +58,7 @@ from .tools.set_object_properties import set_object_properties
 from .tools.set_render_settings import set_render_settings
 from .tools.set_view import set_view
 from .tools.set_camera import set_camera
+from .tools.orbit_camera import orbit_camera
 from .tools.zoom_extents import zoom_extents
 from .tools.zoom_selected import zoom_selected
 from .tools.capture_viewport import capture_viewport

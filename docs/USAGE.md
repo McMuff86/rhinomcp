@@ -112,7 +112,8 @@ uv run rhinomcp
 | `set_view` | Set viewport to standard views (Top, Front, Perspective, etc.) |
 | `zoom_extents` | Zoom viewport to show all objects |
 | `zoom_selected` | Zoom viewport to selected objects |
-| `capture_viewport` | Capture viewport as image (file or base64) |
+| `orbit_camera` | Rotate camera around target (orbit around model) |
+| `capture_viewport` | Capture viewport as image (auto-saves to screenshots/ by default) |
 
 ### Render Settings
 | Tool | Description |
@@ -196,7 +197,7 @@ MCPStatus
 1. Use `ping` to verify connection first
 2. Use batch operations for >10 items
 3. Set current layer before creating objects
-4. Use layer-based materials for PBR
+4. Use layer-based materials for PBR (see `docs/learnings/material-assignment.md` for complete guide)
 
 ---
 

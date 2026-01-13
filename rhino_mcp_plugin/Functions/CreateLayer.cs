@@ -35,9 +35,68 @@ public partial class RhinoMCPFunctions
                 layer.ParentLayerId = parentLayer.Id;
 
         }
-        // Create a box centered at the specified point
+        
+        // Handle material assignment BEFORE adding layer to document
+        // Set RenderMaterialIndex on the layer object before Add()
+        if (parameters.ContainsKey("material_id"))
+        {
+            string materialIdStr = parameters["material_id"]?.ToString();
+            if (!string.IsNullOrWhiteSpace(materialIdStr) && int.TryParse(materialIdStr, out int materialIndex))
+            {
+                if (materialIndex >= 0 && materialIndex < doc.RenderMaterials.Count)
+                {
+                    // Set RenderMaterialIndex BEFORE adding to document (like RhinoScript does)
+                    layer.RenderMaterialIndex = materialIndex;
+                    RhinoApp.WriteLine($"[LAYER PREP] Setting RenderMaterialIndex {materialIndex} on layer '{name}' before Add()");
+                }
+                else
+                {
+                    RhinoApp.WriteLine($"[WARNING] Material index {materialIndex} is out of range. RenderMaterials count: {doc.RenderMaterials.Count}");
+                }
+            }
+        }
+        
+        // Add the layer to the document
         var layerId = doc.Layers.Add(layer);
+        
+        // Get fresh reference after Add() to verify
         layer = doc.Layers.FindIndex(layerId);
+        
+        // Verify material assignment after Add()
+        if (parameters.ContainsKey("material_id"))
+        {
+            string materialIdStr = parameters["material_id"]?.ToString();
+            if (!string.IsNullOrWhiteSpace(materialIdStr) && int.TryParse(materialIdStr, out int materialIndex))
+            {
+                if (materialIndex >= 0 && materialIndex < doc.RenderMaterials.Count)
+                {
+                    var layerIndex = layer.Index;
+                    
+                    // Check if material was preserved after Add()
+                    if (layer.RenderMaterialIndex != materialIndex)
+                    {
+                        RhinoApp.WriteLine($"[WARNING] Material index lost after Add(). Expected {materialIndex}, got {layer.RenderMaterialIndex}. Re-assigning...");
+                        // Re-assign using Modify() as fallback
+                        layer.RenderMaterialIndex = materialIndex;
+                        bool modifySuccess = doc.Layers.Modify(layer, layerIndex, true);
+                        if (!modifySuccess)
+                        {
+                            // Last resort: get fresh layer and try again
+                            var freshLayer = doc.Layers[layerIndex];
+                            if (freshLayer != null)
+                            {
+                                freshLayer.RenderMaterialIndex = materialIndex;
+                                doc.Layers.Modify(freshLayer, layerIndex, true);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        RhinoApp.WriteLine($"[LAYER CREATED] Layer '{name}' created with material index {materialIndex} (preserved from pre-Add assignment)");
+                    }
+                }
+            }
+        }
 
         // Update views
         doc.Views.Redraw();

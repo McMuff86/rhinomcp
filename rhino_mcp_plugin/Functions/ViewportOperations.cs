@@ -244,6 +244,13 @@ public partial class RhinoMCPFunctions
 
         if (!string.IsNullOrEmpty(filename))
         {
+            // Ensure directory exists
+            var fileInfo = new System.IO.FileInfo(filename);
+            if (fileInfo.Directory != null && !fileInfo.Directory.Exists)
+            {
+                fileInfo.Directory.Create();
+            }
+
             // Save to file
             var format = filename.ToLower().EndsWith(".png") ? ImageFormat.Png : ImageFormat.Jpeg;
             bitmap.Save(filename, format);

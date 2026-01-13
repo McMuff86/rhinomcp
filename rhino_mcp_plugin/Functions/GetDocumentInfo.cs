@@ -189,14 +189,36 @@ public partial class RhinoMCPFunctions
 
                 baseMaterial.CommitChanges();
 
+                // CRITICAL: Add base material to doc.Materials first so it appears in UI
+                int materialIndex = doc.Materials.Add(baseMaterial);
+                if (materialIndex < 0)
+                {
+                    throw new InvalidOperationException("Failed to add material to doc.Materials");
+                }
+
                 // Create RenderMaterial from the base material and add to RenderMaterials table
                 var renderMaterial = Rhino.Render.RenderMaterial.CreateBasicMaterial(baseMaterial, doc);
-                doc.RenderMaterials.Add(renderMaterial);
-
+                if (renderMaterial == null)
+                {
+                    throw new InvalidOperationException("Failed to create RenderMaterial from base material");
+                }
+                
+                // Set the name on the RenderMaterial
+                renderMaterial.Name = name;
+                
+                bool addSuccess = doc.RenderMaterials.Add(renderMaterial);
+                if (!addSuccess)
+                {
+                    throw new InvalidOperationException("Failed to add RenderMaterial to doc.RenderMaterials");
+                }
+                
                 // Get the index of the just-added render material
                 int renderIndex = doc.RenderMaterials.Count - 1;
 
-                RhinoApp.WriteLine($"[PBR MATERIAL CREATED] PBR material '{name}' created with RenderMaterials index {renderIndex} (metallic: {metallic}, roughness: {roughness})");
+                // Force UI update
+                doc.Views.Redraw();
+
+                RhinoApp.WriteLine($"[PBR MATERIAL CREATED] PBR material '{name}' created: Material index {materialIndex}, RenderMaterial index {renderIndex} (metallic: {metallic}, roughness: {roughness})");
 
                 return JObject.FromObject(new
                 {
@@ -294,10 +316,48 @@ public partial class RhinoMCPFunctions
             throw new InvalidOperationException($"Material index {materialIndex} is out of range. There are {doc.RenderMaterials.Count} render materials in the document.");
 
         // Assign material to layer - use RenderMaterialIndex for modern Rhino render materials
+        // CRITICAL: We need to modify the layer directly, similar to how RhinoScript does it
+        // The layer object from FindName is a reference, so we can modify it directly
+        var layerIndex = layer.Index;
+        
+        // Set the RenderMaterialIndex directly on the layer
+        // This is the same approach as RhinoScript: layer.RenderMaterialIndex = index
         layer.RenderMaterialIndex = materialIndex;
-        doc.Layers.Modify(layer, layer.Index, true);
+        
+        // CRITICAL: Use Modify to persist the change - but we need to pass the layer object itself
+        // The Modify method needs the modified layer object and the index
+        bool modifySuccess = doc.Layers.Modify(layer, layerIndex, true);
+        
+        if (!modifySuccess)
+        {
+            // If Modify fails, try alternative approach: get fresh layer and modify again
+            var freshLayer = doc.Layers[layerIndex];
+            if (freshLayer != null)
+            {
+                freshLayer.RenderMaterialIndex = materialIndex;
+                modifySuccess = doc.Layers.Modify(freshLayer, layerIndex, true);
+            }
+            
+            if (!modifySuccess)
+            {
+                throw new InvalidOperationException($"Failed to modify layer {layerName} - Modify() returned false. Material index: {materialIndex}, Layer index: {layerIndex}");
+            }
+        }
+        
+        // Verify the assignment was successful by reading it back
+        var verifyLayer = doc.Layers[layerIndex];
+        if (verifyLayer != null && verifyLayer.RenderMaterialIndex != materialIndex)
+        {
+            RhinoApp.WriteLine($"[WARNING] Material assignment verification failed. Expected {materialIndex}, got {verifyLayer.RenderMaterialIndex}");
+            // Try one more time with direct assignment
+            verifyLayer.RenderMaterialIndex = materialIndex;
+            doc.Layers.Modify(verifyLayer, layerIndex, true);
+        }
+        
+        // Force viewport redraw to show the changes immediately
+        doc.Views.Redraw();
 
-        RhinoApp.WriteLine($"[MATERIAL ASSIGNED] Render material {materialIndex} assigned to layer {layerName}");
+        RhinoApp.WriteLine($"[MATERIAL ASSIGNED] Render material {materialIndex} assigned to layer {layerName} (layer index: {layerIndex}, modify success: {modifySuccess}, verified: {verifyLayer?.RenderMaterialIndex == materialIndex})");
         return JObject.FromObject(new { status = "success", message = $"Material assigned to layer {layerName}" });
     }
 }

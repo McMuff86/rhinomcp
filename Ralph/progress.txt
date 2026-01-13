@@ -12,9 +12,10 @@ Project: RhinoMCP Professionalization
 
 ## Current Status
 
-**Version:** 0.1.4.2
+**Version:** 0.1.4.3
 **Phase:** C Complete + Grasshopper Automation
 **Test Count:** 300+ tests
+**Last Update:** 2026-01-13 - Material assignment to layers fully resolved
 
 | Phase | Status |
 |-------|--------|
@@ -22,6 +23,16 @@ Project: RhinoMCP Professionalization
 | Phase B | ✅ Archived |
 | Phase C | ✅ Complete |
 | Grasshopper Automation | ✅ Multi-door working! |
+
+---
+
+## Recent Learnings (2026-01-13)
+
+**Material Assignment to Layers - RESOLVED ✅**
+- Fixed: Objects appearing white despite materials assigned to layers
+- Root causes: Missing MaterialSource setting, incorrect Modify() parameters, incomplete material creation
+- Solution: Set MaterialSource=MaterialFromLayer, use layer.Index (int) for Modify(), add to both doc.Materials and doc.RenderMaterials
+- See: `docs/learnings/material-assignment.md` for complete guide with best practices
 
 ---
 
@@ -48,10 +59,28 @@ mcpstart
 | Grasshopper Automation | `docs/learnings/grasshopper-automation.md` |
 | WebSocket Patterns | `docs/learnings/websocket-patterns.md` |
 | Boolean Operations | `docs/learnings/boolean-operations.md` |
+| **Material Assignment** | **`docs/learnings/material-assignment.md`** ⭐ |
+| Viewport/Camera Operations | `docs/learnings/viewport-camera-operations.md` |
+| Getting Unstuck | `docs/learnings/getting-unstuck.md` |
 
 ---
 
 ## Recent Sessions
+
+### [2026-01-13] - Material Assignment to Layers - RESOLVED ✅
+- Thread: Cursor Agent Session
+- Duration: ~2 hours
+- Problem: Objects appearing white despite materials assigned to layers, missing material icons
+- Root Causes:
+  1. Missing `MaterialSource = MaterialFromLayer` on objects
+  2. Incorrect `Modify()` parameter (using GUID instead of int index)
+  3. Incomplete material creation (only RenderMaterials, not Materials)
+- Solution: Set MaterialSource, use layer.Index for Modify(), add to both doc.Materials and doc.RenderMaterials
+- Files: `CreateObject.cs`, `CreateLayer.cs`, `GetDocumentInfo.cs`
+- Documentation: `docs/learnings/material-assignment.md` - Complete guide with best practices
+- Status: ✅ Fully resolved - materials now work correctly
+
+---
 
 ### [2026-01-12] - Rahmentuer_UD5 Analysis & Script Organization
 - Thread: Cursor Agent Session
