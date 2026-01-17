@@ -28,6 +28,25 @@ Project: RhinoMCP Professionalization
 
 ## Recent Learnings (2026-01-13)
 
+**CRITICAL: No Emojis in Rhino Code ✅**
+- Problem: Using emojis in Python code causes `UnicodeEncodeError` on Windows (cp1252 encoding limitation)
+- Rule: NEVER use emojis in code that runs in Rhino or outputs to console
+- Use instead: Plain text markers like `[OK]`, `[ERROR]`, `[INFO]`, `[WARN]`
+- Applies to: All Python scripts, RhinoScript code, print statements, error messages
+- Example: `print("[OK] Materials created")` NOT `print("✅ Materials created")`
+- See: Common patterns in AGENTS.md "Behavioral Guidelines"
+
+**Multi-Door Grasshopper Automation - Enhanced ✅**
+- Created: `dev/create_7_doors.py` - Automated creation of 7 doors with WebSocket monitoring
+- Key Learnings:
+  1. **All Prompts Must Be Captured**: Rahmentuer_UD5.gh requires 4 prompts (Lichthoehe, Lichtbreite, Get Point, Bandseite) - missing Bandseite caused failures
+  2. **WebSocket Event Monitoring**: Essential to see ALL prompts Rhino asks - use monitoring script first
+  3. **Timeout Handling**: If no events for 5 seconds, cancel and retry (script is fast, shouldn't hang)
+  4. **Retry Logic**: Up to 3 retries per door improves robustness
+  5. **Random vs Alternating**: Both patterns work - random for variety, alternating for predictable patterns
+- Files: `dev/create_7_doors.py`, `dev/monitor_door_script.py`
+- See: `docs/learnings/grasshopper-automation.md` for patterns
+
 **Material Assignment to Layers - RESOLVED ✅**
 - Fixed: Objects appearing white despite materials assigned to layers
 - Root causes: Missing MaterialSource setting, incorrect Modify() parameters, incomplete material creation
@@ -53,19 +72,58 @@ mcpstart
 
 ## Learning Files Index
 
-| Topic | Location |
-|-------|----------|
-| RhinoCommon API | `docs/learnings/rhinocommon-api.md` |
-| Grasshopper Automation | `docs/learnings/grasshopper-automation.md` |
-| WebSocket Patterns | `docs/learnings/websocket-patterns.md` |
-| Boolean Operations | `docs/learnings/boolean-operations.md` |
-| **Material Assignment** | **`docs/learnings/material-assignment.md`** ⭐ |
-| Viewport/Camera Operations | `docs/learnings/viewport-camera-operations.md` |
-| Getting Unstuck | `docs/learnings/getting-unstuck.md` |
+**When to use .md files vs. Ralph documentation:**
+- **Use .md files** (`docs/learnings/*.md`): Complex topics requiring detailed guides (API patterns, multi-step workflows, troubleshooting guides)
+- **Use Ralph** (`progress.txt`): Quick learnings, gotchas, patterns, session notes (keep brief, 5-10 lines)
+
+| Topic | Location | Type |
+|-------|----------|------|
+| RhinoCommon API | `docs/learnings/rhinocommon-api.md` | Complex API patterns |
+| Grasshopper Automation | `docs/learnings/grasshopper-automation.md` | Multi-step workflow |
+| WebSocket Patterns | `docs/learnings/websocket-patterns.md` | Complex patterns |
+| Boolean Operations | `docs/learnings/boolean-operations.md` | API patterns |
+| **Material Assignment** | **`docs/learnings/material-assignment.md`** ⭐ | Complex troubleshooting |
+| Viewport/Camera Operations | `docs/learnings/viewport-camera-operations.md` | Tool reference |
+| Getting Unstuck | `docs/learnings/getting-unstuck.md` | Troubleshooting guide |
+| **No Emojis Rule** | **`Ralph/progress.txt`** | Quick learning (this file) |
 
 ---
 
 ## Recent Sessions
+
+### [2026-01-13] - Castle Artwork Creation & Documentation Improvements ✅
+- Thread: Cursor Agent Session
+- Duration: ~1 hour
+- Created: `scripts/examples/create_castle_artwork.py` - Castle artwork with cubes, materials, rendering, screenshots
+- Key Achievements:
+  1. Created castle structure with cubes (walls, towers, gates, roofs)
+  2. Implemented 4 PBR materials (stone, wood, metal, roof tiles)
+  3. Set display mode to "Rendered" to show materials properly
+  4. Added camera positioning and lighting setup
+  5. Implemented screenshot capture with auto-directory creation
+- Documentation Improvements:
+  1. Moved Emoji learning to Ralph/progress.txt (no separate .md file)
+  2. Updated AGENTS.md with clear guidelines: Use Ralph for 90% of learnings, .md files only for complex topics
+  3. Updated viewport documentation with display mode info
+- Files: `scripts/examples/create_castle_artwork.py`, `Ralph/progress.txt`, `AGENTS.md`
+- Learnings: See "Recent Learnings" section above
+- Status: ✅ Complete - Castle artwork script working, documentation structure improved
+
+### [2026-01-13] - Multi-Door Grasshopper Automation - Enhanced ✅
+- Thread: Cursor Agent Session
+- Duration: ~1 hour
+- Created: `dev/create_7_doors.py` - Automated creation of 7 doors with WebSocket monitoring
+- Key Achievements:
+  1. Identified missing Bandseite prompt in Rahmentuer_UD5.gh (4 prompts total)
+  2. Created monitoring script (`dev/monitor_door_script.py`) to capture all prompts
+  3. Implemented timeout handling (5s without events = retry)
+  4. Added retry logic (up to 3 retries per door)
+  5. Tested both random and alternating Bandseite patterns
+- Files: `dev/create_7_doors.py`, `dev/monitor_door_script.py`
+- Learnings: See `docs/learnings/grasshopper-automation.md` - Updated with new patterns
+- Status: ✅ Fully working - 7 doors created successfully with random Bandseite
+
+---
 
 ### [2026-01-13] - Material Assignment to Layers - RESOLVED ✅
 - Thread: Cursor Agent Session

@@ -28,6 +28,26 @@ RhinoMCP provides tools for controlling viewports, rotating cameras, and capturi
 | `set_camera` | Set camera position | `camera_location`, `target_location`, `lens_length` |
 | `orbit_camera` | Rotate camera around target | `direction`: "right", "left", "up", "down", `angle_degrees` |
 | `capture_viewport` | Capture screenshot | `viewport_name`, `width`, `height`, `filename`, `auto_save` |
+| `render_view` | Render viewport to image | `viewport_name`, `width`, `height`, `filename`, `display_mode`: "rendered" or "raytraced" |
+
+### Setting Display Mode
+
+To show materials properly in Rhino, you must set the viewport display mode to "Rendered":
+
+```python
+# Set display mode to "Rendered" using RhinoScript
+rhino.send_command("execute_rhinoscript_python_code", {
+    "code": """
+import rhinoscriptsyntax as rs
+rs.ViewDisplayMode("Perspective", "Rendered")
+"""
+})
+
+# Note: render_view() sets display mode temporarily for rendering,
+# but doesn't change the viewport's permanent display mode
+```
+
+**Important:** The `render_view()` tool sets display mode temporarily during rendering, but doesn't change the viewport's permanent display mode. To see materials in the viewport, use `ViewDisplayMode` via `execute_rhinoscript_python_code`.
 
 ---
 
@@ -105,9 +125,18 @@ capture_viewport(ctx, filename="C:/full/path/screenshot.png")
 ### Screenshot Directory
 
 - **Location:** `screenshots/` (project root)
-- **Auto-creation:** Directory created automatically on first use
+- **Auto-creation:** Directory created automatically on first use (must be created in scripts since it's in `.gitignore`)
 - **Git status:** Ignored (added to `.gitignore`)
 - **Purpose:** Multimodal model verification, documentation
+
+**Important:** Since `screenshots/` is in `.gitignore`, scripts must explicitly create it:
+```python
+from pathlib import Path
+screenshots_dir = Path(__file__).parent.parent.parent / "screenshots"
+screenshots_dir.mkdir(exist_ok=True)
+if not screenshots_dir.exists():
+    raise RuntimeError(f"Failed to create screenshots directory: {screenshots_dir}")
+```
 
 ### Implementation Details
 

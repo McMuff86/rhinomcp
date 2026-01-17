@@ -8,6 +8,7 @@
 scripts/
 ├── README.md              # This file
 ├── cleanup_temp.py        # Cleanup script for temp folder
+├── land_the_plane.py      # Session cleanup routine (NEW!)
 │
 ├── temp/                  # Temporary scripts (auto-cleanup)
 │   ├── README.md          # Temp scripts documentation
@@ -67,6 +68,32 @@ python scripts/cleanup_temp.py --all
 python scripts/cleanup_temp.py --dry-run
 ```
 
+### Session Cleanup ("Land the Plane")
+
+**Run cleanup routine:**
+```bash
+# Interactive cleanup (recommended)
+python scripts/land_the_plane.py
+
+# Preview without changes
+python scripts/land_the_plane.py --dry-run
+
+# Skip test execution
+python scripts/land_the_plane.py --skip-tests
+
+# Non-interactive mode (careful!)
+python scripts/land_the_plane.py --non-interactive
+```
+
+**What it does:**
+- Phase 1: Documentation cleanup (progress.txt, learnings, archives)
+- Phase 2: Code cleanup (temp scripts, unfertige Features)
+- Phase 3: Tests & Status (run tests, update status docs)
+- Phase 4: Git State & Sync (stashes, branches, commits)
+- Phase 5: Next Session Preparation (identify tasks, prepare context)
+
+See `docs/LAND_THE_PLANE_PLAN.md` for complete documentation.
+
 ### Example Scripts
 
 **Run examples:**
@@ -109,6 +136,7 @@ python scripts/examples/complete_door_example.py
 
 ## Related Documentation
 
+- `docs/LAND_THE_PLANE_PLAN.md` - **Session cleanup routine plan** (NEW!)
 - `docs/learnings/grasshopper-automation.md` - Grasshopper automation patterns
 - `docs/learnings/getting-unstuck.md` - Handling stuck situations
 - `AGENTS.md` - Agent guidelines
