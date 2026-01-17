@@ -2,9 +2,10 @@
 
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
-**Last Updated:** 2026-01-13
+**Last Updated:** 2026-01-17
 **Version:** 0.1.4.3
 **Phase:** C Complete + Grasshopper Automation (Multi-door creation working!)
+**Issue Tracking:** [Beads](https://github.com/steveyegge/beads) - Use `bd` CLI for task management
 
 ---
 
@@ -29,18 +30,23 @@ Before starting, determine which workflow to use:
 | Large refactoring | **Amp (Ralph)** | Context persistence via progress.txt |
 | Quick fixes | **Cursor** | Direct, no overhead |
 
-> **IMPORTANT:** Both tools MUST use `Ralph/progress.txt` for consistency!
-> - **Before work:** Read progress.txt for learnings
-> - **After work:** Append new learnings to progress.txt
+> **IMPORTANT:** Both tools MUST use these for consistency:
+> - **Before work:** Read `progress.txt` for learnings + `bd ready` for open issues
+> - **During work:** `bd update <id> --status in_progress` to track current task
+> - **After work:** Update `progress.txt` + `bd update <id> --status done` + `bd sync`
 
 ### Behavioral Guidelines
 
 | Do | Don't |
 |----|-------|
-| Read `progress.txt` before making changes | Jump straight into coding |
+| Run `bd ready` to find next task | Jump straight into coding |
+| Read `progress.txt` before making changes | Skip context from previous sessions |
+| Use `bd update <id> --status in_progress` when starting | Forget to track what you're working on |
 | Use structured JSON responses (`ok()`, `from_exception()`) | Return plain strings from tools |
 | Test with `uv run pytest tests/ -v` | Skip testing |
 | Update `progress.txt` after each story | Forget to document learnings |
+| Run `bd update <id> --status done` when finished | Leave issues in wrong state |
+| Run `bd sync` before `git push` | Forget to sync Beads issues |
 | Follow existing patterns in the codebase | Invent new conventions |
 | Use same progress.txt for Cursor AND Amp | Create separate progress logs |
 | **Keep documentation clean** | Leave solved problems in active docs |
@@ -68,10 +74,11 @@ Before starting, determine which workflow to use:
 
 | Content Type | Location | When to Update |
 |--------------|----------|----------------|
+| **Issue tracking** | **`bd` (Beads)** | **Create issues, track progress, close when done** |
 | Session logs | `Ralph/progress.txt` | Each session (brief) |
 | Technical learnings | `docs/learnings/*.md` | After solving problems |
 | Solved issues | `docs/archive/solved_issues/` | After issue resolved |
-| Future work | `FUTURE_ISSUES.md` | When deferring work |
+| Future work | `bd create` or `FUTURE_ISSUES.md` | When deferring work |
 | Codebase patterns | `AGENTS.md` | When patterns stabilize |
 
 **Progress.txt Rules:**
@@ -275,6 +282,11 @@ dotnet build --configuration Release
 
 ```
 rhinomcp/                          # Project root
+├── .beads/                       # Beads issue tracking (git-backed)
+│   ├── issues.jsonl              # Issue storage (auto-synced)
+│   ├── config.yaml               # Beads configuration
+│   └── README.md                 # Beads documentation
+│
 ├── rhino_mcp_server/             # Python MCP server
 │   ├── src/rhinomcp/
 │   │   ├── tools/                # MCP tool implementations
