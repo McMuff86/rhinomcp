@@ -2,7 +2,7 @@
 
 > Quick reference for using RhinoMCP tools.
 
-**Version:** 0.1.3.9
+**Version:** 0.1.4.4
 
 ---
 
@@ -129,6 +129,40 @@ uv run rhinomcp
 | `execute_rhinoscript_python_code` | Run Python in Rhino |
 | `get_rhinoscript_python_function_names` | List available functions |
 | `get_rhinoscript_python_code_guide` | Get function documentation |
+
+### Grasshopper API (SDK-based)
+| Tool | Description |
+|------|-------------|
+| `load_grasshopper_definition` | Load .gh/.ghx file, return parameters list |
+| `set_grasshopper_parameter` | Set input parameter value by nickname |
+| `solve_grasshopper` | Execute/solve the loaded definition |
+| `bake_grasshopper` | Bake output geometry to Rhino document |
+| `get_grasshopper_outputs` | Retrieve computed output values |
+| `unload_grasshopper_definition` | Unload definition from memory |
+| `list_grasshopper_definitions` | List all loaded definitions |
+
+**Workflow Example:**
+```python
+# 1. Load definition
+result = load_grasshopper_definition(file_path="C:/path/to/door.gh")
+definition_id = result["data"]["definition_id"]
+
+# 2. Set parameters
+set_grasshopper_parameter(definition_id=definition_id, parameter_name="Height", value=2400)
+set_grasshopper_parameter(definition_id=definition_id, parameter_name="Width", value=1000)
+
+# 3. Solve
+solve_grasshopper(definition_id=definition_id)
+
+# 4. Bake to Rhino
+bake_grasshopper(definition_id=definition_id, layer="Doors")
+
+# 5. Cleanup
+unload_grasshopper_definition(definition_id=definition_id)
+```
+
+**Note:** This API provides direct Grasshopper SDK access without using GrasshopperPlayer.
+For interactive scripts requiring user input, use `run_grasshopper_interactive` instead.
 
 ---
 

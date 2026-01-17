@@ -3,7 +3,7 @@
 > Agent-focused guide for working with RhinoMCP. Single source of truth for AI coding agents.
 
 **Last Updated:** 2026-01-17
-**Version:** 0.1.4.3
+**Version:** 0.1.4.4
 **Phase:** C Complete + Grasshopper Automation (Multi-door creation working!)
 **Issue Tracking:** [Beads](https://github.com/steveyegge/beads) - Use `bd` CLI for task management
 
@@ -506,6 +506,7 @@ When adding new tools, register them in `RhinoMCPServer.cs`:
 | Render Operations | `RenderOperations.cs` |
 | Mesh Operations | `MeshOperations.cs` |
 | Grasshopper Operations | `GrasshopperOperations.cs` (run_grasshopper, run_grasshopper_automated, run_door_script) |
+| **Grasshopper API (SDK)** | **`GrasshopperApiOperations.cs`** (load_grasshopper_definition, set_grasshopper_parameter, solve_grasshopper, bake_grasshopper, get_grasshopper_outputs) |
 | Script Execution | `ExecuteCode.cs` |
 
 ---

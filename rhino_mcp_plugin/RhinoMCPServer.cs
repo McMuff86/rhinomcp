@@ -187,7 +187,8 @@ namespace RhinoMCPPlugin
                 ["Curves"] = new List<string> { "offset_curve", "fillet_curves", "chamfer_curves" },
                 ["Surfaces"] = new List<string> { "loft_curves", "extrude_curve", "revolve_curve" },
                 ["Scripting"] = new List<string> { "execute_rhinoscript_python_code" },
-                ["Debug"] = new List<string> { "set_debug_mode", "log_thought" }
+                ["Debug"] = new List<string> { "set_debug_mode", "log_thought" },
+                ["Grasshopper API"] = new List<string> { "load_grasshopper_definition", "set_grasshopper_parameter", "solve_grasshopper", "bake_grasshopper", "get_grasshopper_outputs", "unload_grasshopper_definition", "list_grasshopper_definitions" }
             };
 
             foreach (var category in categories)
@@ -268,7 +269,15 @@ namespace RhinoMCPPlugin
                 "set_camera",
                 "render_view",
                 // Scripting
-                "execute_rhinoscript_python_code"
+                "execute_rhinoscript_python_code",
+                // Grasshopper API (SDK-based)
+                "load_grasshopper_definition",
+                "set_grasshopper_parameter",
+                "solve_grasshopper",
+                "bake_grasshopper",
+                "get_grasshopper_outputs",
+                "unload_grasshopper_definition",
+                "list_grasshopper_definitions"
             };
         }
 
@@ -614,9 +623,17 @@ namespace RhinoMCPPlugin
                 ["import_mesh"] = this.handler.ImportMesh,
                 ["export_mesh"] = this.handler.ExportMesh,
                 ["mesh_from_brep"] = this.handler.MeshFromBrep,
-                // Grasshopper Operations
+                // Grasshopper Operations (GrasshopperPlayer-based)
                 ["run_grasshopper"] = this.handler.RunGrasshopper,
                 ["generate_bill_of_materials"] = this.handler.GenerateBillOfMaterials,
+                // Grasshopper API Operations (SDK-based)
+                ["load_grasshopper_definition"] = this.handler.LoadGrasshopperDefinition,
+                ["set_grasshopper_parameter"] = this.handler.SetGrasshopperParameter,
+                ["solve_grasshopper"] = this.handler.SolveGrasshopper,
+                ["bake_grasshopper"] = this.handler.BakeGrasshopper,
+                ["get_grasshopper_outputs"] = this.handler.GetGrasshopperOutputs,
+                ["unload_grasshopper_definition"] = this.handler.UnloadGrasshopperDefinition,
+                ["list_grasshopper_definitions"] = this.handler.ListGrasshopperDefinitions,
                 // Async Script Execution (for WebSocket-based control)
                 ["start_script_async"] = this.handler.StartScriptAsync,
                 ["send_command_input"] = this.handler.SendCommandInput,
