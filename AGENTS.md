@@ -16,6 +16,7 @@
 2. **Check learnings:** `docs/learnings/*.md` - Technical patterns from previous work
 3. **Check current phase:** `docs/ROADMAP.md` - What's the current focus?
 4. **Find next task:** `Ralph/prd_phase_c.json` - Pick highest priority story with `passes: false`
+5. **Check Beads issues:** `bd ready` - List tasks with no open blockers, or `bd list` for all issues 
 
 ### Tool Selection: Cursor vs Amp (Ralph)
 
@@ -219,6 +220,33 @@ python scripts/cleanup_temp.py --dry-run  # Preview
 ```
 
 See `scripts/README.md` for script organization guidelines.
+
+### Issue Tracking (Beads)
+```bash
+# List ready tasks (no blockers)
+bd ready
+
+# List all issues
+bd list
+
+# Create new issue
+bd create "Fix bug description" -p 1  # Priority: 0 (highest) to 3 (lowest)
+
+# View issue details
+bd show <issue-id>
+
+# Update issue status
+bd update <issue-id> --status in_progress
+bd update <issue-id> --status done
+
+# Link dependencies (child blocks on parent)
+bd dep add <child-id> <parent-id>
+
+# Sync with git (export/import/commit)
+bd sync
+```
+
+**IMPORTANT:** Never use `bd edit` - it opens an interactive editor. Use `bd update` with flags instead.
 
 ### Test
 ```bash
@@ -463,12 +491,87 @@ Ralph is our structured development workflow for iterative improvements.
 ### Start New Feature
 1. Read `Ralph/progress.txt` for patterns
 2. Check `Ralph/prd_phase_c.json` for current stories
-3. Pick highest priority story with `passes: false`
-4. Implement in small steps
-5. Build & Test (see below)
-6. Update `progress.txt` with learnings
-7. Mark story as `passes: true`
-8. Update `AGENTS.md` (tool tables, test count, status)
+3. Check `bd ready` for issues without blockers
+4. Pick highest priority story with `passes: false`
+5. Create Beads issue if needed: `bd create "Feature: description" -p 1`
+6. Implement in small steps
+7. Build & Test (see below)
+8. Update `progress.txt` with learnings
+9. Mark story as `passes: true`
+10. Update Beads issue: `bd update <id> --status done`
+11. Update `AGENTS.md` (tool tables, test count, status)
+
+---
+
+## Issue Tracking with Beads
+
+**Beads** provides git-backed, dependency-aware issue tracking optimized for AI agents.
+
+### When to Use Beads vs Ralph
+
+| Use Case | Tool | Why |
+|----------|------|-----|
+| Long-term bugs, features | **Beads** | Dependency tracking, git-backed, persistent |
+| Phase-based user stories | **Ralph (prd_*.json)** | Structured PRD format, phase tracking |
+| Session logs | **progress.txt** | Brief, ephemeral session notes |
+
+### Essential Beads Commands
+
+```bash
+# Find next work (tasks with no blockers)
+bd ready
+
+# Create issue with priority
+bd create "Fix connection timeout" -p 0  # P0 = highest priority
+bd create "Add new feature" -p 1
+bd create "Documentation update" -p 2
+
+# View issue details and audit trail
+bd show bd-a1b2
+
+# Update issue (NEVER use 'bd edit' - it's interactive!)
+bd update <id> --status in_progress
+bd update <id> --status done
+bd update <id> --description "Updated description"
+bd update <id> --notes "Implementation notes"
+
+# Link dependencies (child blocks on parent)
+bd dep add bd-child bd-parent
+
+# Sync with git (exports to JSONL, commits, pulls, imports)
+bd sync
+```
+
+### Beads Workflow Integration
+
+**At session start:**
+```bash
+bd ready  # Find tasks without blockers
+bd show <id>  # Review task details
+```
+
+**During work:**
+```bash
+bd update <id> --status in_progress  # Mark as working
+# ... make changes ...
+bd update <id> --notes "Fixed X, tested Y"  # Add progress notes
+```
+
+**At session end (Landing the Plane):**
+```bash
+bd update <id> --status done  # Close completed work
+bd create "Follow-up: ..." -p 2  # File remaining work
+bd sync  # Export/commit/push issues
+```
+
+### Beads Configuration
+
+- **Storage:** Issues stored in `.beads/issues.jsonl` (git-tracked)
+- **Database:** SQLite cache in `.beads/beads.db` (local, fast)
+- **Auto-sync:** `bd sync` exports to JSONL, commits, pulls, imports
+- **Git hooks:** Install with `bd hooks install` for automatic sync
+
+**See:** `.beads/README.md` for Beads-specific documentation
 
 ### Build & Restart Workflow
 After implementing features, **always** run:
@@ -588,7 +691,9 @@ uv run pytest tests/test_connection.py -v
 | `Ralph/README.md` | Ralph workflow documentation |
 | `Ralph/progress.txt` | Session logs & quick commands (keep brief!) |
 | `Ralph/progress_archive_phase_a.txt` | Archived Phase A sessions |
-| `Ralph/progress_archive_phase_b.txt` | Archived Phase B+C sessions
+| `Ralph/progress_archive_phase_b.txt` | Archived Phase B+C sessions |
+| `.beads/README.md` | Beads issue tracking documentation |
+| `.beads/issues.jsonl` | Git-backed issue storage (auto-synced)
 
 ### Tool Documentation
 
@@ -660,6 +765,61 @@ When unsure how to implement a feature or which RhinoCommon/RhinoScript API to u
 
 ---
 
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create Beads issues for anything that needs follow-up:
+   ```bash
+   bd create "Follow-up: description" -p 1
+   ```
+
+2. **Run quality gates** (if code changed) - Tests, linters, builds:
+   ```bash
+   cd rhino_mcp_server && uv run pytest tests/ -v
+   ```
+
+3. **Update Beads issue status** - Close finished work, update in-progress items:
+   ```bash
+   bd update <id> --status done --reason "Completed"
+   bd update <id> --status in_progress  # If still working
+   ```
+
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync  # Export Beads issues to JSONL, commit, pull, import
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+
+5. **Clean up** - Clear stashes, prune remote branches:
+   ```bash
+   git stash clear
+   git remote prune origin
+   ```
+
+6. **Verify** - All changes committed AND pushed:
+   ```bash
+   git status  # Should show "up to date with origin"
+   ```
+
+7. **Hand off** - Provide context for next session:
+   - Summary of completed work
+   - Issues filed for follow-up
+   - Recommended next task: `bd ready` or `bd show <id>`
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
+- Always run `bd sync` before `git push` to ensure Beads issues are committed
+
+---
+
 ## See Also
 
 - [docs/USAGE.md](docs/USAGE.md) - Quick reference (tool list, conventions)
@@ -668,3 +828,6 @@ When unsure how to implement a feature or which RhinoCommon/RhinoScript API to u
 - [docs/learnings/](docs/learnings/) - Technical learnings by topic
 - [Rhino Developer Docs](https://developer.rhino3d.com/) - Official API documentation
 - Tool docstrings: `rhino_mcp_server/src/rhinomcp/tools/*.py` - Detailed tool documentation
+
+
+
