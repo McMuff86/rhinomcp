@@ -33,7 +33,7 @@ Before starting, determine which workflow to use:
 > **IMPORTANT:** Both tools MUST use these for consistency:
 > - **Before work:** Read `progress.txt` for learnings + `bd ready` for open issues
 > - **During work:** `bd update <id> --status in_progress` to track current task
-> - **After work:** Update `progress.txt` + `bd update <id> --status done` + `bd sync`
+> - **After work:** Update `progress.txt` + `bd close <id>` + `bd sync`
 
 ### Behavioral Guidelines
 
@@ -45,7 +45,7 @@ Before starting, determine which workflow to use:
 | Use structured JSON responses (`ok()`, `from_exception()`) | Return plain strings from tools |
 | Test with `uv run pytest tests/ -v` | Skip testing |
 | Update `progress.txt` after each story | Forget to document learnings |
-| Run `bd update <id> --status done` when finished | Leave issues in wrong state |
+| Run `bd close <id>` when finished | Leave issues in wrong state |
 | Run `bd sync` before `git push` | Forget to sync Beads issues |
 | Follow existing patterns in the codebase | Invent new conventions |
 | Use same progress.txt for Cursor AND Amp | Create separate progress logs |
@@ -308,7 +308,7 @@ bd ready
 # List all issues
 bd list
 
-# Create new issue
+# Create new issue (routes to central planning repo if Multi-Repo setup)
 bd create "Fix bug description" -p 1  # Priority: 0 (highest) to 3 (lowest)
 
 # View issue details
@@ -316,7 +316,9 @@ bd show <issue-id>
 
 # Update issue status
 bd update <issue-id> --status in_progress
-bd update <issue-id> --status done
+
+# Close issue (NOT bd update --status done!)
+bd close <issue-id>
 
 # Link dependencies (child blocks on parent)
 bd dep add <child-id> <parent-id>
@@ -325,7 +327,9 @@ bd dep add <child-id> <parent-id>
 bd sync
 ```
 
-**IMPORTANT:** Never use `bd edit` - it opens an interactive editor. Use `bd update` with flags instead.
+**IMPORTANT:** 
+- Never use `bd edit` - it opens an interactive editor. Use `bd update` with flags instead.
+- Use `bd close <id>` to close issues, NOT `bd update --status done`
 
 ### Test
 ```bash
@@ -582,7 +586,7 @@ Ralph is our structured development workflow for iterative improvements.
 7. Build & Test (see below)
 8. Update `progress.txt` with learnings
 9. Mark story as `passes: true`
-10. Update Beads issue: `bd update <id> --status done`
+10. Close Beads issue: `bd close <id>`
 11. Update `AGENTS.md` (tool tables, test count, status)
 
 ---
@@ -611,19 +615,26 @@ bd create "Add new feature" -p 1
 bd create "Documentation update" -p 2
 
 # View issue details and audit trail
-bd show bd-a1b2
+bd show <issue-id>
 
 # Update issue (NEVER use 'bd edit' - it's interactive!)
 bd update <id> --status in_progress
-bd update <id> --status done
 bd update <id> --description "Updated description"
 bd update <id> --notes "Implementation notes"
 
+# Close issue (NOT bd update --status done!)
+bd close <id>
+bd close <id> --reason "Completed"
+
 # Link dependencies (child blocks on parent)
-bd dep add bd-child bd-parent
+bd dep add <child-id> <parent-id>
 
 # Sync with git (exports to JSONL, commits, pulls, imports)
 bd sync
+
+# Check database health
+bd doctor
+bd info
 ```
 
 ### Beads Workflow Integration
@@ -643,9 +654,33 @@ bd update <id> --notes "Fixed X, tested Y"  # Add progress notes
 
 **At session end (Landing the Plane):**
 ```bash
-bd update <id> --status done  # Close completed work
+bd close <id>  # Close completed work (NOT bd update --status done!)
 bd create "Follow-up: ..." -p 2  # File remaining work
 bd sync  # Export/commit/push issues
+```
+
+### Multi-Repo Setup (Optional)
+
+Beads supports routing new issues to a central planning repository:
+
+```
+~/.beads-planning/     ← Central planning (bd create routes here)
+    └── .beads/           Prefix: plan-xxx
+        
+~/repos/project/       ← Project-specific issues
+    └── .beads/           Prefix: rmcp-xxx (or project-specific)
+```
+
+**If Multi-Repo is configured:**
+- `bd create` → Creates issues in central planning repo
+- `bd list` → Shows issues from all configured repos
+- Local `.beads/` still tracks project-specific state
+
+**To check/fix Multi-Repo issues:**
+```bash
+bd --verbose create "Test" -p 2  # Shows "Routing to target repo: ..."
+# If routing to wrong repo, ensure target repo has issue_prefix configured:
+cd <target-repo> && bd config set issue_prefix <prefix>
 ```
 
 ### Beads Configuration
@@ -868,7 +903,7 @@ When unsure how to implement a feature or which RhinoCommon/RhinoScript API to u
 
 3. **Update Beads issue status** - Close finished work, update in-progress items:
    ```bash
-   bd update <id> --status done --reason "Completed"
+   bd close <id> --reason "Completed"  # Close finished work
    bd update <id> --status in_progress  # If still working
    ```
 
