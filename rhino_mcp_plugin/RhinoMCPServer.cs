@@ -213,7 +213,7 @@ namespace RhinoMCPPlugin
         private void PrintAvailableTools()
         {
             var tools = GetAvailableTools();
-            Logger.Raw($"Available MCP Tools ({tools.Count}):");
+            Logger.Raw($"Available Tools ({tools.Count}):");
             
             // Group tools by category
             var categories = new Dictionary<string, List<string>>
