@@ -20,7 +20,7 @@ namespace RhinoMCPPlugin.Commands
             var plugin = RhinoMCPPlugin.Instance;
             if (plugin?.Server == null)
             {
-                RhinoApp.WriteLine("MCP Server is not running.");
+                Logger.Raw("RhinoMCP Server is not running.");
                 return Result.Success;
             }
 
@@ -32,18 +32,18 @@ namespace RhinoMCPPlugin.Commands
             
             string serverMode = isRemote ? "TCP (remote access)" : "MCP (localhost only)";
             
-            RhinoApp.WriteLine($"RhinoMCP Server Status:");
-            RhinoApp.WriteLine($"  - Mode: {serverMode}");
-            RhinoApp.WriteLine($"  - TCP Server: Active on {host}:{port}");
-            RhinoApp.WriteLine($"  - Debug Mode: {(debugMode ? "Enabled" : "Disabled")}");
+            Logger.Raw($"RhinoMCP Server Status:");
+            Logger.Raw($"  - Mode: {serverMode}");
+            Logger.Raw($"  - TCP Server: Active on {host}:{port}");
+            Logger.Raw($"  - Log Level: {Logger.CurrentLevel}");
             
             if (wsStatus.IsRunning)
             {
-                RhinoApp.WriteLine($"  - WebSocket: Active on {wsStatus.Endpoint} ({wsStatus.ClientCount} clients)");
+                Logger.Raw($"  - WebSocket: Active on {wsStatus.Endpoint} ({wsStatus.ClientCount} clients)");
             }
             else
             {
-                RhinoApp.WriteLine($"  - WebSocket: Not running");
+                Logger.Raw($"  - WebSocket: Not running");
             }
 
             return Result.Success;

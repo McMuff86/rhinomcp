@@ -97,7 +97,9 @@ namespace RhinoMCPPlugin
         public void SetDebugMode(bool enable)
         {
             debugMode = enable;
-            RhinoApp.WriteLine($"Debug mode {(enable ? "enabled" : "disabled")}");
+            // Sync with Logger: debug mode = Debug level, otherwise Info
+            Logger.CurrentLevel = enable ? LogLevel.Debug : LogLevel.Info;
+            Logger.Info($"Debug mode {(enable ? "enabled" : "disabled")} (log level: {Logger.CurrentLevel})");
         }
 
         public bool GetDebugMode()
@@ -153,7 +155,7 @@ namespace RhinoMCPPlugin
             {
                 if (running)
                 {
-                    RhinoApp.WriteLine("Server is already running");
+                    Logger.Warning("Server is already running");
                     return;
                 }
 
@@ -172,29 +174,33 @@ namespace RhinoMCPPlugin
                 serverThread.IsBackground = true;
                 serverThread.Start();
 
-                RhinoApp.WriteLine($"RhinoMCP server started on {host}:{port}");
+                Logger.Info($"RhinoMCP server started on {host}:{port}");
                 
                 // Start WebSocket server for real-time event streaming
                 wsServer = new RhinoMCPWebSocketServer();
                 wsServer.Start(host, DefaultWebSocketPort);
                 
-                RhinoApp.WriteLine("-------------------------------------------");
-                PrintAvailableTools();
-                RhinoApp.WriteLine("-------------------------------------------");
+                // Show tools list at Debug level
+                if (Logger.CurrentLevel >= LogLevel.Debug)
+                {
+                    Logger.Raw("-------------------------------------------");
+                    PrintAvailableTools();
+                    Logger.Raw("-------------------------------------------");
+                }
                 
                 // Show appropriate message based on binding
                 if (host == "0.0.0.0")
                 {
-                    RhinoApp.WriteLine("Ready for TCP connections (remote access enabled).");
+                    Logger.Info("Ready for TCP connections (remote access enabled)");
                 }
                 else
                 {
-                    RhinoApp.WriteLine("Ready for MCP connections (localhost only).");
+                    Logger.Info("Ready for MCP connections (localhost only)");
                 }
             }
             catch (Exception e)
             {
-                RhinoApp.WriteLine($"Failed to start server: {e.Message}");
+                Logger.Error("Failed to start server", e);
                 Stop();
             }
         }
@@ -205,7 +211,7 @@ namespace RhinoMCPPlugin
         private void PrintAvailableTools()
         {
             var tools = GetAvailableTools();
-            RhinoApp.WriteLine($"Available MCP Tools ({tools.Count}):");
+            Logger.Raw($"Available MCP Tools ({tools.Count}):");
             
             // Group tools by category
             var categories = new Dictionary<string, List<string>>
@@ -229,7 +235,7 @@ namespace RhinoMCPPlugin
                 var availableInCategory = category.Value.Where(t => tools.Contains(t)).ToList();
                 if (availableInCategory.Count > 0)
                 {
-                    RhinoApp.WriteLine($"  [{category.Key}]: {string.Join(", ", availableInCategory)}");
+                    Logger.Raw($"  [{category.Key}]: {string.Join(", ", availableInCategory)}");
                 }
             }
         }
@@ -363,12 +369,12 @@ namespace RhinoMCPPlugin
                 serverThread = null;
             }
 
-            RhinoApp.WriteLine("RhinoMCP server stopped");
+            Logger.Info("RhinoMCP server stopped");
         }
 
         private void ServerLoop()
         {
-            RhinoApp.WriteLine("Server thread started");
+            Logger.Debug("Server thread started");
 
             while (IsRunning())
             {
@@ -382,7 +388,7 @@ namespace RhinoMCPPlugin
                     if (listener.Pending())
                     {
                         TcpClient client = listener.AcceptTcpClient();
-                        RhinoApp.WriteLine($"Connected to client: {client.Client.RemoteEndPoint}");
+                        Logger.Debug($"Client connected: {client.Client.RemoteEndPoint}");
 
                         // Handle client in a separate thread
                         Thread clientThread = new Thread(() => HandleClient(client));
@@ -397,7 +403,7 @@ namespace RhinoMCPPlugin
                 }
                 catch (Exception e)
                 {
-                    RhinoApp.WriteLine($"Error in server loop: {e.Message}");
+                    Logger.Error($"Error in server loop: {e.Message}");
 
                     if (!IsRunning())
                         break;
@@ -406,12 +412,12 @@ namespace RhinoMCPPlugin
                 }
             }
 
-            RhinoApp.WriteLine("Server thread stopped");
+            Logger.Debug("Server thread stopped");
         }
 
         private void HandleClient(TcpClient client)
         {
-            RhinoApp.WriteLine("Client handler started");
+            Logger.Verbose("Client handler started");
 
             byte[] buffer = new byte[8192];
             string incompleteData = string.Empty;
@@ -430,7 +436,7 @@ namespace RhinoMCPPlugin
                             int bytesRead = stream.Read(buffer, 0, buffer.Length);
                             if (bytesRead == 0)
                             {
-                                RhinoApp.WriteLine("Client disconnected");
+                                Logger.Debug("Client disconnected");
                                 break;
                             }
 
@@ -464,13 +470,13 @@ namespace RhinoMCPPlugin
                                             }
                                             catch (Exception sendEx)
                                             {
-                                                RhinoApp.WriteLine($"Failed to send response - client disconnected: {sendEx.Message}");
+                                                Logger.Warning($"Failed to send response - client disconnected: {sendEx.Message}");
                                             }
                                         }
                                         catch (Exception e)
                                         {
                                             caughtException = e;
-                                            RhinoApp.WriteLine($"Error executing command: {e.Message}\nStackTrace: {e.StackTrace}");
+                                            Logger.Error($"Error executing command: {e.Message}");
                                             try
                                             {
                                                 string errorCmdType = command["type"]?.ToString() ?? "unknown";
@@ -500,7 +506,7 @@ namespace RhinoMCPPlugin
                                     // Wait for UI thread to complete (with timeout)
                                     if (!completionEvent.Wait(TimeSpan.FromSeconds(60)))
                                     {
-                                        RhinoApp.WriteLine("WARNING: Command execution timed out after 60 seconds");
+                                        Logger.Warning("Command execution timed out after 60 seconds");
                                     }
                                 }
                             }
@@ -517,14 +523,14 @@ namespace RhinoMCPPlugin
                     }
                     catch (Exception e)
                     {
-                        RhinoApp.WriteLine($"Error receiving data: {e.Message}");
+                        Logger.Error($"Error receiving data: {e.Message}");
                         break;
                     }
                 }
             }
             catch (Exception e)
             {
-                RhinoApp.WriteLine($"Error in client handler: {e.Message}");
+                Logger.Error($"Error in client handler: {e.Message}");
             }
             finally
             {
@@ -536,7 +542,7 @@ namespace RhinoMCPPlugin
                 {
                     // Ignore errors on close
                 }
-                RhinoApp.WriteLine("Client handler stopped");
+                Logger.Verbose("Client handler stopped");
             }
         }
 
@@ -549,7 +555,7 @@ namespace RhinoMCPPlugin
             // Validate cmdType
             if (string.IsNullOrEmpty(cmdType))
             {
-                RhinoApp.WriteLine($"ERROR: Missing or empty command type. Received: {command.ToString()}");
+                Logger.Error($"Missing or empty command type. Received: {command.ToString()}");
                 return new JObject
                 {
                     ["status"] = "error",
@@ -560,29 +566,18 @@ namespace RhinoMCPPlugin
 
             try
             {
-                if (debugMode)
-                {
-                    RhinoApp.WriteLine($"Executing command: {cmdType} with parameters: {parameters.ToString()}");
-                }
+                Logger.Debug($"Executing: {cmdType}");
+                Logger.Verbose($"Parameters: {parameters.ToString()}");
 
                 JObject result = ExecuteCommandInternal(cmdType, parameters);
 
-                if (debugMode)
-                {
-                    RhinoApp.WriteLine($"Command {cmdType} executed successfully");
-                }
+                Logger.Debug($"Command {cmdType} completed");
                 return result;
             }
             catch (Exception e)
             {
-                if (debugMode)
-                {
-                    RhinoApp.WriteLine($"Error executing command {cmdType}: {e.Message}\nStackTrace: {e.StackTrace}");
-                }
-                else
-                {
-                    RhinoApp.WriteLine($"Error executing command: {e.Message}");
-                }
+                Logger.Error($"Command {cmdType} failed: {e.Message}");
+                Logger.Verbose($"StackTrace: {e.StackTrace}");
                 return new JObject
                 {
                     ["status"] = "error",
@@ -704,14 +699,8 @@ namespace RhinoMCPPlugin
                 }
                 catch (Exception e)
                 {
-                    if (debugMode)
-                    {
-                        RhinoApp.WriteLine($"Error in handler for {cmdType}: {e.Message}\nStackTrace: {e.StackTrace}");
-                    }
-                    else
-                    {
-                        RhinoApp.WriteLine($"Error in handler: {e.Message}");
-                    }
+                    Logger.Error($"Handler error for {cmdType}: {e.Message}");
+                    Logger.Verbose($"StackTrace: {e.StackTrace}");
                     return new JObject
                     {
                         ["status"] = "error",

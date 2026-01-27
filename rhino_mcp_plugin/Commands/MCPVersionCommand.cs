@@ -30,7 +30,7 @@ namespace RhinoMCPPlugin.Commands
         {
             // get the version of the plugin from the properties of the project file
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            Rhino.RhinoApp.WriteLine($"RhinoMCPPlugin version {version}");
+            Logger.Raw($"RhinoMCP Plugin version {version}");
             return Result.Success;
         }
 

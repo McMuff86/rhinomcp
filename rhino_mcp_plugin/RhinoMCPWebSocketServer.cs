@@ -62,7 +62,7 @@ namespace RhinoMCPPlugin
         {
             if (isRunning)
             {
-                RhinoApp.WriteLine("WebSocket server already running");
+                Logger.Warning("WebSocket server already running");
                 return;
             }
 
@@ -94,11 +94,11 @@ namespace RhinoMCPPlugin
                 monitorThread.IsBackground = true;
                 monitorThread.Start();
 
-                RhinoApp.WriteLine($"WebSocket server started on ws://{host}:{port}");
+                Logger.Info($"WebSocket server started on ws://{host}:{port}");
             }
             catch (Exception e)
             {
-                RhinoApp.WriteLine($"Failed to start WebSocket server: {e.Message}");
+                Logger.Error("Failed to start WebSocket server", e);
                 Stop();
             }
         }
@@ -155,7 +155,7 @@ namespace RhinoMCPPlugin
                 server = null;
             }
 
-            RhinoApp.WriteLine("WebSocket server stopped");
+            Logger.Info("WebSocket server stopped");
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace RhinoMCPPlugin
                 clients.Add(socket);
             }
 
-            RhinoApp.WriteLine($"WebSocket client connected: {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort}");
+            Logger.Debug($"WebSocket client connected: {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort}");
 
             // Send welcome message with current state
             try
@@ -183,7 +183,7 @@ namespace RhinoMCPPlugin
             }
             catch (Exception ex)
             {
-                RhinoApp.WriteLine($"Error sending welcome message: {ex.Message}");
+                Logger.Warning($"Error sending welcome message: {ex.Message}");
             }
         }
 
@@ -197,7 +197,7 @@ namespace RhinoMCPPlugin
                 clients.Remove(socket);
             }
 
-            RhinoApp.WriteLine($"WebSocket client disconnected");
+            Logger.Debug("WebSocket client disconnected");
         }
 
         /// <summary>
@@ -205,7 +205,7 @@ namespace RhinoMCPPlugin
         /// </summary>
         private void OnClientError(IWebSocketConnection socket, Exception ex)
         {
-            RhinoApp.WriteLine($"WebSocket client error: {ex.Message}");
+            Logger.Warning($"WebSocket client error: {ex.Message}");
 
             lock (clientsLock)
             {
@@ -270,7 +270,7 @@ namespace RhinoMCPPlugin
             }
             catch (Exception ex)
             {
-                RhinoApp.WriteLine($"Error handling WebSocket message: {ex.Message}");
+                Logger.Error($"Error handling WebSocket message: {ex.Message}");
                 try
                 {
                     socket.Send(new JObject
@@ -485,7 +485,7 @@ namespace RhinoMCPPlugin
                 catch (Exception ex)
                 {
                     // Log but don't crash the monitoring thread
-                    RhinoApp.WriteLine($"Error in WebSocket monitor: {ex.Message}");
+                    Logger.Error($"Error in WebSocket monitor: {ex.Message}");
                 }
 
                 Thread.Sleep(MonitorIntervalMs);

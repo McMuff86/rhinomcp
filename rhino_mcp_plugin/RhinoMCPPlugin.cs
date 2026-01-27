@@ -42,11 +42,11 @@ namespace RhinoMCPPlugin
                     try
                     {
                         Server.Start();
-                        RhinoApp.WriteLine("RhinoMCP Plugin loaded and server started automatically.");
+                        Logger.Info("RhinoMCP Plugin loaded and server started automatically");
                     }
                     catch (Exception ex)
                     {
-                        RhinoApp.WriteLine($"Failed to start MCP server: {ex.Message}");
+                        Logger.Error("Failed to start MCP server", ex);
                     }
                 });
 
@@ -69,12 +69,12 @@ namespace RhinoMCPPlugin
                 if (Server != null)
                 {
                     Server.Stop();
-                    RhinoApp.WriteLine("RhinoMCP Plugin unloaded and server stopped.");
+                    Logger.Info("RhinoMCP Plugin unloaded");
                 }
             }
             catch (Exception ex)
             {
-                RhinoApp.WriteLine($"Error stopping MCP server: {ex.Message}");
+                Logger.Error("Error stopping MCP server", ex);
             }
 
             base.OnShutdown();
