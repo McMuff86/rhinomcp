@@ -24,32 +24,14 @@ namespace RhinoMCPPlugin
         public RhinoMCPServer Server { get; set; }
 
         /// <summary>
-        /// Called when the plug-in is being loaded. Start the MCP server automatically.
+        /// Called when the plug-in is being loaded.
+        /// Server is NOT started automatically - use mcpstart or tcpstart command.
         /// </summary>
         protected override Rhino.PlugIns.LoadReturnCode OnLoad(ref string errorMessage)
         {
             try
             {
-                // Start MCP server automatically when plugin loads
-                if (Server == null)
-                {
-                    Server = new RhinoMCPServer();
-                }
-
-                // Start server in background thread
-                System.Threading.Tasks.Task.Run(() =>
-                {
-                    try
-                    {
-                        Server.Start();
-                        Logger.Info("RhinoMCP Plugin loaded and server started automatically");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error("Failed to start MCP server", ex);
-                    }
-                });
-
+                Logger.Info("RhinoMCP Plugin loaded. Use 'mcpstart' or 'tcpstart' to start the server.");
                 return Rhino.PlugIns.LoadReturnCode.Success;
             }
             catch (Exception ex)

@@ -174,7 +174,9 @@ namespace RhinoMCPPlugin
                 serverThread.IsBackground = true;
                 serverThread.Start();
 
-                Logger.Info($"RhinoMCP server started on {host}:{port}");
+                // Show appropriate server type based on binding
+                string serverType = (host == "0.0.0.0") ? "RhinoTCP" : "RhinoMCP";
+                Logger.Info($"{serverType} server started on {host}:{port}");
                 
                 // Start WebSocket server for real-time event streaming
                 wsServer = new RhinoMCPWebSocketServer();
@@ -188,7 +190,7 @@ namespace RhinoMCPPlugin
                     Logger.Raw("-------------------------------------------");
                 }
                 
-                // Show appropriate message based on binding
+                // Show ready message based on binding
                 if (host == "0.0.0.0")
                 {
                     Logger.Info("Ready for TCP connections (remote access enabled)");
@@ -369,7 +371,7 @@ namespace RhinoMCPPlugin
                 serverThread = null;
             }
 
-            Logger.Info("RhinoMCP server stopped");
+            Logger.Info("Server stopped");
         }
 
         private void ServerLoop()
