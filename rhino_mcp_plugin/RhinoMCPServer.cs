@@ -623,6 +623,16 @@ namespace RhinoMCPPlugin
                 ["chamfer_curves"] = this.handler.ChamferCurves,
                 ["join_curves"] = this.handler.JoinCurves,
                 ["explode_curve"] = this.handler.ExplodeCurve,
+                // Solid Operations
+                ["fillet_edges"] = this.handler.FilletEdges,
+                ["chamfer_edges"] = this.handler.ChamferEdges,
+                ["split_brep"] = this.handler.SplitBrep,
+                ["trim_brep"] = this.handler.TrimBrep,
+                // Text Operations
+                ["create_text"] = this.handler.CreateText,
+                ["create_3d_text"] = this.handler.Create3DText,
+                ["create_text_dot"] = this.handler.CreateTextDot,
+                ["create_leader"] = this.handler.CreateLeader,
                 ["loft_curves"] = this.handler.LoftCurves,
                 ["extrude_curve"] = this.handler.ExtrudeCurve,
                 ["revolve_curve"] = this.handler.RevolveCurve,
