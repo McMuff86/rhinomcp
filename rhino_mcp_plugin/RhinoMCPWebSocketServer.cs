@@ -71,8 +71,8 @@ namespace RhinoMCPPlugin
 
             try
             {
-                // Configure Fleck logging
-                FleckLog.Level = LogLevel.Error;
+                // Configure Fleck logging (use full namespace to avoid conflict with our LogLevel)
+                FleckLog.Level = Fleck.LogLevel.Error;
 
                 // Start WebSocket server
                 server = new WebSocketServer($"ws://{host}:{port}");
