@@ -157,7 +157,16 @@ namespace RhinoMCPPlugin
                 RhinoApp.WriteLine("-------------------------------------------");
                 PrintAvailableTools();
                 RhinoApp.WriteLine("-------------------------------------------");
-                RhinoApp.WriteLine("Ready for MCP connections.");
+                
+                // Show appropriate message based on binding
+                if (host == "0.0.0.0")
+                {
+                    RhinoApp.WriteLine("Ready for TCP connections (remote access enabled).");
+                }
+                else
+                {
+                    RhinoApp.WriteLine("Ready for MCP connections (localhost only).");
+                }
             }
             catch (Exception e)
             {

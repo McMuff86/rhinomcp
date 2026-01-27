@@ -33,7 +33,16 @@ namespace RhinoMCPPlugin
             // Create new server with specified host
             server = new RhinoMCPServer(host);
             server.Start();
-            RhinoApp.WriteLine($"Server started on {host}.");
+            
+            // Show mode-specific message
+            if (host == "0.0.0.0")
+            {
+                RhinoApp.WriteLine("TCP server started (remote access enabled).");
+            }
+            else
+            {
+                RhinoApp.WriteLine("MCP server started (localhost only).");
+            }
         }
 
         public static void StopServer()
