@@ -21,11 +21,15 @@ public partial class RhinoMCPFunctions
         bool attributesModified = false;
         bool geometryModified = false;
 
+        // IMPORTANT: Duplicate attributes to avoid losing existing data (user strings, groups, etc.)
+        // See: https://discourse.mcneel.com/t/modifyattributes-delete-all-attributes/202870
+        var newAttributes = obj.Attributes.Duplicate();
+
         // Change name if provided
         if (parameters["new_name"] != null)
         {
             string name = parameters["new_name"].ToString();
-            obj.Attributes.Name = name;
+            newAttributes.Name = name;
             attributesModified = true;
         }
 
@@ -33,8 +37,34 @@ public partial class RhinoMCPFunctions
         if (parameters["new_color"] != null)
         {
             int[] color = parameters["new_color"]?.ToObject<int[]>() ?? new[] { 0, 0, 0 };
-            obj.Attributes.ObjectColor = Color.FromArgb(color[0], color[1], color[2]);
-            obj.Attributes.ColorSource = ObjectColorSource.ColorFromObject;
+            newAttributes.ObjectColor = Color.FromArgb(color[0], color[1], color[2]);
+            newAttributes.ColorSource = ObjectColorSource.ColorFromObject;
+            attributesModified = true;
+        }
+
+        // Change layer if provided
+        if (parameters["layer"] != null)
+        {
+            string layerName = parameters["layer"].ToString();
+            int layerIndex = doc.Layers.FindByFullPath(layerName, -1);
+            if (layerIndex < 0)
+            {
+                // Try finding by name only (not full path)
+                layerIndex = doc.Layers.FindName(layerName)?.Index ?? -1;
+            }
+            if (layerIndex < 0)
+            {
+                throw new ArgumentException($"Layer not found: {layerName}");
+            }
+            newAttributes.LayerIndex = layerIndex;
+            attributesModified = true;
+        }
+
+        // Change visibility if provided
+        if (parameters["visible"] != null)
+        {
+            bool visible = parameters["visible"].Value<bool>();
+            newAttributes.Visible = visible;
             attributesModified = true;
         }
 
@@ -79,8 +109,8 @@ public partial class RhinoMCPFunctions
 
         if (attributesModified)
         {
-            // Update the object attributes if needed
-            doc.Objects.ModifyAttributes(obj, obj.Attributes, true);
+            // Use duplicated attributes and object ID for reliable modification
+            doc.Objects.ModifyAttributes(obj.Id, newAttributes, true);
         }
 
         if (geometryModified)
