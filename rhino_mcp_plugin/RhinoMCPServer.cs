@@ -105,6 +105,30 @@ namespace RhinoMCPPlugin
             return debugMode;
         }
 
+        /// <summary>
+        /// Gets the current server host address.
+        /// </summary>
+        public string GetHost()
+        {
+            return host;
+        }
+
+        /// <summary>
+        /// Gets the current server port.
+        /// </summary>
+        public int GetPort()
+        {
+            return port;
+        }
+
+        /// <summary>
+        /// Returns true if server is bound to 0.0.0.0 (remote access enabled).
+        /// </summary>
+        public bool IsRemoteAccessEnabled()
+        {
+            return host == "0.0.0.0";
+        }
+
         public bool IsRunning()
         {
             return running;
