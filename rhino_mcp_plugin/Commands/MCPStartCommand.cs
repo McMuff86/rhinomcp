@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace RhinoMCPPlugin.Commands
 {
+    /// <summary>
+    /// Starts the RhinoMCP server bound to 127.0.0.1 (localhost only).
+    /// Use this command for local MCP clients like Cursor or Claude Desktop.
+    /// For remote/WSL access, use 'tcpstart' instead.
+    /// </summary>
     public class MCPStartCommand : Command
     {
         public MCPStartCommand()
@@ -28,15 +33,8 @@ namespace RhinoMCPPlugin.Commands
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {
-            if (RhinoMCPServerController.IsServerRunning())
-            {
-                RhinoApp.WriteLine("MCP server is already running (started automatically on plugin load).");
-            }
-            else
-            {
-                RhinoMCPServerController.StartServer();
-                RhinoApp.WriteLine("MCP server started manually.");
-            }
+            // Start server on 127.0.0.1 for local access (Cursor, Claude Desktop)
+            RhinoMCPServerController.StartServer("127.0.0.1");
             return Result.Success;
         }
 

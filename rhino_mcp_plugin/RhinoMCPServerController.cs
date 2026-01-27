@@ -11,29 +11,29 @@ namespace RhinoMCPPlugin
     {
         private static RhinoMCPServer server;
 
-        public static void StartServer()
+        public static void StartServer(string host = "127.0.0.1")
         {
             // Check if plugin already started a server during auto-start
             var pluginServer = RhinoMCPPlugin.Instance?.Server;
             if (pluginServer != null)
             {
-                // Plugin server exists, just ensure it's started
-                if (!pluginServer.IsRunning())
+                // Plugin server exists - stop it if running with different host
+                if (pluginServer.IsRunning())
                 {
-                    pluginServer.Start();
+                    pluginServer.Stop();
                 }
-                RhinoApp.WriteLine("Server started (using existing plugin server).");
-                return;
             }
 
-            // No plugin server, create our own
-            if (server == null)
+            // Stop existing controller server if any
+            if (server != null && server.IsRunning())
             {
-                server = new RhinoMCPServer();
+                server.Stop();
             }
 
+            // Create new server with specified host
+            server = new RhinoMCPServer(host);
             server.Start();
-            RhinoApp.WriteLine("Server started.");
+            RhinoApp.WriteLine($"Server started on {host}.");
         }
 
         public static void StopServer()

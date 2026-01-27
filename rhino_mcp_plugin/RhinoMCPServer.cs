@@ -84,7 +84,7 @@ namespace RhinoMCPPlugin
         }
         
 
-        public RhinoMCPServer(string host = "0.0.0.0", int port = 1999)
+        public RhinoMCPServer(string host = "127.0.0.1", int port = 1999)
         {
             this.host = host;
             this.port = port;
