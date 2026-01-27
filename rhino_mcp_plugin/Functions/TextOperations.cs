@@ -284,17 +284,8 @@ public partial class RhinoMCPFunctions
         // Create plane from points (use XY plane at first point)
         Plane plane = new Plane(points[0], Vector3d.XAxis, Vector3d.YAxis);
         
-        // Convert to 2D points on plane
-        Point2d[] points2d = new Point2d[points.Count];
-        for (int i = 0; i < points.Count; i++)
-        {
-            double u, v;
-            plane.ClosestParameter(points[i], out u, out v);
-            points2d[i] = new Point2d(u, v);
-        }
-        
         var dimStyle = doc.DimStyles.Current;
-        Leader leader = Leader.Create(text, plane, dimStyle, points2d);
+        Leader leader = Leader.Create(text, plane, dimStyle, points.ToArray());
         
         if (leader == null)
             throw new InvalidOperationException("Failed to create leader");
