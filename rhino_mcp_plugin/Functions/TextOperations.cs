@@ -65,10 +65,10 @@ public partial class RhinoMCPFunctions
         // Set text height
         textEntity.TextHeight = height;
         
-        // Set font
-        var font = new Rhino.DocObjects.Font(fontName, bold ? Rhino.DocObjects.Font.FontWeight.Bold : Rhino.DocObjects.Font.FontWeight.Normal, 
-                                              italic ? Rhino.DocObjects.Font.FontStyle.Italic : Rhino.DocObjects.Font.FontStyle.Upright);
-        textEntity.Font = font;
+        // Set font - use FindOrCreate which is the correct API
+        var font = Rhino.DocObjects.Font.FromQuartetProperties(fontName, bold, italic);
+        if (font != null)
+            textEntity.Font = font;
         
         // Object attributes
         ObjectAttributes attrs = new ObjectAttributes();
@@ -137,14 +137,11 @@ public partial class RhinoMCPFunctions
         normal.Unitize();
         Plane plane = new Plane(position, normal);
         
-        // Create font
-        var font = new Rhino.DocObjects.Font(fontName, 
-            bold ? Rhino.DocObjects.Font.FontWeight.Bold : Rhino.DocObjects.Font.FontWeight.Normal,
-            italic ? Rhino.DocObjects.Font.FontStyle.Italic : Rhino.DocObjects.Font.FontStyle.Upright);
-        
-        // Get text outlines as curves
+        // Get text outlines as curves - use font name string directly
         var dimStyle = doc.DimStyles.Current;
-        Curve[] textCurves = Curve.CreateTextOutlines(text, font, height, 0, false, plane, 0.0, doc.ModelAbsoluteTolerance);
+        Curve[] textCurves = Curve.CreateTextOutlines(text, fontName, height, 
+            bold ? 700 : 400,  // Font weight (400=normal, 700=bold)
+            italic, plane, 0.0, doc.ModelAbsoluteTolerance);
         
         if (textCurves == null || textCurves.Length == 0)
             throw new InvalidOperationException("Failed to create text curves");
@@ -284,17 +281,16 @@ public partial class RhinoMCPFunctions
             points.Add(new Point3d(pt[0], pt[1], pt[2]));
         }
         
-        // Create plane from first two points
-        Vector3d dir = points[1] - points[0];
-        Plane plane = new Plane(points[0], Vector3d.ZAxis);
+        // Create plane from points (use XY plane at first point)
+        Plane plane = new Plane(points[0], Vector3d.XAxis, Vector3d.YAxis);
         
-        // Create leader using 2D points on plane
-        List<Point2d> points2d = new List<Point2d>();
-        foreach (Point3d pt3d in points)
+        // Convert to 2D points on plane
+        Point2d[] points2d = new Point2d[points.Count];
+        for (int i = 0; i < points.Count; i++)
         {
             double u, v;
-            plane.ClosestParameter(pt3d, out u, out v);
-            points2d.Add(new Point2d(u, v));
+            plane.ClosestParameter(points[i], out u, out v);
+            points2d[i] = new Point2d(u, v);
         }
         
         var dimStyle = doc.DimStyles.Current;
