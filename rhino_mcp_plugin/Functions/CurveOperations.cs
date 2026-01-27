@@ -468,4 +468,168 @@ public partial class RhinoMCPFunctions
             trimmed = trim
         });
     }
+    
+    /// <summary>
+    /// Join multiple curves into polycurves where they meet.
+    /// </summary>
+    public JObject JoinCurves(JObject parameters)
+    {
+        var doc = RhinoDoc.ActiveDoc;
+        
+        var curveIds = parameters["curve_ids"]?.ToObject<List<string>>();
+        if (curveIds == null || curveIds.Count < 2)
+            throw new ArgumentException("At least 2 curve_ids are required");
+        
+        bool deleteInput = parameters["delete_input"]?.Value<bool>() ?? true;
+        double tolerance = parameters["tolerance"]?.Value<double>() ?? doc.ModelAbsoluteTolerance;
+        
+        List<Curve> curves = new List<Curve>();
+        List<RhinoObject> inputObjects = new List<RhinoObject>();
+        
+        foreach (string idStr in curveIds)
+        {
+            if (!Guid.TryParse(idStr, out Guid objId))
+                throw new ArgumentException($"Invalid GUID: {idStr}");
+            
+            RhinoObject obj = doc.Objects.FindId(objId);
+            if (obj == null)
+                throw new ArgumentException($"Object not found: {idStr}");
+            
+            Curve curve = obj.Geometry as Curve;
+            if (curve == null)
+                throw new ArgumentException($"Object is not a curve: {idStr}");
+            
+            curves.Add(curve);
+            inputObjects.Add(obj);
+        }
+        
+        Curve[] joinedCurves = Curve.JoinCurves(curves, tolerance);
+        
+        if (joinedCurves == null || joinedCurves.Length == 0)
+            throw new InvalidOperationException("Join operation failed - curves may not be connected");
+        
+        List<string> newIds = new List<string>();
+        int currentLayerIndex = doc.Layers.CurrentLayerIndex;
+        
+        foreach (Curve joinedCurve in joinedCurves)
+        {
+            ObjectAttributes attrs = new ObjectAttributes();
+            attrs.LayerIndex = currentLayerIndex;
+            
+            Guid newId = doc.Objects.AddCurve(joinedCurve, attrs);
+            if (newId != Guid.Empty)
+            {
+                newIds.Add(newId.ToString());
+            }
+        }
+        
+        if (deleteInput)
+        {
+            foreach (RhinoObject obj in inputObjects)
+            {
+                doc.Objects.Delete(obj, true);
+            }
+        }
+        
+        doc.Views.Redraw();
+        
+        return JObject.FromObject(new
+        {
+            input_count = curveIds.Count,
+            result_ids = newIds,
+            result_count = newIds.Count,
+            deleted_input = deleteInput
+        });
+    }
+    
+    /// <summary>
+    /// Explode a polycurve into its segments.
+    /// </summary>
+    public JObject ExplodeCurve(JObject parameters)
+    {
+        var doc = RhinoDoc.ActiveDoc;
+        
+        string curveIdStr = parameters["curve_id"]?.ToString();
+        if (string.IsNullOrEmpty(curveIdStr))
+            throw new ArgumentException("curve_id is required");
+        
+        if (!Guid.TryParse(curveIdStr, out Guid curveId))
+            throw new ArgumentException($"Invalid GUID: {curveIdStr}");
+        
+        RhinoObject obj = doc.Objects.FindId(curveId);
+        if (obj == null)
+            throw new ArgumentException($"Object not found: {curveIdStr}");
+        
+        Curve curve = obj.Geometry as Curve;
+        if (curve == null)
+            throw new ArgumentException($"Object is not a curve: {curveIdStr}");
+        
+        bool deleteInput = parameters["delete_input"]?.Value<bool>() ?? true;
+        
+        // Get curve segments
+        Curve[] segments = null;
+        
+        if (curve is PolyCurve polyCurve)
+        {
+            segments = polyCurve.Explode();
+        }
+        else if (curve is PolylineCurve polyline)
+        {
+            // Convert to segments
+            var pts = new List<Point3d>();
+            for (int i = 0; i < polyline.PointCount; i++)
+            {
+                pts.Add(polyline.Point(i));
+            }
+            
+            segments = new Curve[pts.Count - 1];
+            for (int i = 0; i < pts.Count - 1; i++)
+            {
+                segments[i] = new LineCurve(pts[i], pts[i + 1]);
+            }
+        }
+        else
+        {
+            // Single segment curve, nothing to explode
+            return JObject.FromObject(new
+            {
+                source_id = curveIdStr,
+                segment_ids = new string[] { curveIdStr },
+                segment_count = 1,
+                message = "Curve has only one segment"
+            });
+        }
+        
+        if (segments == null || segments.Length == 0)
+            throw new InvalidOperationException("Explode operation failed - no segments generated");
+        
+        List<string> newIds = new List<string>();
+        int currentLayerIndex = obj.Attributes.LayerIndex;
+        
+        foreach (Curve segment in segments)
+        {
+            ObjectAttributes attrs = obj.Attributes.Duplicate();
+            
+            Guid newId = doc.Objects.AddCurve(segment, attrs);
+            if (newId != Guid.Empty)
+            {
+                newIds.Add(newId.ToString());
+            }
+        }
+        
+        if (deleteInput)
+        {
+            doc.Objects.Delete(obj, true);
+        }
+        
+        doc.Views.Redraw();
+        
+        return JObject.FromObject(new
+        {
+            source_id = curveIdStr,
+            segment_ids = newIds,
+            segment_count = newIds.Count,
+            deleted_input = deleteInput
+        });
+    }
 }

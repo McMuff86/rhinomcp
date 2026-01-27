@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Rhino;
+using Rhino.DocObjects;
+using Rhino.Geometry;
 using System.Collections.Generic;
 
 namespace RhinoMCPPlugin.Functions;
@@ -11,26 +13,136 @@ public partial class RhinoMCPFunctions
 {
     public JObject SelectObjects(JObject parameters)
     {
-        JObject filters = (JObject)parameters["filters"];
-
         var doc = RhinoDoc.ActiveDoc;
         var objects = doc.Objects.ToList();
         var selectedObjects = new List<Guid>();
-        var filtersType = (string)parameters["filters_type"];
-
-        var hasName = false;
-        var hasColor = false;
-        var customAttributes = new Dictionary<string, List<string>>();
-
-        // no filter means all are selected
-        if (filters.Count == 0)
+        
+        // Support simple filter parameters directly
+        string layerName = parameters["layer"]?.ToString();
+        string objectType = parameters["type"]?.ToString()?.ToLowerInvariant();
+        string objectName = parameters["name"]?.ToString();
+        bool? selectAll = parameters["all"]?.Value<bool>();
+        bool? clearSelection = parameters["clear"]?.Value<bool>();
+        var objectIds = parameters["ids"]?.ToObject<List<string>>();
+        
+        // Clear selection if requested
+        if (clearSelection == true)
+        {
+            doc.Objects.UnselectAll();
+            doc.Views.Redraw();
+            return new JObject { ["count"] = 0, ["action"] = "cleared" };
+        }
+        
+        // Select by IDs directly
+        if (objectIds != null && objectIds.Count > 0)
+        {
+            foreach (string idStr in objectIds)
+            {
+                if (Guid.TryParse(idStr, out Guid objId))
+                {
+                    selectedObjects.Add(objId);
+                }
+            }
+            doc.Objects.UnselectAll();
+            doc.Objects.Select(selectedObjects);
+            doc.Views.Redraw();
+            return new JObject { ["count"] = selectedObjects.Count };
+        }
+        
+        // Select all
+        if (selectAll == true)
         {
             doc.Objects.UnselectAll();
             doc.Objects.Select(objects.Select(o => o.Id));
             doc.Views.Redraw();
-
-            return new JObject() { ["count"] = objects.Count };
+            return new JObject { ["count"] = objects.Count };
         }
+        
+        // Filter by layer
+        if (!string.IsNullOrEmpty(layerName))
+        {
+            int layerIndex = doc.Layers.FindByFullPath(layerName, -1);
+            if (layerIndex < 0)
+            {
+                // Try partial match
+                var layer = doc.Layers.FirstOrDefault(l => l.Name.Equals(layerName, StringComparison.OrdinalIgnoreCase));
+                if (layer != null) layerIndex = layer.Index;
+            }
+            
+            if (layerIndex >= 0)
+            {
+                objects = objects.Where(o => o.Attributes.LayerIndex == layerIndex).ToList();
+            }
+            else
+            {
+                // Layer not found, return empty
+                doc.Objects.UnselectAll();
+                doc.Views.Redraw();
+                return new JObject { ["count"] = 0, ["error"] = $"Layer not found: {layerName}" };
+            }
+        }
+        
+        // Filter by type
+        if (!string.IsNullOrEmpty(objectType))
+        {
+            objects = objects.Where(o => MatchesObjectType(o, objectType)).ToList();
+        }
+        
+        // Filter by name
+        if (!string.IsNullOrEmpty(objectName))
+        {
+            objects = objects.Where(o => 
+                o.Name != null && o.Name.IndexOf(objectName, StringComparison.OrdinalIgnoreCase) >= 0
+            ).ToList();
+        }
+        
+        // Legacy filter support
+        JObject filters = parameters["filters"] as JObject;
+        if (filters != null && filters.Count > 0)
+        {
+            return SelectObjectsLegacy(parameters, objects);
+        }
+        
+        // Select filtered objects
+        selectedObjects = objects.Select(o => o.Id).ToList();
+        doc.Objects.UnselectAll();
+        doc.Objects.Select(selectedObjects);
+        doc.Views.Redraw();
+        
+        return new JObject { ["count"] = selectedObjects.Count };
+    }
+    
+    private bool MatchesObjectType(RhinoObject obj, string type)
+    {
+        var geo = obj.Geometry;
+        
+        return type switch
+        {
+            "curve" or "curves" => geo is Curve,
+            "surface" or "surfaces" => geo is Surface || (geo is Brep b && !b.IsSolid),
+            "brep" or "solid" or "solids" => geo is Brep brep && brep.IsSolid,
+            "mesh" or "meshes" => geo is Mesh,
+            "point" or "points" => geo is Point,
+            "line" or "lines" => geo is LineCurve,
+            "circle" or "circles" => geo is ArcCurve ac && ac.IsCircle,
+            "arc" or "arcs" => geo is ArcCurve arc && !arc.IsCircle,
+            "polyline" or "polylines" => geo is PolylineCurve,
+            "extrusion" or "extrusions" => geo is Extrusion,
+            "text" or "annotation" => geo is TextEntity || geo is AnnotationBase,
+            "block" or "blocks" => obj is InstanceObject,
+            _ => obj.ObjectType.ToString().ToLowerInvariant().Contains(type)
+        };
+    }
+    
+    private JObject SelectObjectsLegacy(JObject parameters, List<RhinoObject> objects)
+    {
+        JObject filters = (JObject)parameters["filters"];
+        var selectedObjects = new List<Guid>();
+        var filtersType = parameters["filters_type"]?.ToString() ?? "and";
+
+        var hasName = false;
+        var hasColor = false;
+        var customAttributes = new Dictionary<string, List<string>>();
 
         foreach (JProperty f in filters.Properties())
         {
@@ -78,10 +190,11 @@ public partial class RhinoMCPFunctions
                 selectedObjects.Add(obj.Id);
             }
 
+        var doc = RhinoDoc.ActiveDoc;
         doc.Objects.UnselectAll();
         doc.Objects.Select(selectedObjects);
         doc.Views.Redraw();
 
-        return new JObject() { ["count"] = selectedObjects.Count };
+        return new JObject { ["count"] = selectedObjects.Count };
     }
 }

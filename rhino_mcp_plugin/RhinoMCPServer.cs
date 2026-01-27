@@ -621,6 +621,8 @@ namespace RhinoMCPPlugin
                 ["offset_curve"] = this.handler.OffsetCurve,
                 ["fillet_curves"] = this.handler.FilletCurves,
                 ["chamfer_curves"] = this.handler.ChamferCurves,
+                ["join_curves"] = this.handler.JoinCurves,
+                ["explode_curve"] = this.handler.ExplodeCurve,
                 ["loft_curves"] = this.handler.LoftCurves,
                 ["extrude_curve"] = this.handler.ExtrudeCurve,
                 ["revolve_curve"] = this.handler.RevolveCurve,
