@@ -59,6 +59,9 @@ namespace RhinoMCPPlugin
                 Logger.Error("Error stopping MCP server", ex);
             }
 
+            // Close log file
+            Logger.Shutdown();
+
             base.OnShutdown();
         }
 

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Rhino;
 
 namespace RhinoMCPPlugin
@@ -25,8 +26,46 @@ namespace RhinoMCPPlugin
     /// </summary>
     public static class Logger
     {
-        private static LogLevel _currentLevel = LogLevel.Info;
+        private static LogLevel _currentLevel = LogLevel.Verbose;
         private static readonly object _lock = new object();
+        private static readonly object _fileLock = new object();
+        private static string _logFilePath;
+        private static bool _fileLoggingEnabled = true;
+        private static StreamWriter _logWriter;
+
+        /// <summary>
+        /// Static constructor - initializes file logging.
+        /// </summary>
+        static Logger()
+        {
+            try
+            {
+                // Log to %TEMP%\rhinomcp.log
+                _logFilePath = Path.Combine(Path.GetTempPath(), "rhinomcp.log");
+                
+                // Truncate file on startup (fresh log each session)
+                _logWriter = new StreamWriter(_logFilePath, append: false) { AutoFlush = true };
+                _fileLoggingEnabled = true;
+            }
+            catch
+            {
+                _fileLoggingEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the log file path.
+        /// </summary>
+        public static string LogFilePath => _logFilePath;
+
+        /// <summary>
+        /// Gets or sets whether file logging is enabled.
+        /// </summary>
+        public static bool FileLoggingEnabled
+        {
+            get { return _fileLoggingEnabled; }
+            set { _fileLoggingEnabled = value; }
+        }
 
         /// <summary>
         /// Gets or sets the current log level.
@@ -128,11 +167,61 @@ namespace RhinoMCPPlugin
         public static void Raw(string message)
         {
             RhinoApp.WriteLine(message);
+            
+            var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+            WriteToFile($"[{timestamp}] {message}");
         }
 
         private static void WriteLine(string prefix, string message)
         {
-            RhinoApp.WriteLine($"{prefix} {message}");
+            var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
+            var fullMessage = $"{prefix} {message}";
+            var fileMessage = $"[{timestamp}] {fullMessage}";
+            
+            // Write to Rhino command line
+            RhinoApp.WriteLine(fullMessage);
+            
+            // Write to file
+            WriteToFile(fileMessage);
+        }
+
+        private static void WriteToFile(string message)
+        {
+            if (!_fileLoggingEnabled || _logWriter == null)
+                return;
+
+            try
+            {
+                lock (_fileLock)
+                {
+                    _logWriter.WriteLine(message);
+                }
+            }
+            catch
+            {
+                // Silently fail - don't crash plugin due to logging issues
+            }
+        }
+
+        /// <summary>
+        /// Closes the log file. Call on plugin unload.
+        /// </summary>
+        public static void Shutdown()
+        {
+            lock (_fileLock)
+            {
+                if (_logWriter != null)
+                {
+                    try
+                    {
+                        _logWriter.Flush();
+                        _logWriter.Close();
+                        _logWriter.Dispose();
+                    }
+                    catch { }
+                    _logWriter = null;
+                }
+            }
         }
     }
 }
