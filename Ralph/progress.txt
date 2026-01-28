@@ -15,7 +15,7 @@ Project: RhinoMCP Professionalization
 **Version:** 0.1.4.3
 **Phase:** C Complete + Grasshopper Automation
 **Test Count:** 300+ tests
-**Last Update:** 2026-01-13 - Material assignment to layers fully resolved
+**Last Update:** 2026-01-28 - Fixed layer.RenderMaterialIndex to use doc.Materials index
 
 | Phase | Status |
 |-------|--------|
@@ -90,6 +90,21 @@ mcpstart
 ---
 
 ## Recent Sessions
+
+### [2026-01-28] - Layer Material Index Fix (CRITICAL) ✅
+- Thread: Claude Code Session
+- Duration: ~1 hour
+- Problem: Materials created but not appearing on layers in UI, `layer.RenderMaterial` was `None`
+- Root Cause: **`layer.RenderMaterialIndex` expects `doc.Materials` index, NOT `doc.RenderMaterials` index!**
+- Investigation: Used Python scripts via TCP to debug - found `RenderMaterialIndex=17` but `RenderMaterial=None`
+- Solution:
+  1. `create_material` now returns `material_index` (doc.Materials) as `id`
+  2. Also returns `render_material_index` for reference
+  3. `create_layer` and `assign_material_to_layer` validate against `doc.Materials.Count`
+- Files Modified: `CreateLayer.cs`, `GetDocumentInfo.cs`
+- Commit: `8025bdb` - "fix: use doc.Materials index for layer material assignment"
+- Documentation: Updated `docs/learnings/material-assignment.md` with Pitfall 5
+- Status: ✅ Verified working - layers now show material icons in UI
 
 ### [2026-01-13] - Castle Artwork Creation & Documentation Improvements ✅
 - Thread: Cursor Agent Session

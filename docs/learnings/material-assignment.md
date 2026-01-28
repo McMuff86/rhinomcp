@@ -216,6 +216,29 @@ if obj:
 
 **Fix:** Create layer first, then assign material in a separate call with a small delay.
 
+### ❌ Pitfall 5: Using RenderMaterials Index for Layer Assignment (CRITICAL!)
+
+**Symptom:** `layer.RenderMaterialIndex` is set, but `layer.RenderMaterial` property returns `None`. Material icons don't appear in Layers panel.
+
+**Root Cause:** Despite its confusing name, `layer.RenderMaterialIndex` expects the index from `doc.Materials`, NOT from `doc.RenderMaterials`!
+
+**Wrong:**
+```csharp
+int renderIndex = doc.RenderMaterials.Count - 1;  // RenderMaterials index
+layer.RenderMaterialIndex = renderIndex;  // WRONG! Will not work
+```
+
+**Correct:**
+```csharp
+int materialIndex = doc.Materials.Add(baseMaterial);  // Materials index
+layer.RenderMaterialIndex = materialIndex;  // CORRECT!
+```
+
+**Fix Applied (2026-01-28):**
+- `create_material` now returns `material_index` (doc.Materials) as `id`
+- Also returns `render_material_index` for other use cases
+- `create_layer` and `assign_material_to_layer` validate against `doc.Materials.Count`
+
 ---
 
 ## Complete Working Example
