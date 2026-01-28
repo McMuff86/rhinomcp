@@ -11,7 +11,7 @@
     <!-- Specifies information for Assembly and Yak -->
     <Version>0.1.3.6</Version>
     <Title>rhinomcp</Title>
-    <Company>Jingcheng Chen</Company>
+    <Company>Adrian Muff</Company>
     <Description>Rhino integration through the Model Context Protocol</Description>
   </PropertyGroup>
   
