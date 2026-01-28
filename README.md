@@ -4,7 +4,7 @@
 ![Tests](https://img.shields.io/badge/tests-265%20passed-brightgreen)
 ![Version](https://img.shields.io/badge/version-0.1.3.8-blue)
 
-<img src="assets/rhinomcp_logo.svg" alt="RhinoMCP Logo" width="130">
+<img src="assets/rhinomcp_logo.png" alt="RhinoMCP Logo" width="130">
 
 RhinoMCP connects Rhino to AI agents through the Model Context Protocol (MCP), allowing AI agents to directly interact with and control Rhino. This integration enables prompt assisted 3D modeling in Rhino 3D.
 
@@ -28,23 +28,6 @@ RhinoMCP connects Rhino to AI agents through the Model Context Protocol (MCP), a
 > [!NOTE]  
 > The tool supports a growing set of primitive and derived geometries and operations. See [docs/USAGE.md](docs/USAGE.md) for the full list of object types and tools.
 
-## Demo
-
-### Demo 1
-
-This demo shows how AI can interact with Rhino in two directions. Click the image below to watch the video.
-
-[![demo2](assets/demo2.jpg)](https://youtu.be/pi6dbqUuhI4)
-
-### Demo 2
-
-This demo shows how to ask AI to create custom scripts and execute them in Rhino. Click the image below to watch the video.
-
-[![demo1](assets/demo1.jpg)](https://youtu.be/NFOF_Pjp3qY)
-
-## Tutorial
-
-Thanks to Nate. He has created a showcase and installation [tutorial](https://www.youtube.com/watch?v=z2IBP81ABRM) for this tool.
 
 ## Components
 
