@@ -5,6 +5,8 @@ Grasshopper Player automation - run GH definitions with custom parameters.
 Usage:
     python3 grasshopper.py run "C:/path/to/file.gh" --Lichthoehe 2200 --Lichtbreite 1000
     python3 grasshopper.py info "C:/path/to/file.gh"  # Show available parameters
+    python3 grasshopper.py run "C:/path/to/file.gh" --validate --Lichthoehe 2200
+    python3 grasshopper.py batch batch_config.json --dry-run
 """
 
 import argparse
@@ -13,6 +15,8 @@ import logging
 import sys
 import time
 import re
+from dataclasses import dataclass, field
+from typing import List
 from rhino_client import RhinoClient
 
 logger = logging.getLogger("rhinomcp.grasshopper")
@@ -29,6 +33,116 @@ PARAM_ALIASES = {
 def normalize_param_name(name: str) -> str:
     """Map GH nicknames to GrasshopperPlayer prompt names."""
     return PARAM_ALIASES.get(name, name)
+
+
+# --- Validation ---
+
+@dataclass
+class ValidationResult:
+    valid: bool
+    errors: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+
+
+def validate_parameters(params: dict, gh_params: dict) -> ValidationResult:
+    """Validate parameters against GH definition constraints.
+
+    Args:
+        params: User-provided parameters (already alias-normalized)
+        gh_params: Parameter info from get_gh_parameters()
+    """
+    errors = []
+    warnings = []
+
+    for name, value in params.items():
+        if name == 'Point':
+            # Validate point format
+            if isinstance(value, str):
+                parts = value.replace(' ', '').split(',')
+                if len(parts) != 3:
+                    errors.append(f"Point format invalid: '{value}' (expected x,y,z)")
+                else:
+                    try:
+                        [float(p) for p in parts]
+                    except ValueError:
+                        errors.append(f"Point contains non-numeric values: '{value}'")
+            continue
+
+        if name not in gh_params:
+            warnings.append(f"Unknown parameter: '{name}'")
+            continue
+
+        info = gh_params[name]
+        param_type = info.get('type', '')
+
+        # Number validation
+        if param_type in ('Number', 'NumberSlider', 'Integer'):
+            try:
+                num = float(value)
+                min_val = info.get('min')
+                max_val = info.get('max')
+                if min_val is not None and num < float(min_val):
+                    errors.append(f"{name}={value} below minimum ({min_val})")
+                if max_val is not None and num > float(max_val):
+                    errors.append(f"{name}={value} above maximum ({max_val})")
+            except (ValueError, TypeError):
+                errors.append(f"{name}='{value}' is not a valid number")
+
+        # Boolean validation
+        elif param_type == 'Boolean':
+            if str(value).lower() not in ('true', 'false', '1', '0', 'yes', 'no'):
+                errors.append(f"{name}='{value}' is not a valid boolean")
+
+    return ValidationResult(valid=len(errors) == 0, errors=errors, warnings=warnings)
+
+
+# --- Object GUID Tracking ---
+
+def get_all_object_ids() -> set:
+    """Get all object GUIDs in current document."""
+    with RhinoClient() as client:
+        code = '''
+import rhinoscriptsyntax as rs
+ids = rs.AllObjects()
+if ids:
+    print(",".join(str(id) for id in ids))
+else:
+    print("")
+'''
+        result = client.send_command('execute_rhinoscript_python_code', {'code': code})
+        output = result.get('result', {}).get('output', '').strip()
+        if output:
+            return set(output.split(','))
+        return set()
+
+
+def get_objects_by_layer(guids: list) -> dict:
+    """Group GUIDs by their layer."""
+    if not guids:
+        return {}
+    with RhinoClient() as client:
+        guids_str = json.dumps(guids)
+        code = f'''
+import rhinoscriptsyntax as rs
+import json
+guids = {guids_str}
+by_layer = {{}}
+for guid in guids:
+    try:
+        layer = rs.ObjectLayer(guid)
+        if layer not in by_layer:
+            by_layer[layer] = []
+        by_layer[layer].append(str(guid))
+    except:
+        pass
+print(json.dumps(by_layer))
+'''
+        result = client.send_command('execute_rhinoscript_python_code', {'code': code})
+        output = result.get('result', {}).get('output', '{}').strip()
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError:
+            return {}
 
 
 def get_gh_parameters(file_path: str) -> dict:
@@ -113,13 +227,16 @@ def parse_prompt(prompt: str) -> tuple:
     return None, None
 
 
-def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 120) -> dict:
+def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 120,
+                           track_objects: bool = True, validate: bool = True) -> dict:
     """Run a Grasshopper definition through GrasshopperPlayer with custom parameters.
     
     Args:
         file_path: Path to .gh file (Windows path)
         params: Dict of parameter_name -> value overrides
         timeout: Max seconds to wait
+        track_objects: If True, track created object GUIDs via before/after diff
+        validate: If True, validate parameters before running
     
     Returns:
         Dict with status and created objects info
@@ -128,6 +245,34 @@ def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 1
     
     # Normalize parameter names (aliases)
     params = {normalize_param_name(k): v for k, v in params.items()}
+    
+    # Validate parameters
+    if validate and params:
+        try:
+            gh_params = get_gh_parameters(file_path)
+            validation = validate_parameters(params, gh_params)
+            if not validation.valid:
+                logger.error(f"Validation failed: {validation.errors}")
+                return {
+                    'status': 'error',
+                    'message': 'Parameter validation failed',
+                    'errors': validation.errors,
+                    'warnings': validation.warnings
+                }
+            for w in validation.warnings:
+                logger.warning(f"Validation warning: {w}")
+        except Exception as e:
+            logger.warning(f"Could not validate parameters (continuing anyway): {e}")
+    
+    # Snapshot object IDs before run
+    before_ids = set()
+    if track_objects:
+        try:
+            before_ids = get_all_object_ids()
+            logger.debug(f"Objects before run: {len(before_ids)}")
+        except Exception as e:
+            logger.warning(f"Could not snapshot objects before run: {e}")
+            track_objects = False
     
     # Start GrasshopperPlayer
     logger.info(f"Starting GrasshopperPlayer: {file_path}")
@@ -193,17 +338,119 @@ def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 1
         else:
             time.sleep(0.2)
     
-    # Get final object count
+    # Get final document info
     with RhinoClient() as client:
         result = client.send_command('get_document_info', {})
         doc_info = result.get('result', {})
+    
+    # Calculate created objects diff
+    new_ids = []
+    created_by_layer = {}
+    if track_objects:
+        try:
+            after_ids = get_all_object_ids()
+            new_ids = list(after_ids - before_ids)
+            logger.info(f"Objects created: {len(new_ids)}")
+            if new_ids:
+                created_by_layer = get_objects_by_layer(new_ids)
+        except Exception as e:
+            logger.warning(f"Could not calculate object diff: {e}")
     
     return {
         'status': 'success',
         'file': file_path,
         'prompts_handled': prompts_handled,
-        'objects_created': doc_info.get('object_count', 0),
+        'objects_created': len(new_ids) if track_objects else doc_info.get('object_count', 0),
+        'created_guids': new_ids if track_objects else [],
+        'created_by_layer': created_by_layer if track_objects else {},
         'layers': [l.get('name') for l in doc_info.get('layers', [])]
+    }
+
+
+def run_batch(input_file: str, dry_run: bool = False, continue_on_error: bool = False) -> dict:
+    """Run multiple GH definitions from JSON file.
+
+    JSON format:
+    {
+        "definition": "C:/path/to/file.gh",
+        "defaults": {"Rahmendicke": 53},
+        "items": [
+            {"id": "T01", "Lichthoehe": 2100, "Lichtbreite": 900, "Point": "0,0,0"},
+            {"id": "T02", "Lichthoehe": 2000, "Lichtbreite": 800, "Point": "1500,0,0"}
+        ]
+    }
+    """
+    with open(input_file) as f:
+        config = json.load(f)
+
+    gh_file = config['definition']
+    defaults = config.get('defaults', {})
+    items = config['items']
+
+    if not items:
+        return {'status': 'error', 'message': 'No items in batch file'}
+
+    # Validate all items first
+    logger.info(f"Batch: {len(items)} items from {input_file}")
+    try:
+        gh_params = get_gh_parameters(gh_file)
+    except Exception as e:
+        logger.warning(f"Could not load GH params for validation: {e}")
+        gh_params = {}
+
+    all_valid = True
+    for item in items:
+        item_id = item.get('id', '?')
+        merged = {**defaults, **{k: v for k, v in item.items() if k != 'id'}}
+        merged = {normalize_param_name(k): v for k, v in merged.items()}
+        validation = validate_parameters(merged, gh_params)
+        if not validation.valid:
+            logger.error(f"  {item_id}: {validation.errors}")
+            all_valid = False
+        for w in validation.warnings:
+            logger.warning(f"  {item_id}: {w}")
+
+    if not all_valid and not continue_on_error:
+        return {'status': 'error', 'message': 'Validation failed. Use --continue to ignore.'}
+
+    if dry_run:
+        return {
+            'status': 'dry_run',
+            'total': len(items),
+            'message': 'Validation passed' if all_valid else 'Validation has errors'
+        }
+
+    # Run each item
+    results = []
+    for i, item in enumerate(items):
+        item_id = item.get('id', f'item_{i}')
+        merged = {**defaults, **{k: v for k, v in item.items() if k != 'id'}}
+
+        logger.info(f"Batch [{i+1}/{len(items)}] {item_id}")
+
+        try:
+            result = run_grasshopper_player(gh_file, merged, validate=False)
+            result['batch_id'] = item_id
+            results.append(result)
+        except Exception as e:
+            if continue_on_error:
+                results.append({'batch_id': item_id, 'status': 'error', 'message': str(e)})
+            else:
+                return {
+                    'status': 'error',
+                    'message': f'Failed at {item_id}: {e}',
+                    'completed': results
+                }
+
+    succeeded = sum(1 for r in results if r.get('status') == 'success')
+    failed = sum(1 for r in results if r.get('status') == 'error')
+
+    return {
+        'status': 'success' if failed == 0 else 'partial',
+        'total': len(items),
+        'succeeded': succeeded,
+        'failed': failed,
+        'results': results
     }
 
 
@@ -244,6 +491,14 @@ Examples:
   
   # Set insertion point
   python3 grasshopper.py run "C:/path/to/file.gh" --Point 100,200,0
+  
+  # Validate only (dry-run)
+  python3 grasshopper.py run "C:/path/to/file.gh" --validate --Lichthoehe 2200
+  
+  # Batch processing
+  python3 grasshopper.py batch batch_config.json
+  python3 grasshopper.py batch batch_config.json --dry-run
+  python3 grasshopper.py batch batch_config.json --continue
 """
     )
     
@@ -257,6 +512,17 @@ Examples:
     run_p = subparsers.add_parser('run', help='Run GH definition')
     run_p.add_argument('file', help='Path to .gh file (Windows path)')
     run_p.add_argument('--timeout', type=int, default=120, help='Timeout in seconds')
+    run_p.add_argument('--validate', '--dry-run', action='store_true', dest='validate_only',
+                       help='Validate parameters only, do not run')
+    run_p.add_argument('--no-track', action='store_true',
+                       help='Disable object GUID tracking')
+    
+    # Batch command
+    batch_p = subparsers.add_parser('batch', help='Run batch from JSON file')
+    batch_p.add_argument('file', help='Path to batch JSON file')
+    batch_p.add_argument('--dry-run', action='store_true', help='Validate only, do not run')
+    batch_p.add_argument('--continue', dest='continue_on_error', action='store_true',
+                         help='Continue on errors')
     
     # Parse known args first to get the file, then parse remaining as parameters
     args, remaining = parser.parse_known_args()
@@ -290,11 +556,41 @@ Examples:
             else:
                 i += 1
         
+        # Validate-only mode
+        if args.validate_only:
+            normalized = {normalize_param_name(k): v for k, v in custom_params.items()}
+            try:
+                gh_params = get_gh_parameters(args.file)
+                validation = validate_parameters(normalized, gh_params)
+                result = {
+                    'status': 'valid' if validation.valid else 'invalid',
+                    'errors': validation.errors,
+                    'warnings': validation.warnings,
+                    'parameters': normalized
+                }
+            except Exception as e:
+                result = {'status': 'error', 'message': f'Could not validate: {e}'}
+            print(json.dumps(result, indent=2))
+            sys.exit(0 if result.get('status') == 'valid' else 1)
+        
         if custom_params:
             print(f"Custom parameters: {custom_params}")
         
-        result = run_grasshopper_player(args.file, custom_params, args.timeout)
+        result = run_grasshopper_player(
+            args.file, custom_params, args.timeout,
+            track_objects=not args.no_track
+        )
         print(json.dumps(result, indent=2))
+    
+    elif args.action == 'batch':
+        result = run_batch(
+            args.file,
+            dry_run=args.dry_run,
+            continue_on_error=args.continue_on_error
+        )
+        print(json.dumps(result, indent=2))
+        if result.get('status') == 'error':
+            sys.exit(1)
 
 
 if __name__ == '__main__':
