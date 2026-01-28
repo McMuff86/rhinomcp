@@ -6,16 +6,16 @@ Layer management for Rhino via RhinoMCP.
 import argparse
 import json
 import sys
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from rhino_client import RhinoClient, with_rhino
 
 
 @with_rhino
 def create_layer(client: RhinoClient, name: str, color: Optional[List[int]] = None,
-                 parent: Optional[str] = None) -> Dict:
+                 parent: Optional[str] = None) -> Dict[str, Any]:
     """Create a new layer."""
-    params: Dict = {"name": name}
+    params: Dict[str, Any] = {"name": name}
     if color:
         params["color"] = color
     if parent:
@@ -24,25 +24,25 @@ def create_layer(client: RhinoClient, name: str, color: Optional[List[int]] = No
 
 
 @with_rhino
-def delete_layer(client: RhinoClient, name: str) -> Dict:
+def delete_layer(client: RhinoClient, name: str) -> Dict[str, Any]:
     """Delete a layer."""
     return client.send_command("delete_layer", {"name": name})
 
 
 @with_rhino
-def set_current_layer(client: RhinoClient, name: str) -> Dict:
+def set_current_layer(client: RhinoClient, name: str) -> Dict[str, Any]:
     """Set the current active layer."""
     return client.send_command("get_or_set_current_layer", {"name": name})
 
 
 @with_rhino
-def get_current_layer(client: RhinoClient) -> Dict:
+def get_current_layer(client: RhinoClient) -> Dict[str, Any]:
     """Get the current active layer."""
     return client.send_command("get_or_set_current_layer", {})
 
 
 @with_rhino
-def list_layers(client: RhinoClient) -> Dict:
+def list_layers(client: RhinoClient) -> Dict[str, Any]:
     """List all layers via document info."""
     info = client.send_command("get_document_info")
     if info.get("status") == "success":

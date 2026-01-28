@@ -3,7 +3,7 @@
 Shared utility functions for RhinoMCP Clawdbot scripts.
 """
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 
 def parse_coords(s: str) -> Optional[List[float]]:
@@ -68,7 +68,7 @@ def format_point(pt: List[float], decimals: int = 2) -> str:
     return f'({formatted})'
 
 
-def format_result(result: dict, verbose: bool = False) -> str:
+def format_result(result: Dict[str, Any], verbose: bool = False) -> str:
     """Format a command result dict for CLI output.
     
     Args:

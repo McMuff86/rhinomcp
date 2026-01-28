@@ -6,18 +6,18 @@ Execute RhinoScript Python code in Rhino via RhinoMCP.
 import argparse
 import json
 import sys
-from typing import Dict
+from typing import Any, Dict
 
 from rhino_client import RhinoClient, with_rhino
 
 
 @with_rhino
-def execute_script(client: RhinoClient, code: str) -> Dict:
+def execute_script(client: RhinoClient, code: str) -> Dict[str, Any]:
     """Execute RhinoScript Python code."""
     return client.send_command("execute_rhinoscript_python_code", {"code": code})
 
 
-def execute_file(filepath: str) -> Dict:
+def execute_file(filepath: str) -> Dict[str, Any]:
     """Execute a Python script file."""
     with open(filepath, 'r') as f:
         code = f.read()

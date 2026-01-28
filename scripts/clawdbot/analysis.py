@@ -4,13 +4,13 @@
 import argparse
 import json
 import sys
-from typing import Dict
+from typing import Any, Dict
 
 from rhino_client import RhinoClient, with_rhino
 
 
 @with_rhino
-def get_object_info(client: RhinoClient, object_id: str) -> Dict:
+def get_object_info(client: RhinoClient, object_id: str) -> Dict[str, Any]:
     """Get basic info about an object.
 
     Args:
@@ -24,7 +24,7 @@ def get_object_info(client: RhinoClient, object_id: str) -> Dict:
 
 
 @with_rhino
-def get_object_properties(client: RhinoClient, object_id: str) -> Dict:
+def get_object_properties(client: RhinoClient, object_id: str) -> Dict[str, Any]:
     """Get detailed properties including area/volume.
 
     Args:
@@ -38,13 +38,13 @@ def get_object_properties(client: RhinoClient, object_id: str) -> Dict:
 
 
 @with_rhino
-def get_selected_info(client: RhinoClient) -> Dict:
+def get_selected_info(client: RhinoClient) -> Dict[str, Any]:
     """Get info about all selected objects."""
     return client.send_command("get_selected_objects_info", {})
 
 
 @with_rhino
-def get_document_info(client: RhinoClient) -> Dict:
+def get_document_info(client: RhinoClient) -> Dict[str, Any]:
     """Get document info including object counts by type."""
     return client.send_command("get_document_info", {})
 
