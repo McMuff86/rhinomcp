@@ -88,7 +88,7 @@ def with_retry(max_retries: int = None, delay: float = None,
     return decorator
 
 
-__all__ = ['RhinoClient', 'get_client', 'RhinoMCPError', 'RhinoConnectionError',
+__all__ = ['RhinoClient', 'get_client', 'with_rhino', 'RhinoMCPError', 'RhinoConnectionError',
            'RhinoTimeoutError', 'RhinoCommandError', 'ValidationError', 'with_retry']
 
 
@@ -218,6 +218,23 @@ class RhinoClient:
     
     def __exit__(self, *args):
         self.disconnect()
+
+
+def with_rhino(func):
+    """Decorator that injects a connected RhinoClient as first argument.
+
+    Usage:
+        @with_rhino
+        def my_function(client: RhinoClient, other_args...) -> dict:
+            return client.send_command(...)
+
+    The decorator handles connect/disconnect automatically.
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with RhinoClient() as client:
+            return func(client, *args, **kwargs)
+    return wrapper
 
 
 def get_client() -> RhinoClient:
