@@ -11,7 +11,6 @@ import os
 import sys
 import time
 from functools import wraps
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 # Configure logging based on RHINOMCP_DEBUG env var
@@ -23,25 +22,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger("rhinomcp")
 
-# Load config
-CONFIG_PATH = Path(__file__).parent.parent / "config.json"
+# Load config via singleton
+from config import Config
 
-def load_config() -> Dict[str, Any]:
-    """Load configuration from config.json."""
-    if CONFIG_PATH.exists():
-        with open(CONFIG_PATH) as f:
-            return json.load(f)
-    return {}
+_cfg = Config.get()
+DEFAULT_HOST = _cfg.connection.host
+DEFAULT_PORT = _cfg.connection.port
+DEFAULT_TIMEOUT = _cfg.connection.timeout
+DEFAULT_RETRIES = _cfg.connection.max_retries
+DEFAULT_RETRY_DELAY = _cfg.connection.retry_delay
 
-CONFIG = load_config()
-CONNECTION = CONFIG.get("connection", {})
-
-# Defaults from config
-DEFAULT_HOST = CONNECTION.get("host", "172.31.96.1")
-DEFAULT_PORT = CONNECTION.get("port", 1999)
-DEFAULT_TIMEOUT = CONNECTION.get("timeout", 15.0)
-DEFAULT_RETRIES = CONNECTION.get("max_retries", 3)
-DEFAULT_RETRY_DELAY = CONNECTION.get("retry_delay", 1.0)
+# Backward-compat alias for scripts that import CONFIG directly
+CONFIG = _cfg.raw
 
 
 # --- Custom Exceptions ---
