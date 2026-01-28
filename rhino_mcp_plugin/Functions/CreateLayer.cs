@@ -37,21 +37,23 @@ public partial class RhinoMCPFunctions
         }
         
         // Handle material assignment BEFORE adding layer to document
-        // Set RenderMaterialIndex on the layer object before Add()
+        // IMPORTANT: layer.RenderMaterialIndex expects doc.Materials index, NOT doc.RenderMaterials index!
         if (parameters.ContainsKey("material_id"))
         {
             string materialIdStr = parameters["material_id"]?.ToString();
             if (!string.IsNullOrWhiteSpace(materialIdStr) && int.TryParse(materialIdStr, out int materialIndex))
             {
-                if (materialIndex >= 0 && materialIndex < doc.RenderMaterials.Count)
+                // Validate against doc.Materials (not doc.RenderMaterials!)
+                if (materialIndex >= 0 && materialIndex < doc.Materials.Count)
                 {
-                    // Set RenderMaterialIndex BEFORE adding to document (like RhinoScript does)
+                    // Set RenderMaterialIndex BEFORE adding to document
+                    // Despite the name, this expects doc.Materials index
                     layer.RenderMaterialIndex = materialIndex;
-                    RhinoApp.WriteLine($"[LAYER PREP] Setting RenderMaterialIndex {materialIndex} on layer '{name}' before Add()");
+                    RhinoApp.WriteLine($"[LAYER PREP] Setting RenderMaterialIndex {materialIndex} on layer '{name}' (doc.Materials index)");
                 }
                 else
                 {
-                    RhinoApp.WriteLine($"[WARNING] Material index {materialIndex} is out of range. RenderMaterials count: {doc.RenderMaterials.Count}");
+                    RhinoApp.WriteLine($"[WARNING] Material index {materialIndex} is out of range. doc.Materials count: {doc.Materials.Count}. Note: Use doc.Materials index, not doc.RenderMaterials index.");
                 }
             }
         }
@@ -68,10 +70,11 @@ public partial class RhinoMCPFunctions
             string materialIdStr = parameters["material_id"]?.ToString();
             if (!string.IsNullOrWhiteSpace(materialIdStr) && int.TryParse(materialIdStr, out int materialIndex))
             {
-                if (materialIndex >= 0 && materialIndex < doc.RenderMaterials.Count)
+                // Validate against doc.Materials (not doc.RenderMaterials!)
+                if (materialIndex >= 0 && materialIndex < doc.Materials.Count)
                 {
                     var layerIndex = layer.Index;
-                    
+
                     // Check if material was preserved after Add()
                     if (layer.RenderMaterialIndex != materialIndex)
                     {
@@ -92,7 +95,7 @@ public partial class RhinoMCPFunctions
                     }
                     else
                     {
-                        RhinoApp.WriteLine($"[LAYER CREATED] Layer '{name}' created with material index {materialIndex} (preserved from pre-Add assignment)");
+                        RhinoApp.WriteLine($"[LAYER CREATED] Layer '{name}' created with doc.Materials index {materialIndex}");
                     }
                 }
             }

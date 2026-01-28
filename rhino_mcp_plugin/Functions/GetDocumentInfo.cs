@@ -223,8 +223,10 @@ public partial class RhinoMCPFunctions
                 return JObject.FromObject(new
                 {
                     status = "success",
-                    message = $"PBR Material {name} created with render index {renderIndex}",
-                    id = renderIndex.ToString(),
+                    message = $"PBR Material {name} created with material index {materialIndex}",
+                    id = materialIndex.ToString(),  // Return Materials index for layer assignment
+                    material_index = materialIndex,  // doc.Materials index - use this for layers!
+                    render_material_index = renderIndex,  // doc.RenderMaterials index
                     type = "pbr",
                     metallic = metallic,
                     roughness = roughness
@@ -312,17 +314,17 @@ public partial class RhinoMCPFunctions
         if (!int.TryParse(materialId, out var materialIndex))
             throw new InvalidOperationException($"Invalid material_id '{materialId}'. Expected an integer index.");
 
-        if (materialIndex < 0 || materialIndex >= doc.RenderMaterials.Count)
-            throw new InvalidOperationException($"Material index {materialIndex} is out of range. There are {doc.RenderMaterials.Count} render materials in the document.");
+        // IMPORTANT: layer.RenderMaterialIndex expects doc.Materials index, NOT doc.RenderMaterials index!
+        // Validate against doc.Materials
+        if (materialIndex < 0 || materialIndex >= doc.Materials.Count)
+            throw new InvalidOperationException($"Material index {materialIndex} is out of range. There are {doc.Materials.Count} materials in the document. Note: Use doc.Materials index, not doc.RenderMaterials index.");
 
-        // Assign material to layer - use RenderMaterialIndex for modern Rhino render materials
-        // CRITICAL: We need to modify the layer directly, similar to how RhinoScript does it
-        // The layer object from FindName is a reference, so we can modify it directly
+        // Assign material to layer using doc.Materials index
         var layerIndex = layer.Index;
-        
-        // Set the RenderMaterialIndex directly on the layer
-        // This is the same approach as RhinoScript: layer.RenderMaterialIndex = index
+
+        // Set the RenderMaterialIndex - this expects doc.Materials index despite the confusing name
         layer.RenderMaterialIndex = materialIndex;
+        RhinoApp.WriteLine($"[LAYER MATERIAL] Setting layer '{layerName}' RenderMaterialIndex to {materialIndex} (doc.Materials index)");
         
         // CRITICAL: Use Modify to persist the change - but we need to pass the layer object itself
         // The Modify method needs the modified layer object and the index
