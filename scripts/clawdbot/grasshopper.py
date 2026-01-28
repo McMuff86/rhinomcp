@@ -18,6 +18,7 @@ import re
 from dataclasses import dataclass, field
 from typing import List
 from rhino_client import RhinoClient
+from presets import PresetManager
 
 logger = logging.getLogger("rhinomcp.grasshopper")
 
@@ -454,6 +455,102 @@ def run_batch(input_file: str, dry_run: bool = False, continue_on_error: bool = 
     }
 
 
+def run_preset(preset_name: str, overrides: dict = None, point: str = None,
+               validate_only: bool = False, track_objects: bool = True) -> dict:
+    """Run a preset with optional parameter overrides."""
+    manager = PresetManager()
+    preset = manager.get_preset(preset_name)
+
+    # Start with preset params
+    params = dict(preset['params'])
+
+    # Apply alias resolution to overrides
+    if overrides:
+        resolved = manager.resolve_aliases(overrides, preset['aliases'])
+        params.update(resolved)
+
+    # Set point if provided
+    if point:
+        params['Point'] = point
+
+    logger.info(f"Preset '{preset_name}': {preset['description']}")
+    logger.info(f"Template: {preset['template_name']} → {preset['file']}")
+
+    if validate_only:
+        # Validate parameters against GH definition
+        normalized = {normalize_param_name(k): v for k, v in params.items()}
+        try:
+            gh_params = get_gh_parameters(preset['file'])
+            validation = validate_parameters(normalized, gh_params)
+            return {
+                'status': 'valid' if validation.valid else 'invalid',
+                'preset': preset_name,
+                'errors': validation.errors,
+                'warnings': validation.warnings,
+                'parameters': normalized
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': f'Could not validate: {e}'}
+
+    return run_grasshopper_player(
+        preset['file'], params,
+        track_objects=track_objects
+    )
+
+
+def show_presets(category: str = None):
+    """List available presets."""
+    manager = PresetManager()
+    presets = manager.list_presets(category)
+
+    if not presets:
+        print("No presets found.")
+        return
+
+    print(f"Available Presets ({len(presets)}):")
+    print("-" * 60)
+    for p in presets:
+        print(f"  {p['name']:<22} {p['description']}")
+
+
+def show_templates(category: str = None):
+    """List available templates."""
+    manager = PresetManager()
+    templates = manager.list_templates(category)
+
+    if not templates:
+        print("No templates found.")
+        return
+
+    print(f"Available Templates ({len(templates)}):")
+    print("-" * 60)
+    for t in templates:
+        print(f"  {t['name']:<22} {t['description']}")
+
+
+def show_preset_info(preset_name: str):
+    """Show detailed info about a preset."""
+    manager = PresetManager()
+    preset = manager.get_preset(preset_name)
+
+    print(f"Preset: {preset['name']}")
+    print(f"Description: {preset['description']}")
+    print(f"Template: {preset['template_name']}")
+    print(f"GH File: {preset['file']}")
+    print(f"Category: {preset['category']}")
+    print(f"\nParameters:")
+    for k, v in sorted(preset['params'].items()):
+        print(f"  --{k} = {v}")
+    if preset['aliases']:
+        print(f"\nAliases:")
+        for alias, target in sorted(preset['aliases'].items()):
+            print(f"  --{alias} → --{target}")
+    if preset['validation']:
+        print(f"\nValidation Rules:")
+        for param, rules in sorted(preset['validation'].items()):
+            print(f"  {param}: {rules}")
+
+
 def show_info(file_path: str):
     """Show available parameters for a GH file."""
     print(f"Loading: {file_path}")
@@ -524,6 +621,23 @@ Examples:
     batch_p.add_argument('--continue', dest='continue_on_error', action='store_true',
                          help='Continue on errors')
     
+    # Presets list
+    presets_p = subparsers.add_parser('presets', help='List available presets')
+    presets_p.add_argument('--category', '-cat', type=str, help='Filter by category')
+
+    # Templates list
+    templates_p = subparsers.add_parser('templates', help='List available templates')
+    templates_p.add_argument('--category', '-cat', type=str, help='Filter by category')
+
+    # Preset run
+    preset_p = subparsers.add_parser('preset', help='Run a preset')
+    preset_p.add_argument('name', type=str, help='Preset name')
+    preset_p.add_argument('--info', action='store_true', help='Show preset details without running')
+    preset_p.add_argument('--Point', type=str, help='Insertion point (x,y,z)')
+    preset_p.add_argument('--validate', '--dry-run', action='store_true', dest='validate_only',
+                          help='Validate only')
+    preset_p.add_argument('--no-track', action='store_true', help='Disable object tracking')
+
     # Parse known args first to get the file, then parse remaining as parameters
     args, remaining = parser.parse_known_args()
     
@@ -591,6 +705,49 @@ Examples:
         print(json.dumps(result, indent=2))
         if result.get('status') == 'error':
             sys.exit(1)
+
+    elif args.action == 'presets':
+        show_presets(getattr(args, 'category', None))
+
+    elif args.action == 'templates':
+        show_templates(getattr(args, 'category', None))
+
+    elif args.action == 'preset':
+        if args.info:
+            show_preset_info(args.name)
+        else:
+            # Parse remaining args as overrides
+            custom_params = {}
+            i = 0
+            while i < len(remaining):
+                arg = remaining[i]
+                if arg.startswith('--') and arg[2:] not in ('info', 'validate', 'dry-run', 'no-track'):
+                    param_name = arg[2:]
+                    if i + 1 < len(remaining) and not remaining[i + 1].startswith('--'):
+                        value = remaining[i + 1]
+                        try:
+                            if '.' in value:
+                                value = float(value)
+                            else:
+                                value = int(value)
+                        except ValueError:
+                            pass
+                        custom_params[param_name] = value
+                        i += 2
+                    else:
+                        custom_params[param_name] = True
+                        i += 1
+                else:
+                    i += 1
+
+            result = run_preset(
+                args.name,
+                overrides=custom_params if custom_params else None,
+                point=getattr(args, 'Point', None),
+                validate_only=getattr(args, 'validate_only', False),
+                track_objects=not getattr(args, 'no_track', False),
+            )
+            print(json.dumps(result, indent=2))
 
 
 if __name__ == '__main__':

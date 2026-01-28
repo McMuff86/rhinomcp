@@ -60,7 +60,8 @@ python3 rhino_client.py ping
 | `render.py` | Lights, render settings, render to file |
 | `files.py` | Open, save, import, export (STEP, OBJ, STL...) |
 | `groups.py` | Groups and block definitions |
-| `grasshopper.py` | Grasshopper Player automation (run/info with custom params) |
+| `grasshopper.py` | Grasshopper Player automation (run/info/preset with custom params) |
+| `presets.py` | Preset & Template manager for GH definitions |
 | `scene.py` | Document info, batch operations |
 
 ---
@@ -144,6 +145,66 @@ python3 grasshopper.py run "C:/path/to/Rahmentuer_UD4.gh" \
 export RHINOMCP_DEBUG=1
 python3 grasshopper.py run "C:/path/to/file.gh" --Lichthoehe 2200
 ```
+
+---
+
+## 🎯 Presets & Templates
+
+Quick access to common Grasshopper configurations.
+
+### List Presets
+
+```bash
+python3 grasshopper.py presets
+# Output:
+# Available Presets (5):
+# ------------------------------------------------------------
+#   standard_900           Standard Innentür 900mm
+#   standard_800           Standard Innentür 800mm
+#   brandschutz_t30        Brandschutztür T30 (EI30)
+#   nasszelle_750          Nasszelltür 750mm (WC/Bad)
+#   aussentuer_schwelle    Aussentür mit Schwelle
+```
+
+### Run a Preset
+
+```bash
+# Run with defaults
+python3 grasshopper.py preset standard_900 --Point 0,0,0
+
+# Run with parameter override
+python3 grasshopper.py preset standard_900 --Lichthoehe 2200 --Point 1500,0,0
+
+# Show preset details
+python3 grasshopper.py preset standard_900 --info
+
+# Validate only
+python3 grasshopper.py preset brandschutz_t30 --validate
+```
+
+### Templates
+
+Templates map friendly names to GH files with defaults and validation:
+
+```bash
+python3 grasshopper.py templates
+```
+
+### Adding Custom Presets
+
+Edit `config/presets.yaml` to add your own:
+
+```yaml
+presets:
+  my_custom_door:
+    description: "My custom door preset"
+    template: rahmentuer_ud4
+    params:
+      Lichtbreite: 1200
+      Lichthoehe: 2400
+```
+
+Templates support inheritance — see `config/templates.yaml`.
 
 ---
 
