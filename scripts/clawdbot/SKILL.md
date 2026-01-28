@@ -60,7 +60,90 @@ python3 rhino_client.py ping
 | `render.py` | Lights, render settings, render to file |
 | `files.py` | Open, save, import, export (STEP, OBJ, STL...) |
 | `groups.py` | Groups and block definitions |
+| `grasshopper.py` | Grasshopper Player automation (run/info with custom params) |
 | `scene.py` | Document info, batch operations |
+
+---
+
+## 🌿 Grasshopper Player Automation
+
+Run Grasshopper definitions with custom parameters directly from CLI.
+
+### Basic Usage
+
+```bash
+# Show available parameters in a GH file
+python3 grasshopper.py info "C:/path/to/definition.gh"
+
+# Run with default parameters
+python3 grasshopper.py run "C:/path/to/definition.gh"
+
+# Run with custom parameters
+python3 grasshopper.py run "C:/path/to/definition.gh" --Lichthoehe 2200 --Lichtbreite 1000
+
+# Set insertion point
+python3 grasshopper.py run "C:/path/to/definition.gh" --Point 100,200,0
+```
+
+### Parameter Discovery
+
+```bash
+python3 grasshopper.py info "C:/path/to/Rahmentuer_UD4.gh"
+# Output:
+# Available Parameters (26):
+# ----------------------------------------------------------
+#   --Lichthoehe = 2100.0 [1800.0 - 2600.0]  (Number)
+#   --Lichtbreite = 900.0 [600.0 - 1400.0]  (Number)
+#   --Rahmendicke = 53.0  (Number)
+#   --Tuerstaerke = 58.0  (Number)
+#   --DichtNut_Rahmen = True  (Boolean)
+#   ...
+```
+
+### Parameter Aliases
+
+GH nicknames are automatically mapped to Player prompt names:
+
+| GH Nickname | Maps to |
+|-------------|---------|
+| Pt | Point |
+| Punkt | Point |
+| Position | Point |
+| Pos | Point |
+
+Add custom aliases in `PARAM_ALIASES` dict in `grasshopper.py`.
+
+### How It Works
+
+1. `info` loads the GH file via Grasshopper SDK to extract parameter metadata (names, types, defaults, min/max)
+2. `run` starts Rhino's GrasshopperPlayer command via `SendKeystrokes` (non-blocking)
+3. Script monitors command prompts and sends parameter values
+4. Prompts like `Lichthoehe <2100>` get the custom or default value
+5. `Get Point` prompts receive the `--Point` coordinate or default `0,0,0`
+
+### Example: Create Multiple Doors
+
+```bash
+# Door 1: Standard at origin
+python3 grasshopper.py run "C:/path/to/Rahmentuer_UD4.gh" \
+  --Lichthoehe 2100 --Lichtbreite 900 --Point 0,0,0
+
+# Door 2: Wider door offset 1500mm
+python3 grasshopper.py run "C:/path/to/Rahmentuer_UD4.gh" \
+  --Lichthoehe 2100 --Lichtbreite 1000 --Point 1500,0,0
+
+# Door 3: Taller door offset 3000mm
+python3 grasshopper.py run "C:/path/to/Rahmentuer_UD4.gh" \
+  --Lichthoehe 2300 --Lichtbreite 900 --Point 3000,0,0
+```
+
+### Debugging
+
+```bash
+# Enable verbose logging
+export RHINOMCP_DEBUG=1
+python3 grasshopper.py run "C:/path/to/file.gh" --Lichthoehe 2200
+```
 
 ---
 

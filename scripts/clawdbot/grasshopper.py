@@ -9,10 +9,26 @@ Usage:
 
 import argparse
 import json
+import logging
 import sys
 import time
 import re
 from rhino_client import RhinoClient
+
+logger = logging.getLogger("rhinomcp.grasshopper")
+
+# Parameter alias mapping (GH nicknames → Player prompt names)
+PARAM_ALIASES = {
+    'Pt': 'Point',
+    'Punkt': 'Point',
+    'Position': 'Point',
+    'Pos': 'Point',
+}
+
+
+def normalize_param_name(name: str) -> str:
+    """Map GH nicknames to GrasshopperPlayer prompt names."""
+    return PARAM_ALIASES.get(name, name)
 
 
 def get_gh_parameters(file_path: str) -> dict:
@@ -110,8 +126,11 @@ def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 1
     """
     params = params or {}
     
+    # Normalize parameter names (aliases)
+    params = {normalize_param_name(k): v for k, v in params.items()}
+    
     # Start GrasshopperPlayer
-    print(f"Starting GrasshopperPlayer: {file_path}")
+    logger.info(f"Starting GrasshopperPlayer: {file_path}")
     if not start_grasshopper_player(file_path):
         return {'status': 'error', 'message': 'Failed to start GrasshopperPlayer'}
     
@@ -132,7 +151,7 @@ def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 1
             # Check if player finished
             if prompt.strip() == 'Command':
                 if prompts_handled:  # Only finish if we handled at least one prompt
-                    print("GrasshopperPlayer finished!")
+                    logger.info("GrasshopperPlayer finished!")
                     break
                 else:
                     time.sleep(0.5)
@@ -145,7 +164,7 @@ def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 1
                 # Check if we have a custom value for this parameter
                 if param_name in params:
                     value = str(params[param_name])
-                    print(f"  {param_name}: {value} (custom)")
+                    logger.info(f"  {param_name}: {value} (custom)")
                 elif param_name == 'Point' and 'Point' in params:
                     # Handle point as "x,y,z"
                     pt = params['Point']
@@ -153,15 +172,15 @@ def run_grasshopper_player(file_path: str, params: dict = None, timeout: int = 1
                         value = f"{pt[0]},{pt[1]},{pt[2]}"
                     else:
                         value = str(pt)
-                    print(f"  Point: {value} (custom)")
+                    logger.info(f"  Point: {value} (custom)")
                 elif param_name == 'Point':
                     # Default point to origin
                     value = "0,0,0"
-                    print(f"  Point: {value} (default: origin)")
+                    logger.info(f"  Point: {value} (default: origin)")
                 else:
                     # Use default (just press Enter)
                     value = ""
-                    print(f"  {param_name}: <{default_value}> (default)")
+                    logger.info(f"  {param_name}: <{default_value}> (default)")
                 
                 send_input(value)
                 prompts_handled.append({

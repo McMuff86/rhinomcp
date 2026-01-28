@@ -6,9 +6,20 @@ Bypasses the MCP server layer for direct Clawdbot integration.
 
 import socket
 import json
+import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+# Configure logging based on RHINOMCP_DEBUG env var
+_log_level = logging.DEBUG if os.getenv("RHINOMCP_DEBUG") else logging.WARNING
+logging.basicConfig(
+    level=_log_level,
+    format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+    datefmt="%H:%M:%S"
+)
+logger = logging.getLogger("rhinomcp")
 
 # Load config
 CONFIG_PATH = Path(__file__).parent.parent / "config.json"
@@ -45,10 +56,11 @@ class RhinoClient:
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.settimeout(self.timeout)
+            logger.debug(f"Connecting to {self.host}:{self.port}")
             self.sock.connect((self.host, self.port))
             return True
         except Exception as e:
-            print(f"Connection failed: {e}", file=sys.stderr)
+            logger.error(f"Connection failed: {e}")
             self.sock = None
             return False
     
@@ -134,7 +146,7 @@ if __name__ == '__main__':
     try:
         params = json.loads(args.params)
     except json.JSONDecodeError as e:
-        print(f"Invalid JSON params: {e}", file=sys.stderr)
+        logger.error(f"Invalid JSON params: {e}")
         sys.exit(1)
     
     # All commands use the same client with host/port from args or config

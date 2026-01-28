@@ -7,6 +7,7 @@ import argparse
 import json
 import sys
 from rhino_client import RhinoClient
+from utils import parse_coords as _parse_coords, parse_color as _parse_color
 
 GEOMETRY_TYPES = [
     'POINT', 'LINE', 'POLYLINE', 'CIRCLE', 'ARC', 'ELLIPSE', 
